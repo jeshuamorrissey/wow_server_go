@@ -1,67 +1,23 @@
 package packet
 
 import (
-	"bytes"
-	"encoding/binary"
+	"bufio"
 )
 
-func maybeSetSize(currSize int, data []byte) int {
-	if currSize == 0 && len(data) != 0 {
-		return len(data)
-	}
-
-	return currSize
+// ServerPacket is a type of packet which can have it's contents written to a
+// byte buffer.
+type ServerPacket interface {
+	// Write takes as input a buffer and writes it's contents to it.
+	Write(*bufio.Writer) error
 }
 
-func maybeAllocate(data *[]byte, expectedLen int) {
-	if len(*data) != expectedLen {
-		*data = make([]byte, expectedLen)
-	}
-}
+// ClientPacket is a type of packet which can have it's contents filled in
+// from a byte buffer.
+type ClientPacket interface {
+	// Read takes as input a buffer and populates the fields of the packet.
+	Read(*bufio.Reader) error
 
-func MakeReader(buffer *bytes.Buffer) ProcessFunc {
-	return func(byteOrder binary.ByteOrder, data interface{}) error {
-		return binary.Read(buffer, byteOrder, data)
-	}
-}
-
-func MakeWriter(buffer *bytes.Buffer) ProcessFunc {
-	return func(byteOrder binary.ByteOrder, data interface{}) error {
-		return binary.Write(buffer, byteOrder, data)
-	}
-}
-
-type ProcessFunc func(binary.ByteOrder, interface{}) error
-
-type ClientPacketA struct {
-	A    uint8
-	B    [4]byte
-	C    [3]uint8
-	DLen uint8
-	D    []byte
-}
-
-func (pkt *ClientPacketA) Process(process ProcessFunc) error {
-	process(binary.LittleEndian, &pkt.A)
-	process(binary.LittleEndian, &pkt.B)
-
-	if pkt.A == 0 {
-		process(binary.LittleEndian, &pkt.C)
-	}
-
-	pkt.DLen = uint8(maybeSetSize(int(pkt.DLen), pkt.D))
-	process(binary.LittleEndian, &pkt.DLen)
-	maybeAllocate(&pkt.D, int(pkt.DLen))
-	process(binary.LittleEndian, &pkt.D)
-	return nil
-}
-
-type ServerPacketA struct {
-	a int16
-	b string
-	c []struct {
-		x float32
-		y float32
-		z float32
-	}
+	// Handle the packet and return a list of server packets to send back
+	// to the client.
+	Handle() ([]ServerPacket, error)
 }
