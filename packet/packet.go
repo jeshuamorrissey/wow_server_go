@@ -7,8 +7,8 @@ import (
 // ServerPacket is a type of packet which can have it's contents written to a
 // byte buffer.
 type ServerPacket interface {
-	// Write takes as input a buffer and writes it's contents to it.
-	Write(*bufio.Writer) error
+	// Bytes writes out the packet as a byte array.
+	Bytes() []byte
 }
 
 // ClientPacket is a type of packet which can have it's contents filled in

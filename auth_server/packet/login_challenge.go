@@ -2,8 +2,8 @@ package packet
 
 import (
 	"bufio"
+	"bytes"
 	"encoding/binary"
-	"log"
 	"math/big"
 
 	"gitlab.com/jeshuamorrissey/mmo_server/auth_server/srp"
@@ -61,31 +61,43 @@ type ServerLoginChallenge struct {
 	SaltCRC big.Int
 }
 
-// Write writes the data stored in the ServerLoginChallenge packet to a byte buffer.
-func (pkt *ServerLoginChallenge) Write(buffer *bufio.Writer) error {
+// Bytes writes out the packet to an array of bytes.
+func (pkt *ServerLoginChallenge) Bytes() []byte {
+	buffer := bytes.NewBufferString("")
+
 	buffer.WriteByte(ServerLoginChallengeOpCode)
 	buffer.WriteByte(0) // unk1
 	buffer.WriteByte(pkt.Error)
 
 	if pkt.Error == 0 {
-		buffer.Write(pkt.B.Bytes())
+		buffer.Write(reverse(padBigIntBytes(pkt.B.Bytes(), 32)))
 		buffer.WriteByte(1)
 		buffer.WriteByte(srp.G)
 		buffer.WriteByte(32)
-		buffer.Write(srp.N().Bytes())
-		buffer.Write(pkt.Salt.Bytes())
-		buffer.Write(pkt.SaltCRC.Bytes())
+		buffer.Write(reverse(padBigIntBytes(srp.N().Bytes(), 32)))
+		buffer.Write(reverse(padBigIntBytes(pkt.Salt.Bytes(), 32)))
+		buffer.Write(reverse(padBigIntBytes(pkt.SaltCRC.Bytes(), 16)))
 		buffer.WriteByte(0) // unk2
 	}
 
-	return nil
+	return buffer.Bytes()
 }
 
 // Handle will check the database for the account and send an appropriate response.
 func (pkt *ClientLoginChallenge) Handle() ([]packet.ServerPacket, error) {
 	response := new(ServerLoginChallenge)
 
-	log.Println(string(pkt.AccountName))
+	// TODO(jeshua): Read this data from a database instead.
+	salt := srp.GenerateSalt()
+	v := srp.GenerateVerifier("JESHUA", "JESHUA", salt)
+
+	// TODO(jeshua): Save this information with the session.
+	_, B := srp.GenerateEphemeral(v)
+
+	response.Error = 0
+	response.B.Set(B)
+	response.Salt.Set(salt)
+	response.SaltCRC.SetInt64(0)
 
 	return []packet.ServerPacket{response}, nil
 }

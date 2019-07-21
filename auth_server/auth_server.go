@@ -2,64 +2,30 @@ package main
 
 import (
 	"bufio"
-	"fmt"
+	"log"
 	"net"
-
-	"gitlab.com/jeshuamorrissey/mmo_server/auth_server/packet"
-	packet_common "gitlab.com/jeshuamorrissey/mmo_server/packet"
 )
-
-// ReadClientPacket will read the next available client packet from the connection
-// and return it.
-func ReadClientPacket(buffer *bufio.Reader) (packet_common.ClientPacket, error) {
-	// First, read the OpCode.
-	opCode, err := buffer.ReadByte()
-	if err != nil {
-		return nil, err
-	}
-
-	if opCode == packet.ClientLoginChallengeOpCode {
-		return new(packet.ClientLoginChallenge), nil
-	} else {
-		return nil, fmt.Errorf("unknown opcode %v", opCode)
-	}
-}
 
 func main() {
 	listener, err := net.Listen("tcp", ":5000")
 	if err != nil {
-		fmt.Printf("Error while opening port: %v", err)
+		log.Fatalf("Error while opening port: %v\n", err)
 		return
 	}
 
-	// Accept a connection.
-	conn, err := listener.Accept()
-	if err != nil {
-		fmt.Printf("Error while receiving client connection: %v", err)
-		return
-	}
+	log.Printf("Listening for connections on :5000...\n")
 
-	// Make a new buffer to read from.
-	buffer := bufio.NewReader(conn)
-
-	// Receive packets from the connection.
 	for {
-		packet, err := ReadClientPacket(buffer)
+		// Accept a connection.
+		conn, err := listener.Accept()
 		if err != nil {
-			fmt.Printf("Error while reading client pakcet: %v", err)
+			log.Fatalf("Error while receiving client connection: %v\n", err)
 			return
 		}
 
-		// Load and then handle the packet.
-		packet.Read(buffer)
-		response, err := packet.Handle()
-		if err != nil {
-			fmt.Printf("Error while handling packet: %v", err)
-		}
+		log.Printf("Receiving connection from %v\n", conn.RemoteAddr())
 
-		for pkt := range response {
-			// send response
-			fmt.Printf("%v", pkt)
-		}
+		// Make a new buffer to read from.
+		go RunSession(bufio.NewReader(conn), bufio.NewWriter(conn))
 	}
 }
