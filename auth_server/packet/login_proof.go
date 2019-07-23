@@ -4,7 +4,6 @@ import (
 	"bufio"
 	"bytes"
 	"encoding/binary"
-	"log"
 	"math/big"
 
 	"gitlab.com/jeshuamorrissey/mmo_server/auth_server/srp"
@@ -68,7 +67,7 @@ func (pkt *ServerLoginProof) Bytes() []byte {
 	buffer.WriteByte(pkt.Error)
 
 	if pkt.Error == 0 {
-		buffer.Write(padBigIntBytes(pkt.Proof.Bytes(), 20))
+		buffer.Write(padBigIntBytes(reverse(pkt.Proof.Bytes()), 20))
 		buffer.Write([]byte("\x00\x00\x00\x00")) // unk1
 	}
 
@@ -81,17 +80,12 @@ func (pkt *ClientLoginProof) Handle() ([]packet.ServerPacket, error) {
 
 	// TODO(jeshua): Read this data from a database instead.
 	salt := srp.GenerateSalt()
-	v := srp.GenerateVerifier("JESHUA", "jeshua", salt)
+	v := srp.GenerateVerifier("JESHUA", "JESHUA", salt)
 
 	// TODO(jeshua): Save this information with the session.
 	b, B := srp.GenerateEphemeral(v)
 
 	K, M := srp.CalculateSessionKey(&pkt.A, B, b, v, salt, "JESHUA")
-	log.Printf("K = %v\n", K.String())
-	log.Printf("M = %v\n", M.String())
-	log.Printf("M    = %v\n", M.Bytes())
-	log.Printf("MExp = %v\n", pkt.M.Bytes())
-	log.Printf("MExp = %v\n", pkt.M.String())
 	if M.Cmp(&pkt.M) != 0 {
 		response.Error = 4 // TODO(jeshua): make these constants
 	} else {

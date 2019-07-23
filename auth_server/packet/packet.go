@@ -21,7 +21,7 @@ func padBigIntBytes(data []byte, nBytes int) []byte {
 
 	currSize := len(data)
 	for i := 0; i < nBytes-currSize; i++ {
-		data = append([]byte{'\x00'}, data...)
+		data = append(data, '\x00')
 	}
 
 	return data

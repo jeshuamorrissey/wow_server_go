@@ -70,13 +70,13 @@ func (pkt *ServerLoginChallenge) Bytes() []byte {
 	buffer.WriteByte(pkt.Error)
 
 	if pkt.Error == 0 {
-		buffer.Write(reverse(padBigIntBytes(pkt.B.Bytes(), 32)))
+		buffer.Write(padBigIntBytes(reverse(pkt.B.Bytes()), 32))
 		buffer.WriteByte(1)
 		buffer.WriteByte(srp.G)
 		buffer.WriteByte(32)
-		buffer.Write(reverse(padBigIntBytes(srp.N().Bytes(), 32)))
-		buffer.Write(reverse(padBigIntBytes(pkt.Salt.Bytes(), 32)))
-		buffer.Write(reverse(padBigIntBytes(pkt.SaltCRC.Bytes(), 16)))
+		buffer.Write(reverse(srp.N().Bytes()))
+		buffer.Write(padBigIntBytes(reverse(pkt.Salt.Bytes()), 32))
+		buffer.Write(padBigIntBytes(reverse(pkt.SaltCRC.Bytes()), 16))
 		buffer.WriteByte(0) // unk2
 	}
 
