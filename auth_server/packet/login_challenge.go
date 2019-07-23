@@ -6,8 +6,9 @@ import (
 	"encoding/binary"
 	"math/big"
 
+	"gitlab.com/jeshuamorrissey/mmo_server/database"
+
 	"gitlab.com/jeshuamorrissey/mmo_server/auth_server/srp"
-	"gitlab.com/jeshuamorrissey/mmo_server/packet"
 )
 
 // OpCodes used by the AuthServer.
@@ -84,20 +85,31 @@ func (pkt *ServerLoginChallenge) Bytes() []byte {
 }
 
 // Handle will check the database for the account and send an appropriate response.
-func (pkt *ClientLoginChallenge) Handle() ([]packet.ServerPacket, error) {
+func (pkt *ClientLoginChallenge) Handle(session *Session) ([]ServerPacket, error) {
 	response := new(ServerLoginChallenge)
 
-	// TODO(jeshua): Read this data from a database instead.
-	salt := srp.GenerateSalt()
-	v := srp.GenerateVerifier("JESHUA", "JESHUA", salt)
+	// Get information from the session.
+	account, err := database.GetAccount(session.Database, string(pkt.AccountName))
+	if err != nil {
+		return nil, err
+	}
 
-	// TODO(jeshua): Save this information with the session.
-	_, B := srp.GenerateEphemeral(v)
+	// Build the verifier + salt from the account.
+	verifier := big.NewInt(0)
+	verifier.SetString(account.Verifier, 16)
+
+	salt := big.NewInt(0)
+	salt.SetString(account.Salt, 16)
+
+	b, B := srp.GenerateEphemeral(verifier)
+	session.PrivateEphemeral.Set(b)
+	session.PublicEphemeral.Set(B)
+	session.Account = account
 
 	response.Error = 0
 	response.B.Set(B)
 	response.Salt.Set(salt)
 	response.SaltCRC.SetInt64(0)
 
-	return []packet.ServerPacket{response}, nil
+	return []ServerPacket{response}, nil
 }

@@ -7,7 +7,6 @@ import (
 	"math/big"
 
 	"gitlab.com/jeshuamorrissey/mmo_server/auth_server/srp"
-	"gitlab.com/jeshuamorrissey/mmo_server/packet"
 )
 
 // OpCodes used by the AuthServer.
@@ -75,17 +74,23 @@ func (pkt *ServerLoginProof) Bytes() []byte {
 }
 
 // Handle will check the database for the account and send an appropriate response.
-func (pkt *ClientLoginProof) Handle() ([]packet.ServerPacket, error) {
+func (pkt *ClientLoginProof) Handle(session *Session) ([]ServerPacket, error) {
 	response := new(ServerLoginProof)
 
-	// TODO(jeshua): Read this data from a database instead.
-	salt := srp.GenerateSalt()
-	v := srp.GenerateVerifier("JESHUA", "JESHUA", salt)
+	verifier := big.NewInt(0)
+	verifier.SetString(session.Account.Verifier, 16)
 
-	// TODO(jeshua): Save this information with the session.
-	b, B := srp.GenerateEphemeral(v)
+	salt := big.NewInt(0)
+	salt.SetString(session.Account.Salt, 16)
 
-	K, M := srp.CalculateSessionKey(&pkt.A, B, b, v, salt, "JESHUA")
+	K, M := srp.CalculateSessionKey(
+		&pkt.A,
+		&session.PublicEphemeral,
+		&session.PrivateEphemeral,
+		verifier,
+		salt,
+		session.Account.Name)
+
 	if M.Cmp(&pkt.M) != 0 {
 		response.Error = 4 // TODO(jeshua): make these constants
 	} else {
@@ -93,5 +98,5 @@ func (pkt *ClientLoginProof) Handle() ([]packet.ServerPacket, error) {
 		response.Proof.Set(srp.CalculateServerProof(&pkt.A, M, K))
 	}
 
-	return []packet.ServerPacket{response}, nil
+	return []ServerPacket{response}, nil
 }

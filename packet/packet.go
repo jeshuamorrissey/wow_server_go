@@ -18,6 +18,7 @@ type ClientPacket interface {
 	Read(*bufio.Reader) error
 
 	// Handle the packet and return a list of server packets to send back
-	// to the client.
-	Handle() ([]ServerPacket, error)
+	// to the client. It takes as input some session information (which
+	// depends on the type of session).
+	Handle(session interface{}) ([]ServerPacket, error)
 }
