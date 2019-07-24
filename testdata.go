@@ -12,5 +12,16 @@ func GenerateTestData() error {
 		return err
 	}
 
+	// Make some realms they can connect to.
+	err = database.NewRealm("Sydney", "localhost:5001").Save()
+	if err != nil {
+		return err
+	}
+
+	err = database.NewRealm("Brisbane", "localhost:5002").Save()
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
