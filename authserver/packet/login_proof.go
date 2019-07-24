@@ -6,7 +6,7 @@ import (
 	"encoding/binary"
 	"math/big"
 
-	"gitlab.com/jeshuamorrissey/mmo_server/auth_server/srp"
+	"gitlab.com/jeshuamorrissey/mmo_server/authserver/srp"
 )
 
 // OpCodes used by the AuthServer.
@@ -77,18 +77,12 @@ func (pkt *ServerLoginProof) Bytes() []byte {
 func (pkt *ClientLoginProof) Handle(session *Session) ([]ServerPacket, error) {
 	response := new(ServerLoginProof)
 
-	verifier := big.NewInt(0)
-	verifier.SetString(session.Account.Verifier, 16)
-
-	salt := big.NewInt(0)
-	salt.SetString(session.Account.Salt, 16)
-
 	K, M := srp.CalculateSessionKey(
 		&pkt.A,
 		&session.PublicEphemeral,
 		&session.PrivateEphemeral,
-		verifier,
-		salt,
+		&session.Account.Verifier,
+		&session.Account.Salt,
 		session.Account.Name)
 
 	if M.Cmp(&pkt.M) != 0 {

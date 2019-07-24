@@ -6,14 +6,11 @@ import (
 	"math/big"
 
 	"gitlab.com/jeshuamorrissey/mmo_server/database"
-	"go.mongodb.org/mongo-driver/mongo"
 )
 
 // Session contains information required to maintain a user session. One of these
 // structures will be created for each session.
 type Session struct {
-	Database *mongo.Database
-
 	PublicEphemeral  big.Int
 	PrivateEphemeral big.Int
 
@@ -21,10 +18,8 @@ type Session struct {
 }
 
 // RunSession takes control of the thread and listens for packets and responds to them.
-func RunSession(database *mongo.Database, input *bufio.Reader, output *bufio.Writer) {
+func RunSession(input *bufio.Reader, output *bufio.Writer) {
 	session := Session{
-		Database: database,
-
 		PublicEphemeral:  big.Int{},
 		PrivateEphemeral: big.Int{},
 

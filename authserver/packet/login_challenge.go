@@ -6,9 +6,8 @@ import (
 	"encoding/binary"
 	"math/big"
 
+	"gitlab.com/jeshuamorrissey/mmo_server/authserver/srp"
 	"gitlab.com/jeshuamorrissey/mmo_server/database"
-
-	"gitlab.com/jeshuamorrissey/mmo_server/auth_server/srp"
 )
 
 // OpCodes used by the AuthServer.
@@ -89,26 +88,19 @@ func (pkt *ClientLoginChallenge) Handle(session *Session) ([]ServerPacket, error
 	response := new(ServerLoginChallenge)
 
 	// Get information from the session.
-	account, err := database.GetAccount(session.Database, string(pkt.AccountName))
+	account, err := database.GetAccount(string(pkt.AccountName))
 	if err != nil {
 		return nil, err
 	}
 
-	// Build the verifier + salt from the account.
-	verifier := big.NewInt(0)
-	verifier.SetString(account.Verifier, 16)
-
-	salt := big.NewInt(0)
-	salt.SetString(account.Salt, 16)
-
-	b, B := srp.GenerateEphemeral(verifier)
+	b, B := srp.GenerateEphemeral(&account.Verifier)
 	session.PrivateEphemeral.Set(b)
 	session.PublicEphemeral.Set(B)
 	session.Account = account
 
 	response.Error = 0
 	response.B.Set(B)
-	response.Salt.Set(salt)
+	response.Salt.Set(&account.Salt)
 	response.SaltCRC.SetInt64(0)
 
 	return []ServerPacket{response}, nil
