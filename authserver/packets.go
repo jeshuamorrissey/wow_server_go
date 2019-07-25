@@ -16,6 +16,7 @@ var (
 	opCodeToPacket = map[session.OpCode]func() session.ClientPacket{
 		packet.ClientLoginChallengeOpCode: func() session.ClientPacket { return new(packet.ClientLoginChallenge) },
 		packet.ClientLoginProofOpCode:     func() session.ClientPacket { return new(packet.ClientLoginProof) },
+		packet.ClientRealmlistOpCode:      func() session.ClientPacket { return new(packet.ClientRealmlist) },
 	}
 )
 
