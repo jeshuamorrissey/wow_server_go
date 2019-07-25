@@ -1,18 +1,15 @@
 package packet
 
 import (
-	"bufio"
 	"bytes"
 	"encoding/binary"
+	"io"
 	"math/big"
 
-	"gitlab.com/jeshuamorrissey/mmo_server/authserver/srp"
-)
+	"gitlab.com/jeshuamorrissey/mmo_server/common"
+	"gitlab.com/jeshuamorrissey/mmo_server/session"
 
-// OpCodes used by the AuthServer.
-const (
-	ClientLoginProofOpCode = 1
-	ServerLoginProofOpCode = 1
+	"gitlab.com/jeshuamorrissey/mmo_server/authserver/srp"
 )
 
 // ClientLoginProof encodes proof that the client has the correct information.
@@ -34,7 +31,7 @@ func reverse(data []byte) []byte {
 
 // Read will load a ClientLoginProof packet from a buffer.
 // An error will be returned if at least one of the fields didn't load correctly.
-func (pkt *ClientLoginProof) Read(buffer *bufio.Reader) error {
+func (pkt *ClientLoginProof) Read(buffer io.Reader) error {
 	aBuffer := make([]byte, 32)
 	buffer.Read(aBuffer)
 	pkt.A.SetBytes(reverse(aBuffer))
@@ -66,24 +63,30 @@ func (pkt *ServerLoginProof) Bytes() []byte {
 	buffer.WriteByte(pkt.Error)
 
 	if pkt.Error == 0 {
-		buffer.Write(padBigIntBytes(reverse(pkt.Proof.Bytes()), 20))
+		buffer.Write(common.PadBigIntBytes(reverse(pkt.Proof.Bytes()), 20))
 		buffer.Write([]byte("\x00\x00\x00\x00")) // unk1
 	}
 
 	return buffer.Bytes()
 }
 
+// OpCode gets the opcode of the packet.
+func (*ServerLoginProof) OpCode() session.OpCode {
+	return ServerLoginProofOpCode
+}
+
 // Handle will check the database for the account and send an appropriate response.
-func (pkt *ClientLoginProof) Handle(session *Session) ([]ServerPacket, error) {
+func (pkt *ClientLoginProof) Handle(stateBase session.State) ([]session.ServerPacket, error) {
+	state := stateBase.(*State)
 	response := new(ServerLoginProof)
 
 	K, M := srp.CalculateSessionKey(
 		&pkt.A,
-		&session.PublicEphemeral,
-		&session.PrivateEphemeral,
-		&session.Account.Verifier,
-		&session.Account.Salt,
-		session.Account.Name)
+		&state.PublicEphemeral,
+		&state.PrivateEphemeral,
+		&state.Account.Verifier,
+		&state.Account.Salt,
+		state.Account.Name)
 
 	if M.Cmp(&pkt.M) != 0 {
 		response.Error = 4 // TODO(jeshua): make these constants
@@ -92,5 +95,5 @@ func (pkt *ClientLoginProof) Handle(session *Session) ([]ServerPacket, error) {
 		response.Proof.Set(srp.CalculateServerProof(&pkt.A, M, K))
 	}
 
-	return []ServerPacket{response}, nil
+	return []session.ServerPacket{response}, nil
 }

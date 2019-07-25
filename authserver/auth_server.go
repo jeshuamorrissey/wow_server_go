@@ -1,11 +1,11 @@
 package authserver
 
 import (
-	"bufio"
 	"log"
 	"net"
 
 	"gitlab.com/jeshuamorrissey/mmo_server/authserver/packet"
+	"gitlab.com/jeshuamorrissey/mmo_server/session"
 )
 
 // RunAuthServer takes as input a database and runs an auth server referencing
@@ -28,7 +28,10 @@ func RunAuthServer() {
 
 		log.Printf("Receiving connection from %v\n", conn.RemoteAddr())
 
-		// Make a new buffer to read from.
-		go packet.RunSession(bufio.NewReader(conn), bufio.NewWriter(conn))
+		go session.NewSession(
+			readHeader,
+			opCodeToPacket,
+			packet.OpCodeName,
+			new(packet.State)).Run(conn, conn)
 	}
 }

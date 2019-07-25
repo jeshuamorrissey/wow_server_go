@@ -1,25 +1,20 @@
 package packet
 
 import (
-	"bufio"
 	"bytes"
 	"encoding/binary"
+	"io"
 	"math/big"
 
 	"gitlab.com/jeshuamorrissey/mmo_server/authserver/srp"
+	"gitlab.com/jeshuamorrissey/mmo_server/common"
 	"gitlab.com/jeshuamorrissey/mmo_server/database"
-)
-
-// OpCodes used by the AuthServer.
-const (
-	ClientLoginChallengeOpCode = 0
-	ServerLoginChallengeOpCode = 0
+	"gitlab.com/jeshuamorrissey/mmo_server/session"
 )
 
 // ClientLoginChallenge encodes information about a new connection to the
 // login server.
 type ClientLoginChallenge struct {
-	Error          uint8
 	GameName       [4]byte
 	Version        [3]uint8
 	Build          uint16
@@ -33,9 +28,7 @@ type ClientLoginChallenge struct {
 
 // Read will load a ClientLoginChallenge packet from a buffer.
 // An error will be returned if at least one of the fields didn't load correctly.
-func (pkt *ClientLoginChallenge) Read(buffer *bufio.Reader) error {
-	binary.Read(buffer, binary.LittleEndian, &pkt.Error)
-	buffer.Read(make([]byte, 2)) // unused: packet length
+func (pkt *ClientLoginChallenge) Read(buffer io.Reader) error {
 	binary.Read(buffer, binary.LittleEndian, &pkt.GameName)
 	binary.Read(buffer, binary.LittleEndian, &pkt.Version)
 	binary.Read(buffer, binary.LittleEndian, &pkt.Build)
@@ -65,26 +58,32 @@ type ServerLoginChallenge struct {
 func (pkt *ServerLoginChallenge) Bytes() []byte {
 	buffer := bytes.NewBufferString("")
 
-	buffer.WriteByte(ServerLoginChallengeOpCode)
+	buffer.WriteByte(uint8(ServerLoginChallengeOpCode))
 	buffer.WriteByte(0) // unk1
 	buffer.WriteByte(pkt.Error)
 
 	if pkt.Error == 0 {
-		buffer.Write(padBigIntBytes(reverse(pkt.B.Bytes()), 32))
+		buffer.Write(common.PadBigIntBytes(reverse(pkt.B.Bytes()), 32))
 		buffer.WriteByte(1)
 		buffer.WriteByte(srp.G)
 		buffer.WriteByte(32)
 		buffer.Write(reverse(srp.N().Bytes()))
-		buffer.Write(padBigIntBytes(reverse(pkt.Salt.Bytes()), 32))
-		buffer.Write(padBigIntBytes(reverse(pkt.SaltCRC.Bytes()), 16))
+		buffer.Write(common.PadBigIntBytes(reverse(pkt.Salt.Bytes()), 32))
+		buffer.Write(common.PadBigIntBytes(reverse(pkt.SaltCRC.Bytes()), 16))
 		buffer.WriteByte(0) // unk2
 	}
 
 	return buffer.Bytes()
 }
 
+// OpCode gets the opcode of the packet.
+func (*ServerLoginChallenge) OpCode() session.OpCode {
+	return ServerLoginChallengeOpCode
+}
+
 // Handle will check the database for the account and send an appropriate response.
-func (pkt *ClientLoginChallenge) Handle(session *Session) ([]ServerPacket, error) {
+func (pkt *ClientLoginChallenge) Handle(stateBase session.State) ([]session.ServerPacket, error) {
+	state := stateBase.(*State)
 	response := new(ServerLoginChallenge)
 
 	// Get information from the session.
@@ -94,14 +93,14 @@ func (pkt *ClientLoginChallenge) Handle(session *Session) ([]ServerPacket, error
 	}
 
 	b, B := srp.GenerateEphemeral(&account.Verifier)
-	session.PrivateEphemeral.Set(b)
-	session.PublicEphemeral.Set(B)
-	session.Account = account
+	state.PrivateEphemeral.Set(b)
+	state.PublicEphemeral.Set(B)
+	state.Account = account
 
 	response.Error = 0
 	response.B.Set(B)
 	response.Salt.Set(&account.Salt)
 	response.SaltCRC.SetInt64(0)
 
-	return []ServerPacket{response}, nil
+	return []session.ServerPacket{response}, nil
 }
