@@ -21,28 +21,20 @@ type ClientLoginProof struct {
 	SecurityFlags uint8
 }
 
-func reverse(data []byte) []byte {
-	for i, j := 0, len(data)-1; i < j; i, j = i+1, j-1 {
-		data[i], data[j] = data[j], data[i]
-	}
-
-	return data
-}
-
 // Read will load a ClientLoginProof packet from a buffer.
 // An error will be returned if at least one of the fields didn't load correctly.
 func (pkt *ClientLoginProof) Read(buffer io.Reader) error {
 	aBuffer := make([]byte, 32)
 	buffer.Read(aBuffer)
-	pkt.A.SetBytes(reverse(aBuffer))
+	pkt.A.SetBytes(common.ReverseBytes(aBuffer))
 
 	mBuffer := make([]byte, 20)
 	buffer.Read(mBuffer)
-	pkt.M.SetBytes(reverse(mBuffer))
+	pkt.M.SetBytes(common.ReverseBytes(mBuffer))
 
 	crcHashBuffer := make([]byte, 20)
 	buffer.Read(crcHashBuffer)
-	pkt.CRCHash.SetBytes(reverse(crcHashBuffer))
+	pkt.CRCHash.SetBytes(common.ReverseBytes(crcHashBuffer))
 
 	binary.Read(buffer, binary.LittleEndian, &pkt.NumberOfKeys)
 	return binary.Read(buffer, binary.LittleEndian, &pkt.SecurityFlags)
@@ -63,7 +55,7 @@ func (pkt *ServerLoginProof) Bytes() []byte {
 	buffer.WriteByte(pkt.Error)
 
 	if pkt.Error == 0 {
-		buffer.Write(common.PadBigIntBytes(reverse(pkt.Proof.Bytes()), 20))
+		buffer.Write(common.PadBigIntBytes(common.ReverseBytes(pkt.Proof.Bytes()), 20))
 		buffer.Write([]byte("\x00\x00\x00\x00")) // unk1
 	}
 
@@ -84,8 +76,8 @@ func (pkt *ClientLoginProof) Handle(stateBase session.State) ([]session.ServerPa
 		&pkt.A,
 		&state.PublicEphemeral,
 		&state.PrivateEphemeral,
-		&state.Account.Verifier,
-		&state.Account.Salt,
+		state.Account.Verifier(),
+		state.Account.Salt(),
 		state.Account.Name)
 
 	if M.Cmp(&pkt.M) != 0 {

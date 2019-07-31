@@ -5,6 +5,16 @@ import (
 	"io"
 )
 
+// ReverseBytes takes as input a byte array and returns a reversed version
+// of it.
+func ReverseBytes(data []byte) []byte {
+	for i, j := 0, len(data)-1; i < j; i, j = i+1, j-1 {
+		data[i], data[j] = data[j], data[i]
+	}
+
+	return data
+}
+
 // PadBigIntBytes takes as input an array of bytes and a size and ensures that the
 // byte array is at least nBytes in length. \x00 bytes will be added to the end
 // until the desired length is reached.

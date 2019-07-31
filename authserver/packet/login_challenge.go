@@ -8,7 +8,7 @@ import (
 
 	"gitlab.com/jeshuamorrissey/mmo_server/authserver/srp"
 	"gitlab.com/jeshuamorrissey/mmo_server/common"
-	"gitlab.com/jeshuamorrissey/mmo_server/database"
+	db "gitlab.com/jeshuamorrissey/mmo_server/database"
 	"gitlab.com/jeshuamorrissey/mmo_server/session"
 )
 
@@ -63,13 +63,13 @@ func (pkt *ServerLoginChallenge) Bytes() []byte {
 	buffer.WriteByte(pkt.Error)
 
 	if pkt.Error == 0 {
-		buffer.Write(common.PadBigIntBytes(reverse(pkt.B.Bytes()), 32))
+		buffer.Write(common.PadBigIntBytes(common.ReverseBytes(pkt.B.Bytes()), 32))
 		buffer.WriteByte(1)
 		buffer.WriteByte(srp.G)
 		buffer.WriteByte(32)
-		buffer.Write(reverse(srp.N().Bytes()))
-		buffer.Write(common.PadBigIntBytes(reverse(pkt.Salt.Bytes()), 32))
-		buffer.Write(common.PadBigIntBytes(reverse(pkt.SaltCRC.Bytes()), 16))
+		buffer.Write(common.ReverseBytes(srp.N().Bytes()))
+		buffer.Write(common.PadBigIntBytes(common.ReverseBytes(pkt.Salt.Bytes()), 32))
+		buffer.Write(common.PadBigIntBytes(common.ReverseBytes(pkt.SaltCRC.Bytes()), 16))
 		buffer.WriteByte(0) // unk2
 	}
 
@@ -87,19 +87,18 @@ func (pkt *ClientLoginChallenge) Handle(stateBase session.State) ([]session.Serv
 	response := new(ServerLoginChallenge)
 
 	// Get information from the session.
-	account, err := database.GetAccount(string(pkt.AccountName))
+	err := stateBase.DB().Where(&db.Account{Name: string(pkt.AccountName)}).First(&state.Account).Error
 	if err != nil {
 		return nil, err
 	}
 
-	b, B := srp.GenerateEphemeral(&account.Verifier)
+	b, B := srp.GenerateEphemeral(state.Account.Verifier())
 	state.PrivateEphemeral.Set(b)
 	state.PublicEphemeral.Set(B)
-	state.Account = account
 
 	response.Error = 0
 	response.B.Set(B)
-	response.Salt.Set(&account.Salt)
+	response.Salt.Set(state.Account.Salt())
 	response.SaltCRC.SetInt64(0)
 
 	return []session.ServerPacket{response}, nil

@@ -4,13 +4,14 @@ import (
 	"log"
 	"net"
 
+	"github.com/jinzhu/gorm"
 	"gitlab.com/jeshuamorrissey/mmo_server/authserver/packet"
 	"gitlab.com/jeshuamorrissey/mmo_server/session"
 )
 
 // RunAuthServer takes as input a database and runs an auth server referencing
 // it.
-func RunAuthServer() {
+func RunAuthServer(db *gorm.DB) {
 	listener, err := net.Listen("tcp", ":5000")
 	if err != nil {
 		log.Fatalf("Error while opening port: %v\n", err)
@@ -32,6 +33,6 @@ func RunAuthServer() {
 			readHeader,
 			opCodeToPacket,
 			packet.OpCodeName,
-			new(packet.State)).Run(conn, conn)
+			packet.NewState(db)).Run(conn, conn)
 	}
 }

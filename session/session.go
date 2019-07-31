@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"io"
 	"log"
+
+	"github.com/jinzhu/gorm"
 )
 
 // OpCode is an integer type which is used to distinguish which packets are which.
@@ -12,7 +14,10 @@ type OpCode int
 
 // State is a generic interface which represents some data that needs to be stored
 // with the session. This state will vary depending on the server.
-type State interface{}
+type State interface {
+	// DB should return a reference to the DB to use in this handler.
+	DB() *gorm.DB
+}
 
 // Session management utility.
 type Session struct {

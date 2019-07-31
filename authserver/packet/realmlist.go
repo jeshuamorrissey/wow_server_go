@@ -5,7 +5,7 @@ import (
 	"encoding/binary"
 	"io"
 
-	"gitlab.com/jeshuamorrissey/mmo_server/database"
+	db "gitlab.com/jeshuamorrissey/mmo_server/database"
 	"gitlab.com/jeshuamorrissey/mmo_server/session"
 )
 
@@ -73,7 +73,8 @@ func (pkt *ClientRealmlist) Handle(stateBase session.State) ([]session.ServerPac
 	response := new(ServerRealmlist)
 
 	// Get information from the session.
-	realms, err := database.GetAllRealms()
+	var realms []db.Realm
+	err := stateBase.DB().Find(&realms).Error
 	if err != nil {
 		return nil, err
 	}
