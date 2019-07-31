@@ -8,14 +8,14 @@ import (
 	"gotest.tools/assert"
 )
 
-func TestGenerateEphemeral(t *testing.T) {
+func TestGenerateEphemeralPair(t *testing.T) {
 	var v, expectedb, expectedB big.Int
 
 	v.SetString("37510828772889775988011936555774753323884663064643682200527651910267083044538", 10)
 	expectedb.SetString("3679141816495610969398422835318306156547245306", 10)
 	expectedB.SetString("16630279820182697578309394812726193457375869535456855997552735653810818403718", 10)
 
-	b, B := srp.GenerateEphemeral(&v)
+	b, B := srp.GenerateEphemeralPair(&v)
 	assert.Equal(t, b.Cmp(&expectedb), 0)
 	assert.Equal(t, B.Cmp(&expectedB), 0)
 }

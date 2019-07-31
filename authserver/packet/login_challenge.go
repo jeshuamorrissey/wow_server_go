@@ -92,7 +92,7 @@ func (pkt *ClientLoginChallenge) Handle(stateBase session.State) ([]session.Serv
 		return nil, err
 	}
 
-	b, B := srp.GenerateEphemeral(state.Account.Verifier())
+	b, B := srp.GenerateEphemeralPair(state.Account.Verifier())
 	state.PrivateEphemeral.Set(b)
 	state.PublicEphemeral.Set(B)
 
