@@ -43,7 +43,7 @@ func (pkt *ClientLoginProof) Read(buffer io.Reader) error {
 // ServerLoginProof is the server's response to a client's challenge. It contains
 // some SRP information used for handshaking.
 type ServerLoginProof struct {
-	Error uint8
+	Error LoginErrorCode
 	Proof big.Int
 }
 
@@ -52,7 +52,7 @@ func (pkt *ServerLoginProof) Bytes() []byte {
 	buffer := bytes.NewBufferString("")
 
 	buffer.WriteByte(ServerLoginProofOpCode)
-	buffer.WriteByte(pkt.Error)
+	buffer.WriteByte(uint8(pkt.Error))
 
 	if pkt.Error == 0 {
 		buffer.Write(common.PadBigIntBytes(common.ReverseBytes(pkt.Proof.Bytes()), 20))

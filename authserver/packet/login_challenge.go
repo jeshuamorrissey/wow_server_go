@@ -5,6 +5,9 @@ import (
 	"encoding/binary"
 	"io"
 	"math/big"
+	"strings"
+
+	"github.com/jinzhu/gorm"
 
 	"gitlab.com/jeshuamorrissey/mmo_server/authserver/srp"
 	"gitlab.com/jeshuamorrissey/mmo_server/common"
@@ -48,7 +51,7 @@ func (pkt *ClientLoginChallenge) Read(buffer io.Reader) error {
 // ServerLoginChallenge is the server's response to a client's challenge. It contains
 // some SRP information used for handshaking.
 type ServerLoginChallenge struct {
-	Error   uint8
+	Error   LoginErrorCode
 	B       big.Int
 	Salt    big.Int
 	SaltCRC big.Int
@@ -60,7 +63,7 @@ func (pkt *ServerLoginChallenge) Bytes() []byte {
 
 	buffer.WriteByte(uint8(ServerLoginChallengeOpCode))
 	buffer.WriteByte(0) // unk1
-	buffer.WriteByte(pkt.Error)
+	buffer.WriteByte(uint8(pkt.Error))
 
 	if pkt.Error == 0 {
 		buffer.Write(common.PadBigIntBytes(common.ReverseBytes(pkt.B.Bytes()), 32))
@@ -85,21 +88,34 @@ func (*ServerLoginChallenge) OpCode() session.OpCode {
 func (pkt *ClientLoginChallenge) Handle(stateBase session.State) ([]session.ServerPacket, error) {
 	state := stateBase.(*State)
 	response := new(ServerLoginChallenge)
+	response.Error = LoginOK
 
-	// Get information from the session.
-	err := stateBase.DB().Where(&db.Account{Name: string(pkt.AccountName)}).First(&state.Account).Error
-	if err != nil {
-		return nil, err
+	// Validate the packet.
+	if strings.TrimRight(string(pkt.GameName[:]), "\x00") != SupportedGameName {
+		response.Error = LoginFailed
+	} else if pkt.Version != SupportedGameVersion || pkt.Build != SupportedGameBuild {
+		response.Error = LoginBadVersion
+	} else {
+		// Get information from the session.
+		err := stateBase.DB().Where(&db.Account{Name: string(pkt.AccountName)}).First(&state.Account).Error
+		if err != nil {
+			if err == gorm.ErrRecordNotFound {
+				response.Error = LoginUnknownAccount
+			} else {
+				return nil, err
+			}
+		}
 	}
 
-	b, B := srp.GenerateEphemeralPair(state.Account.Verifier())
-	state.PrivateEphemeral.Set(b)
-	state.PublicEphemeral.Set(B)
+	if response.Error == LoginOK {
+		b, B := srp.GenerateEphemeralPair(state.Account.Verifier())
+		state.PrivateEphemeral.Set(b)
+		state.PublicEphemeral.Set(B)
 
-	response.Error = 0
-	response.B.Set(B)
-	response.Salt.Set(state.Account.Salt())
-	response.SaltCRC.SetInt64(0)
+		response.B.Set(B)
+		response.Salt.Set(state.Account.Salt())
+		response.SaltCRC.SetInt64(0)
+	}
 
 	return []session.ServerPacket{response}, nil
 }
