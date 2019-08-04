@@ -7,6 +7,7 @@ import (
 	"github.com/jinzhu/gorm"
 )
 
+// State represents all information required by the AuthServer.
 type State struct {
 	_db *gorm.DB
 
