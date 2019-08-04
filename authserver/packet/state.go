@@ -3,8 +3,8 @@ package packet
 import (
 	"math/big"
 
+	db "github.com/jeshuamorrissey/wow_server_go/common/database"
 	"github.com/jinzhu/gorm"
-	db "gitlab.com/jeshuamorrissey/mmo_server/database"
 )
 
 type State struct {

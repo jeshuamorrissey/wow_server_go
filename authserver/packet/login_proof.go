@@ -6,10 +6,10 @@ import (
 	"io"
 	"math/big"
 
-	"gitlab.com/jeshuamorrissey/mmo_server/common"
-	"gitlab.com/jeshuamorrissey/mmo_server/session"
+	"github.com/jeshuamorrissey/wow_server_go/common"
+	"github.com/jeshuamorrissey/wow_server_go/common/session"
 
-	"gitlab.com/jeshuamorrissey/mmo_server/authserver/srp"
+	"github.com/jeshuamorrissey/wow_server_go/authserver/srp"
 )
 
 // ClientLoginProof encodes proof that the client has the correct information.

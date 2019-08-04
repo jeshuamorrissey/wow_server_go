@@ -9,10 +9,10 @@ import (
 
 	"github.com/jinzhu/gorm"
 
-	"gitlab.com/jeshuamorrissey/mmo_server/authserver/srp"
-	"gitlab.com/jeshuamorrissey/mmo_server/common"
-	db "gitlab.com/jeshuamorrissey/mmo_server/database"
-	"gitlab.com/jeshuamorrissey/mmo_server/session"
+	"github.com/jeshuamorrissey/wow_server_go/authserver/srp"
+	"github.com/jeshuamorrissey/wow_server_go/common"
+	db "github.com/jeshuamorrissey/wow_server_go/common/database"
+	"github.com/jeshuamorrissey/wow_server_go/common/session"
 )
 
 // ClientLoginChallenge encodes information about a new connection to the

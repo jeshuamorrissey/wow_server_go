@@ -6,10 +6,9 @@ import (
 	"fmt"
 	"io"
 
-	"gitlab.com/jeshuamorrissey/mmo_server/common"
-
-	"gitlab.com/jeshuamorrissey/mmo_server/authserver/packet"
-	"gitlab.com/jeshuamorrissey/mmo_server/session"
+	"github.com/jeshuamorrissey/wow_server_go/authserver/packet"
+	"github.com/jeshuamorrissey/wow_server_go/common"
+	"github.com/jeshuamorrissey/wow_server_go/common/session"
 )
 
 var (

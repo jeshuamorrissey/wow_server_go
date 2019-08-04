@@ -3,7 +3,7 @@ package packet
 import (
 	"fmt"
 
-	"gitlab.com/jeshuamorrissey/mmo_server/session"
+	"github.com/jeshuamorrissey/wow_server_go/common/session"
 )
 
 // OpCodes used by the AuthServer.

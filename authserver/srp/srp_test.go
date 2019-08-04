@@ -4,7 +4,7 @@ import (
 	"math/big"
 	"testing"
 
-	"gitlab.com/jeshuamorrissey/mmo_server/authserver/srp"
+	"github.com/jeshuamorrissey/wow_server_go/authserver/srp"
 	"gotest.tools/assert"
 )
 

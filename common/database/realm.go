@@ -8,6 +8,6 @@ import (
 type Realm struct {
 	gorm.Model
 
-	Name string
+	Name string `gorm:"unique"`
 	Host string
 }

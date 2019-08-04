@@ -6,9 +6,9 @@ import (
 	"gotest.tools/assert"
 
 	"github.com/jinzhu/gorm"
-	"gitlab.com/jeshuamorrissey/mmo_server/authserver/packet"
-	"gitlab.com/jeshuamorrissey/mmo_server/authserver/srp"
-	"gitlab.com/jeshuamorrissey/mmo_server/database"
+	"github.com/jeshuamorrissey/wow_server_go/authserver/packet"
+	"github.com/jeshuamorrissey/wow_server_go/authserver/srp"
+	"github.com/jeshuamorrissey/wow_server_go/common/database"
 
 	// Import the SQL driver.
 	_ "github.com/mattn/go-sqlite3"

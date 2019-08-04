@@ -4,9 +4,9 @@ import (
 	"log"
 	"net"
 
+	"github.com/jeshuamorrissey/wow_server_go/authserver/packet"
+	"github.com/jeshuamorrissey/wow_server_go/common/session"
 	"github.com/jinzhu/gorm"
-	"gitlab.com/jeshuamorrissey/mmo_server/authserver/packet"
-	"gitlab.com/jeshuamorrissey/mmo_server/session"
 )
 
 // RunAuthServer takes as input a database and runs an auth server referencing

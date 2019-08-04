@@ -5,8 +5,8 @@ import (
 	"encoding/binary"
 	"io"
 
-	db "gitlab.com/jeshuamorrissey/mmo_server/database"
-	"gitlab.com/jeshuamorrissey/mmo_server/session"
+	db "github.com/jeshuamorrissey/wow_server_go/common/database"
+	"github.com/jeshuamorrissey/wow_server_go/common/session"
 )
 
 // ClientRealmlist packet contains no fields.
