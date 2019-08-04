@@ -51,7 +51,6 @@ type ServerLoginProof struct {
 func (pkt *ServerLoginProof) Bytes() []byte {
 	buffer := bytes.NewBufferString("")
 
-	buffer.WriteByte(uint8(ServerLoginProofOpCode))
 	buffer.WriteByte(uint8(pkt.Error))
 
 	if pkt.Error == 0 {
@@ -64,7 +63,7 @@ func (pkt *ServerLoginProof) Bytes() []byte {
 
 // OpCode gets the opcode of the packet.
 func (*ServerLoginProof) OpCode() session.OpCode {
-	return ServerLoginProofOpCode
+	return OpCodeLoginProof
 }
 
 // Handle will check the database for the account and send an appropriate response.

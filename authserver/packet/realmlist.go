@@ -55,7 +55,6 @@ func (pkt *ServerRealmlist) Bytes() []byte {
 
 	// Make the real buffer, which has the length at the start.
 	buffer := bytes.NewBufferString("")
-	buffer.WriteByte(uint8(ServerRealmlistOpCode))
 	binary.Write(buffer, binary.LittleEndian, uint16(realmsBuffer.Len()))
 	buffer.Write(realmsBuffer.Bytes())
 
@@ -64,7 +63,7 @@ func (pkt *ServerRealmlist) Bytes() []byte {
 
 // OpCode returns ServerRealmlistOpCode.
 func (*ServerRealmlist) OpCode() session.OpCode {
-	return ServerRealmlistOpCode
+	return OpCodeRealmlist
 }
 
 // Handle will check the database for the account and send an appropriate response.

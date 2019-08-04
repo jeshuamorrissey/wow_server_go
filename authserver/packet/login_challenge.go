@@ -61,7 +61,6 @@ type ServerLoginChallenge struct {
 func (pkt *ServerLoginChallenge) Bytes() []byte {
 	buffer := bytes.NewBufferString("")
 
-	buffer.WriteByte(uint8(ServerLoginChallengeOpCode))
 	buffer.WriteByte(0) // unk1
 	buffer.WriteByte(uint8(pkt.Error))
 
@@ -81,7 +80,7 @@ func (pkt *ServerLoginChallenge) Bytes() []byte {
 
 // OpCode gets the opcode of the packet.
 func (*ServerLoginChallenge) OpCode() session.OpCode {
-	return ServerLoginChallengeOpCode
+	return OpCodeLoginChallenge
 }
 
 // Handle will check the database for the account and send an appropriate response.

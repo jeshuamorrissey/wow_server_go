@@ -30,11 +30,20 @@ func RunWorldServer(port int, db *gorm.DB) {
 
 		log.Printf("Receiving WORLD connection from %v\n", conn.RemoteAddr())
 
-		// TODO(jeshua): send an AUTH_CHALLENGE packet.
-		go session.NewSession(
+		sess := session.NewSession(
 			readHeader,
+			writeHeader,
 			opCodeToPacket,
-			packet.OpCodeName,
-			packet.NewState(db)).Run(conn, conn)
+			conn,
+			conn,
+			packet.NewState(db),
+		)
+
+		// Send the initial auth challenge.
+		pkt := packet.ServerAuthChallenge{Seed: 0}
+		sess.SendPacket(&pkt)
+
+		// Run the session.
+		go sess.Run()
 	}
 }

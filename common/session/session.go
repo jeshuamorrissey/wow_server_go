@@ -10,8 +10,10 @@ import (
 )
 
 // OpCode is an integer type which is used to distinguish which packets are which.
-//go:generate stringer -type=LoginErrorCode
-type OpCode int
+type OpCode interface {
+	Int() int
+	String() string
+}
 
 // State is a generic interface which represents some data that needs to be stored
 // with the session. This state will vary depending on the server.
@@ -26,11 +28,17 @@ type Session struct {
 	// the number of bytes that make up the packet.
 	readHeader func(io.Reader) (OpCode, int, error)
 
+	// Function which will write the header for the given packet and
+	// return it. The arguments are the packet's byte length and the
+	// packet's OpCode.
+	writeHeader func(int, OpCode) ([]byte, error)
+
 	// Function which will take as input an OpCode and return a valid ClientPacket.
 	opCodeToPacket map[OpCode]func() ClientPacket
 
-	// Function which will take as input an OpCode and return a string name.
-	opCodeName func(OpCode) string
+	// The I/O for this session. Usually will be socket conns.
+	input  io.Reader
+	output io.Writer
 
 	state State
 }
@@ -38,13 +46,17 @@ type Session struct {
 // NewSession makes a new session and returns it.
 func NewSession(
 	readHeader func(io.Reader) (OpCode, int, error),
+	writeHeader func(int, OpCode) ([]byte, error),
 	opCodeToPacket map[OpCode]func() ClientPacket,
-	opCodeName func(OpCode) string,
+	input io.Reader,
+	output io.Writer,
 	state State) *Session {
 	return &Session{
 		readHeader:     readHeader,
+		writeHeader:    writeHeader,
 		opCodeToPacket: opCodeToPacket,
-		opCodeName:     opCodeName,
+		input:          input,
+		output:         output,
 		state:          state,
 	}
 }
@@ -72,11 +84,11 @@ func (s *Session) readPacket(buffer io.Reader) (ClientPacket, error) {
 
 	builder, ok := s.opCodeToPacket[opCode]
 	if !ok {
-		log.Printf("Unhandled opcode %v", s.opCodeName(opCode))
+		log.Printf("<-- %v [UNHANDLED]", opCode.String())
 		return nil, nil
 	}
 
-	log.Printf("<-- %v", s.opCodeName(opCode))
+	log.Printf("<-- %v", opCode.String())
 
 	pkt := builder()
 	pkt.Read(bytes.NewReader(data))
@@ -84,12 +96,37 @@ func (s *Session) readPacket(buffer io.Reader) (ClientPacket, error) {
 	return pkt, nil
 }
 
+// SendPacket will send a packet back to the given output.
+func (s *Session) SendPacket(pkt ServerPacket) error {
+	log.Printf("--> %v", pkt.OpCode().String())
+
+	// Write the header.
+	pktData := pkt.Bytes()
+	header, err := s.writeHeader(len(pktData), pkt.OpCode())
+	if err != nil {
+		return err
+	}
+
+	// Send the data.
+	toSend := append(header, pktData...)
+	n, err := s.output.Write(toSend)
+	if err != nil {
+		return err
+	}
+
+	if n != len(toSend) {
+		return fmt.Errorf("expected %v bytes to send, only sent %v", len(pktData), n)
+	}
+
+	return nil
+}
+
 // Run takes as input a data source (input) and data destination (output) and
 // manages incoming packets, routing them to the handler and then sending the
 // output to the appropriate place.
-func (s *Session) Run(input io.Reader, output io.Writer) {
+func (s *Session) Run() {
 	for {
-		packet, err := s.readPacket(input)
+		packet, err := s.readPacket(s.input)
 		if err != nil {
 			// This usually happens because of an EOF, so just terminate.
 			log.Printf("Terminating connection: %v\n", err)
@@ -109,8 +146,7 @@ func (s *Session) Run(input io.Reader, output io.Writer) {
 		}
 
 		for _, pkt := range response {
-			log.Printf("--> %v", s.opCodeName(pkt.OpCode()))
-			output.Write(pkt.Bytes())
+			s.SendPacket(pkt)
 		}
 	}
 }

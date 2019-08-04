@@ -32,8 +32,11 @@ func RunAuthServer(port int, db *gorm.DB) {
 
 		go session.NewSession(
 			readHeader,
+			writeHeader,
 			opCodeToPacket,
-			packet.OpCodeName,
-			packet.NewState(db)).Run(conn, conn)
+			conn,
+			conn,
+			packet.NewState(db),
+		).Run()
 	}
 }
