@@ -31,10 +31,10 @@ const (
 // ClientLoingChallenge packet for a connection to be established.
 const (
 	SupportedGameName  = "WoW"
-	SupportedGameBuild = 5675
+	SupportedGameBuild = 5875
 )
 
 // Game version information (which has to be variable because it is a slice).
 var (
-	SupportedGameVersion = [3]uint8{1, 12, 0}
+	SupportedGameVersion = [3]uint8{1, 12, 1}
 )

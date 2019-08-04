@@ -91,7 +91,8 @@ func (pkt *ClientLoginChallenge) Handle(stateBase session.State) ([]session.Serv
 	response.Error = LoginOK
 
 	// Validate the packet.
-	if strings.TrimRight(string(pkt.GameName[:]), "\x00") != SupportedGameName {
+	gameName := strings.TrimRight(string(pkt.GameName[:]), "\x00")
+	if gameName != SupportedGameName {
 		response.Error = LoginFailed
 	} else if pkt.Version != SupportedGameVersion || pkt.Build != SupportedGameBuild {
 		response.Error = LoginBadVersion
