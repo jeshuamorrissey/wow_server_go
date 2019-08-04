@@ -10,6 +10,7 @@ import (
 )
 
 // OpCode is an integer type which is used to distinguish which packets are which.
+//go:generate stringer -type=LoginErrorCode
 type OpCode int
 
 // State is a generic interface which represents some data that needs to be stored

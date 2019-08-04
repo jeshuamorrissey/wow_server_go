@@ -51,7 +51,7 @@ type ServerLoginProof struct {
 func (pkt *ServerLoginProof) Bytes() []byte {
 	buffer := bytes.NewBufferString("")
 
-	buffer.WriteByte(ServerLoginProofOpCode)
+	buffer.WriteByte(uint8(ServerLoginProofOpCode))
 	buffer.WriteByte(uint8(pkt.Error))
 
 	if pkt.Error == 0 {

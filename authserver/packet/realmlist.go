@@ -55,7 +55,7 @@ func (pkt *ServerRealmlist) Bytes() []byte {
 
 	// Make the real buffer, which has the length at the start.
 	buffer := bytes.NewBufferString("")
-	buffer.WriteByte(ServerRealmlistOpCode)
+	buffer.WriteByte(uint8(ServerRealmlistOpCode))
 	binary.Write(buffer, binary.LittleEndian, uint16(realmsBuffer.Len()))
 	buffer.Write(realmsBuffer.Bytes())
 

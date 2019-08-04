@@ -2,10 +2,12 @@ package main
 
 import (
 	"log"
+	"sync"
 
 	"github.com/jeshuamorrissey/wow_server_go/authserver"
 	"github.com/jeshuamorrissey/wow_server_go/authserver/srp"
 	"github.com/jeshuamorrissey/wow_server_go/common/database"
+	"github.com/jeshuamorrissey/wow_server_go/worldserver"
 	"github.com/jinzhu/gorm"
 
 	// Import the SQL driver.
@@ -55,5 +57,17 @@ func main() {
 		log.Fatalf("Failed to generate test data: %v\n", err)
 	}
 
-	authserver.RunAuthServer(db)
+	var wg sync.WaitGroup
+	wg.Add(2)
+	go func() {
+		defer wg.Done()
+		authserver.RunAuthServer(5000, db)
+	}()
+
+	go func() {
+		defer wg.Done()
+		worldserver.RunWorldServer(5001, db)
+	}()
+
+	wg.Wait()
 }
