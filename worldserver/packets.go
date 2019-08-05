@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"io"
 
+	"github.com/jeshuamorrissey/wow_server_go/common"
+
 	"github.com/jeshuamorrissey/wow_server_go/common/session"
 	"github.com/jeshuamorrissey/wow_server_go/worldserver/packet"
 )
@@ -16,7 +18,9 @@ var (
 	}
 )
 
-func readHeader(buffer io.Reader) (session.OpCode, int, error) {
+func readHeader(stateBase session.State, buffer io.Reader) (session.OpCode, int, error) {
+	state := stateBase.(*packet.State)
+
 	headerData := make([]byte, 6)
 	n, err := buffer.Read(headerData)
 	if err != nil {
@@ -28,7 +32,17 @@ func readHeader(buffer io.Reader) (session.OpCode, int, error) {
 	}
 
 	// If there is a session key in the state, then we need to decrypt.
-	// TODO(jeshua): implement this.
+	if state.Account.SessionKey() != nil {
+		sessionKeyBytes := common.ReverseBytes(state.Account.SessionKey().Bytes())
+
+		for i := 0; i < 6; i++ {
+			state.RecvI %= uint8(len(sessionKeyBytes))
+			x := (headerData[i] - state.RecvJ) ^ sessionKeyBytes[state.RecvI]
+			state.RecvI++
+			state.RecvJ = headerData[i]
+			headerData[i] = x
+		}
+	}
 
 	// In the world server, the length is the first 2 bytes in the pkt.
 	length := int(binary.BigEndian.Uint16(headerData[:2]))
@@ -37,14 +51,33 @@ func readHeader(buffer io.Reader) (session.OpCode, int, error) {
 	return opCode, length - 4, nil
 }
 
-func writeHeader(packetLen int, opCode session.OpCode) ([]byte, error) {
+func writeHeader(stateBase session.State, packetLen int, opCode session.OpCode) ([]byte, error) {
+	state := stateBase.(*packet.State)
+
 	lengthData := make([]byte, 2)
 	opCodeData := make([]byte, 2)
 
-	binary.BigEndian.PutUint16(lengthData, uint16(packetLen))
+	binary.BigEndian.PutUint16(lengthData, uint16(packetLen)+2)
 	binary.LittleEndian.PutUint16(opCodeData, uint16(opCode.Int()))
 
+	header := make([]byte, 0)
+	header = append(header, lengthData...)
+	header = append(header, opCodeData...)
+
 	// If there is a session key in the state, then we need to encrypt.
+	if state.Account.SessionKey() != nil {
+		sessionKeyBytes := common.ReverseBytes(state.Account.SessionKey().Bytes())
+
+		for i := 0; i < 4; i++ {
+			state.SendI %= uint8(len(sessionKeyBytes))
+			x := (header[i] ^ sessionKeyBytes[state.SendI]) + state.SendJ
+			state.SendI++
+
+			header[i] = x
+			state.SendJ = x
+		}
+	}
+
 	// TODO(jeshua): implement this.
-	return append(lengthData, opCodeData...), nil
+	return header, nil
 }

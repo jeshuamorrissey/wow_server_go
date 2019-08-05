@@ -12,6 +12,10 @@ type State struct {
 	log *logrus.Entry
 
 	Account database.Account
+
+	// Some counters required for encrypting the header.
+	SendI, SendJ uint8
+	RecvI, RecvJ uint8
 }
 
 // NewState creates a new state based on the given DB connection.

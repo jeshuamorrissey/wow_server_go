@@ -19,7 +19,7 @@ var (
 	}
 )
 
-func readHeader(buffer io.Reader) (session.OpCode, int, error) {
+func readHeader(state session.State, buffer io.Reader) (session.OpCode, int, error) {
 	opCodeData := make([]byte, 1)
 	n, err := buffer.Read(opCodeData)
 	if err != nil {
@@ -49,6 +49,6 @@ func readHeader(buffer io.Reader) (session.OpCode, int, error) {
 	return opCode, length, nil
 }
 
-func writeHeader(packetLen int, opCode session.OpCode) ([]byte, error) {
+func writeHeader(stateBase session.State, packetLen int, opCode session.OpCode) ([]byte, error) {
 	return []byte{uint8(opCode.Int())}, nil
 }

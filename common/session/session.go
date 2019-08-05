@@ -33,12 +33,12 @@ type State interface {
 type Session struct {
 	// Function which will read the header of the packet and return the OpCode +
 	// the number of bytes that make up the packet.
-	readHeader func(io.Reader) (OpCode, int, error)
+	readHeader func(State, io.Reader) (OpCode, int, error)
 
 	// Function which will write the header for the given packet and
 	// return it. The arguments are the packet's byte length and the
 	// packet's OpCode.
-	writeHeader func(int, OpCode) ([]byte, error)
+	writeHeader func(State, int, OpCode) ([]byte, error)
 
 	// Function which will take as input an OpCode and return a valid ClientPacket.
 	opCodeToPacket map[OpCode]func() ClientPacket
@@ -55,8 +55,8 @@ type Session struct {
 
 // NewSession makes a new session and returns it.
 func NewSession(
-	readHeader func(io.Reader) (OpCode, int, error),
-	writeHeader func(int, OpCode) ([]byte, error),
+	readHeader func(State, io.Reader) (OpCode, int, error),
+	writeHeader func(State, int, OpCode) ([]byte, error),
 	opCodeToPacket map[OpCode]func() ClientPacket,
 	log *logrus.Entry,
 	input io.Reader,
@@ -74,7 +74,7 @@ func NewSession(
 }
 
 func (s *Session) readPacket(buffer io.Reader) (ClientPacket, error) {
-	opCode, length, err := s.readHeader(buffer)
+	opCode, length, err := s.readHeader(s.state, buffer)
 	if err != nil {
 		return nil, err
 	}
@@ -119,7 +119,7 @@ func (s *Session) SendPacket(pkt ServerPacket) error {
 
 	// Write the header.
 	pktData := pkt.Bytes()
-	header, err := s.writeHeader(len(pktData), pkt.OpCode())
+	header, err := s.writeHeader(s.state, len(pktData), pkt.OpCode())
 	if err != nil {
 		return err
 	}
