@@ -11,7 +11,7 @@ import (
 
 	"github.com/jeshuamorrissey/wow_server_go/authserver/srp"
 	"github.com/jeshuamorrissey/wow_server_go/common"
-	db "github.com/jeshuamorrissey/wow_server_go/common/database"
+	"github.com/jeshuamorrissey/wow_server_go/common/database"
 	"github.com/jeshuamorrissey/wow_server_go/common/session"
 )
 
@@ -97,7 +97,7 @@ func (pkt *ClientLoginChallenge) Handle(stateBase session.State) ([]session.Serv
 		response.Error = LoginBadVersion
 	} else {
 		// Get information from the session.
-		err := stateBase.DB().Where(&db.Account{Name: string(pkt.AccountName)}).First(&state.Account).Error
+		err := stateBase.DB().Where(&database.Account{Name: string(pkt.AccountName)}).First(&state.Account).Error
 		if err != nil {
 			if err == gorm.ErrRecordNotFound {
 				response.Error = LoginUnknownAccount

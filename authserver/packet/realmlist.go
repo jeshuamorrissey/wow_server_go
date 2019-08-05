@@ -5,7 +5,7 @@ import (
 	"encoding/binary"
 	"io"
 
-	db "github.com/jeshuamorrissey/wow_server_go/common/database"
+	"github.com/jeshuamorrissey/wow_server_go/common/database"
 	"github.com/jeshuamorrissey/wow_server_go/common/session"
 )
 
@@ -72,7 +72,7 @@ func (pkt *ClientRealmlist) Handle(stateBase session.State) ([]session.ServerPac
 	response := new(ServerRealmlist)
 
 	// Get information from the session.
-	var realms []db.Realm
+	var realms []database.Realm
 	err := stateBase.DB().Find(&realms).Error
 	if err != nil {
 		return nil, err

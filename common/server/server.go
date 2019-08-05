@@ -35,7 +35,7 @@ func RunServer(
 		}
 
 		log.Printf("Receiving %v connection from %v\n", strings.ToUpper(name), conn.RemoteAddr())
-		sessLog := logrus.WithFields(logrus.Fields{"server": name, "client": conn.RemoteAddr().String()})
+		sessLog := logrus.WithFields(logrus.Fields{"server": name, "account": "???"})
 		sess := makeSession(conn, conn, sessLog, db)
 		setupSession(sess)
 		go sess.Run()

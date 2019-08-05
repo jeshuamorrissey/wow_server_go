@@ -35,13 +35,16 @@ func PadBigIntBytes(data []byte, nBytes int) []byte {
 // of the data is read (or there was an error), an error will be returned.
 func ReadBytes(buffer io.Reader, length int) ([]byte, error) {
 	data := make([]byte, length)
-	n, err := buffer.Read(data)
-	if err != nil {
-		return nil, fmt.Errorf("error while reading bytes: %v", err)
-	}
 
-	if n != length {
-		return nil, fmt.Errorf("short read: wanted %v bytes, got %v", length, n)
+	if length > 0 {
+		n, err := buffer.Read(data)
+		if err != nil {
+			return nil, fmt.Errorf("error while reading bytes: %v", err)
+		}
+
+		if n != length {
+			return nil, fmt.Errorf("short read: wanted %v bytes, got %v", length, n)
+		}
 	}
 
 	return data, nil

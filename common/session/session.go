@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 
+	"github.com/jeshuamorrissey/wow_server_go/common"
 	"github.com/jinzhu/gorm"
 	"github.com/sirupsen/logrus"
 )
@@ -79,19 +80,9 @@ func (s *Session) readPacket(buffer io.Reader) (ClientPacket, error) {
 		return nil, err
 	}
 
-	// Read all required bytes from the buffer. If less were read than expected,
-	// or an EOF was not found, then error.
-	data := make([]byte, length)
-	n, err := buffer.Read(data)
-
-	// If this is a valid packet, then the length should match exactly.
-	if n != length {
-		return nil, fmt.Errorf("short read: wanted %v bytes, only got %v bytes", length, n)
-	}
-
-	// We shouldn't see any error (even an EOF).
+	data, err := common.ReadBytes(buffer, length)
 	if err != nil {
-		return nil, fmt.Errorf("unknown error while reading packet data: %v", err)
+		return nil, err
 	}
 
 	builder, ok := s.opCodeToPacket[opCode]
@@ -100,10 +91,10 @@ func (s *Session) readPacket(buffer io.Reader) (ClientPacket, error) {
 		return nil, nil
 	}
 
-	s.log.Tracef("<-- %v", opCode.String())
-
 	pkt := builder()
 	pkt.Read(bytes.NewReader(data))
+
+	s.log.Tracef("<-- %v", opCode.String())
 
 	return pkt, nil
 }

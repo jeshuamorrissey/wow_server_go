@@ -7,7 +7,6 @@ import (
 	"io"
 
 	"github.com/jeshuamorrissey/wow_server_go/common"
-
 	"github.com/jeshuamorrissey/wow_server_go/common/session"
 	"github.com/jeshuamorrissey/wow_server_go/worldserver/packet"
 )
@@ -15,6 +14,7 @@ import (
 var (
 	opCodeToPacket = map[session.OpCode]func() session.ClientPacket{
 		packet.OpCodeClientAuthSession: func() session.ClientPacket { return new(packet.ClientAuthSession) },
+		packet.OpCodeClientPing:        func() session.ClientPacket { return new(packet.ClientPing) },
 	}
 )
 

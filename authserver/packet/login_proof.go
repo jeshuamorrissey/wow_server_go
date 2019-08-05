@@ -6,10 +6,9 @@ import (
 	"io"
 	"math/big"
 
+	"github.com/jeshuamorrissey/wow_server_go/authserver/srp"
 	"github.com/jeshuamorrissey/wow_server_go/common"
 	"github.com/jeshuamorrissey/wow_server_go/common/session"
-
-	"github.com/jeshuamorrissey/wow_server_go/authserver/srp"
 )
 
 // ClientLoginProof encodes proof that the client has the correct information.
@@ -84,6 +83,8 @@ func (pkt *ClientLoginProof) Handle(stateBase session.State) ([]session.ServerPa
 	} else {
 		response.Error = 0
 		response.Proof.Set(srp.CalculateServerProof(&pkt.A, M, K))
+
+		state.AddLogField("account", state.Account.Name)
 
 		state.Account.SessionKeyStr = new(string)
 		*state.Account.SessionKeyStr = K.Text(16)
