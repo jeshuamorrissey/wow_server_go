@@ -1,49 +1,34 @@
 package worldserver
 
 import (
-	"log"
-	"net"
-	"strconv"
+	"io"
 
+	"github.com/jeshuamorrissey/wow_server_go/common/server"
 	"github.com/jeshuamorrissey/wow_server_go/common/session"
 	"github.com/jeshuamorrissey/wow_server_go/worldserver/packet"
 	"github.com/jinzhu/gorm"
+	"github.com/sirupsen/logrus"
 )
+
+func makeSession(reader io.Reader, writer io.Writer, log *logrus.Entry, db *gorm.DB) *session.Session {
+	return session.NewSession(
+		readHeader,
+		writeHeader,
+		opCodeToPacket,
+		log,
+		reader,
+		writer,
+		packet.NewState(db),
+	)
+}
+
+func setupSession(sess *session.Session) {
+	pkt := packet.ServerAuthChallenge{Seed: 0}
+	sess.SendPacket(&pkt)
+}
 
 // RunWorldServer takes as input a database and runs an world server referencing
 // it.
 func RunWorldServer(port int, db *gorm.DB) {
-	listener, err := net.Listen("tcp", ":"+strconv.Itoa(port))
-	if err != nil {
-		log.Fatalf("Error while opening port: %v\n", err)
-	}
-
-	// Main control loop.
-	log.Printf("Listening for WORLD connections on :%v...\n", port)
-
-	for {
-		// Accept a connection.
-		conn, err := listener.Accept()
-		if err != nil {
-			log.Fatalf("Error while receiving client connection: %v\n", err)
-		}
-
-		log.Printf("Receiving WORLD connection from %v\n", conn.RemoteAddr())
-
-		sess := session.NewSession(
-			readHeader,
-			writeHeader,
-			opCodeToPacket,
-			conn,
-			conn,
-			packet.NewState(db),
-		)
-
-		// Send the initial auth challenge.
-		pkt := packet.ServerAuthChallenge{Seed: 0}
-		sess.SendPacket(&pkt)
-
-		// Run the session.
-		go sess.Run()
-	}
+	server.RunServer("world", port, db, makeSession, setupSession)
 }

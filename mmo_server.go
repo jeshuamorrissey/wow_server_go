@@ -1,7 +1,6 @@
 package main
 
 import (
-	"log"
 	"sync"
 
 	"github.com/jeshuamorrissey/wow_server_go/authserver"
@@ -9,6 +8,7 @@ import (
 	"github.com/jeshuamorrissey/wow_server_go/common/database"
 	"github.com/jeshuamorrissey/wow_server_go/worldserver"
 	"github.com/jinzhu/gorm"
+	"github.com/sirupsen/logrus"
 
 	// Import the SQL driver.
 	_ "github.com/mattn/go-sqlite3"
@@ -40,12 +40,15 @@ func GenerateTestData(db *gorm.DB) error {
 }
 
 func main() {
+	logrus.SetFormatter(&logrus.TextFormatter{ForceColors: true})
+	logrus.SetLevel(logrus.TraceLevel)
+
 	db, err := gorm.Open("sqlite3", ":memory:")
 	if err != nil {
 		panic(err)
 	}
 
-	log.Printf("Created in-memory database")
+	logrus.Infof("Created in-memory database")
 
 	database.Setup(db)
 
@@ -54,7 +57,7 @@ func main() {
 	// Create database testdata.
 	err = GenerateTestData(db)
 	if err != nil {
-		log.Fatalf("Failed to generate test data: %v\n", err)
+		logrus.Fatalf("Failed to generate test data: %v\n", err)
 	}
 
 	var wg sync.WaitGroup

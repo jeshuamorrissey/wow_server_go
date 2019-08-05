@@ -4,9 +4,9 @@ import (
 	"bytes"
 	"fmt"
 	"io"
-	"log"
 
 	"github.com/jinzhu/gorm"
+	"github.com/sirupsen/logrus"
 )
 
 // OpCode is an integer type which is used to distinguish which packets are which.
@@ -36,6 +36,9 @@ type Session struct {
 	// Function which will take as input an OpCode and return a valid ClientPacket.
 	opCodeToPacket map[OpCode]func() ClientPacket
 
+	// A logger to write to.
+	log *logrus.Entry
+
 	// The I/O for this session. Usually will be socket conns.
 	input  io.Reader
 	output io.Writer
@@ -48,6 +51,7 @@ func NewSession(
 	readHeader func(io.Reader) (OpCode, int, error),
 	writeHeader func(int, OpCode) ([]byte, error),
 	opCodeToPacket map[OpCode]func() ClientPacket,
+	log *logrus.Entry,
 	input io.Reader,
 	output io.Writer,
 	state State) *Session {
@@ -55,6 +59,7 @@ func NewSession(
 		readHeader:     readHeader,
 		writeHeader:    writeHeader,
 		opCodeToPacket: opCodeToPacket,
+		log:            log,
 		input:          input,
 		output:         output,
 		state:          state,
@@ -84,11 +89,11 @@ func (s *Session) readPacket(buffer io.Reader) (ClientPacket, error) {
 
 	builder, ok := s.opCodeToPacket[opCode]
 	if !ok {
-		log.Printf("<-- %v [UNHANDLED]", opCode.String())
+		s.log.Warnf("<-- %v [UNHANDLED]", opCode.String())
 		return nil, nil
 	}
 
-	log.Printf("<-- %v", opCode.String())
+	s.log.Tracef("<-- %v", opCode.String())
 
 	pkt := builder()
 	pkt.Read(bytes.NewReader(data))
@@ -98,7 +103,7 @@ func (s *Session) readPacket(buffer io.Reader) (ClientPacket, error) {
 
 // SendPacket will send a packet back to the given output.
 func (s *Session) SendPacket(pkt ServerPacket) error {
-	log.Printf("--> %v", pkt.OpCode().String())
+	s.log.Tracef("--> %v", pkt.OpCode().String())
 
 	// Write the header.
 	pktData := pkt.Bytes()
@@ -129,7 +134,7 @@ func (s *Session) Run() {
 		packet, err := s.readPacket(s.input)
 		if err != nil {
 			// This usually happens because of an EOF, so just terminate.
-			log.Printf("Terminating connection: %v\n", err)
+			s.log.Warnf("Terminating connection: %v\n", err)
 			return
 		}
 
@@ -141,7 +146,7 @@ func (s *Session) Run() {
 		// Load and then handle the packet.
 		response, err := packet.Handle(s.state)
 		if err != nil {
-			log.Printf("Error while handling packet: %v\n", err)
+			s.log.Warnf("Error while handling packet: %v\n", err)
 			return
 		}
 
