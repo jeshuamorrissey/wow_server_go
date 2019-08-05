@@ -20,6 +20,13 @@ type OpCode interface {
 type State interface {
 	// DB should return a reference to the DB to use in this handler.
 	DB() *gorm.DB
+
+	// Log returns a reference to the logger to use.
+	Log() *logrus.Entry
+
+	// AddLogField adds a new field to the log entry this state should
+	// use.
+	AddLogField(string, interface{})
 }
 
 // Session management utility.
@@ -99,6 +106,11 @@ func (s *Session) readPacket(buffer io.Reader) (ClientPacket, error) {
 	pkt.Read(bytes.NewReader(data))
 
 	return pkt, nil
+}
+
+// AddLogField will add a new field to the logger for this session.
+func (s *Session) AddLogField(key string, value interface{}) {
+	s.log = s.log.WithField(key, value)
 }
 
 // SendPacket will send a packet back to the given output.

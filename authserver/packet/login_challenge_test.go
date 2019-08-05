@@ -5,10 +5,11 @@ import (
 
 	"gotest.tools/assert"
 
-	"github.com/jinzhu/gorm"
 	"github.com/jeshuamorrissey/wow_server_go/authserver/packet"
 	"github.com/jeshuamorrissey/wow_server_go/authserver/srp"
 	"github.com/jeshuamorrissey/wow_server_go/common/database"
+	"github.com/jinzhu/gorm"
+	"github.com/sirupsen/logrus"
 
 	// Import the SQL driver.
 	_ "github.com/mattn/go-sqlite3"
@@ -71,7 +72,7 @@ func TestHandle(t *testing.T) {
 		"TEST",
 	)
 
-	state := packet.NewState(db)
+	state := packet.NewState(db, logrus.WithField("test", true))
 
 	// Check the response.
 	responses, err := pkt.Handle(state)
@@ -155,7 +156,7 @@ func TestHandleWithError(t *testing.T) {
 			test.accountName,
 		)
 
-		state := packet.NewState(db)
+		state := packet.NewState(db, logrus.WithField("test", true))
 
 		// Check the response.
 		responses, err := pkt.Handle(state)

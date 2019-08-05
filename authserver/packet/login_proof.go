@@ -84,6 +84,10 @@ func (pkt *ClientLoginProof) Handle(stateBase session.State) ([]session.ServerPa
 	} else {
 		response.Error = 0
 		response.Proof.Set(srp.CalculateServerProof(&pkt.A, M, K))
+
+		state.Account.SessionKeyStr = new(string)
+		*state.Account.SessionKeyStr = K.Text(16)
+		stateBase.DB().Save(state.Account)
 	}
 
 	return []session.ServerPacket{response}, nil

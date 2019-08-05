@@ -24,7 +24,6 @@ const (
 	LoginConnected       LoginErrorCode = 0x0E
 	LoginParentalControl LoginErrorCode = 0x0F // "blocked by parental controls"
 	LoginLockedEnforced  LoginErrorCode = 0x10 // "disconnected from server"
-
 )
 
 // Game version information which must be present in the

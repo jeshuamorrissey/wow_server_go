@@ -18,7 +18,7 @@ func makeSession(reader io.Reader, writer io.Writer, log *logrus.Entry, db *gorm
 		log,
 		reader,
 		writer,
-		packet.NewState(db),
+		packet.NewState(db, log),
 	)
 }
 

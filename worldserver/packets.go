@@ -11,7 +11,9 @@ import (
 )
 
 var (
-	opCodeToPacket = map[session.OpCode]func() session.ClientPacket{}
+	opCodeToPacket = map[session.OpCode]func() session.ClientPacket{
+		packet.OpCodeClientAuthSession: func() session.ClientPacket { return new(packet.ClientAuthSession) },
+	}
 )
 
 func readHeader(buffer io.Reader) (session.OpCode, int, error) {
