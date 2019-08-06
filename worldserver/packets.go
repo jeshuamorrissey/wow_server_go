@@ -15,6 +15,7 @@ var (
 	opCodeToPacket = map[session.OpCode]func() session.ClientPacket{
 		packet.OpCodeClientAuthSession: func() session.ClientPacket { return new(packet.ClientAuthSession) },
 		packet.OpCodeClientPing:        func() session.ClientPacket { return new(packet.ClientPing) },
+		packet.OpCodeClientCharEnum:    func() session.ClientPacket { return new(packet.ClientCharEnum) },
 	}
 )
 

@@ -20,18 +20,48 @@ func GenerateTestData(db *gorm.DB) error {
 	// Generate some accounts.
 	salt := srp.GenerateSalt()
 	verifier := srp.GenerateVerifier("JESHUA", "JESHUA", salt)
-	err := db.Create(&database.Account{Name: "JESHUA", VerifierStr: verifier.Text(16), SaltStr: salt.Text(16)}).Error
+	account := database.Account{Name: "JESHUA", VerifierStr: verifier.Text(16), SaltStr: salt.Text(16)}
+	err := db.Create(&account).Error
 	if err != nil {
 		return err
 	}
 
 	// Make some realms they can connect to.
-	err = db.Create(&database.Realm{Name: "Sydney", Host: "localhost:5001"}).Error
+	realm := database.Realm{Name: "Sydney", Host: "localhost:5001"}
+	err = db.Create(&realm).Error
 	if err != nil {
 		return err
 	}
 
-	err = db.Create(&database.Realm{Name: "Brisbane", Host: "localhost:5002"}).Error
+	// Make a character.
+	err = db.Create(&database.Character{
+		Name: "Jeshua",
+		Object: *db.Create(&database.GameObjectPlayer{
+			GameObjectUnit: database.GameObjectUnit{
+				Race:   database.RaceHuman,
+				Class:  database.ClassWarrior,
+				Gender: database.GenderMale,
+
+				X: 0.0,
+				Y: 0.0,
+				Z: 0.0,
+				O: 0.0,
+			},
+
+			Level: 1,
+
+			SkinColor: 1,
+			Face:      1,
+			HairStyle: 1,
+			HairColor: 1,
+			Feature:   1,
+
+			ZoneID: 1,
+			MapID:  1,
+		}).Value.(*database.GameObjectPlayer),
+		Account: account,
+		Realm:   realm,
+	}).Error
 	if err != nil {
 		return err
 	}
