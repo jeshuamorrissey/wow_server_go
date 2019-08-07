@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"encoding/binary"
 	"io"
-	"log"
 
 	"github.com/jeshuamorrissey/wow_server_go/common/database"
 	"github.com/jeshuamorrissey/wow_server_go/common/session"
@@ -20,10 +19,10 @@ func (pkt *ClientCharEnum) Read(buffer io.Reader) error {
 
 // Handle will ensure that the given account exists.
 func (pkt *ClientCharEnum) Handle(stateBase session.State) ([]session.ServerPacket, error) {
+	state := stateBase.(*State)
 	response := new(ServerCharEnum)
 
-	// TODO(jeshua): this isn't populating thigns
-	err := stateBase.DB().Find(&response.Characters).Error
+	err := stateBase.DB().Where(&database.Character{AccountID: state.Account.ID, RealmID: state.Realm.ID}).Find(&response.Characters).Error
 	if err != nil {
 		return nil, err
 	}
@@ -78,8 +77,6 @@ func (pkt *ServerCharEnum) Bytes() []byte {
 		binary.Write(buffer, binary.LittleEndian, uint32(0)) // FirstBagDisplayID
 		binary.Write(buffer, binary.LittleEndian, uint8(0))  // FirstBagInventoryType
 	}
-
-	log.Printf("%v\n", buffer.Bytes())
 
 	return buffer.Bytes()
 }

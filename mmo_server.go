@@ -27,16 +27,16 @@ func GenerateTestData(db *gorm.DB) error {
 	}
 
 	// Make some realms they can connect to.
-	realm := database.Realm{Name: "Sydney", Host: "localhost:5001"}
-	err = db.Create(&realm).Error
+	realmSydney := database.Realm{Name: "Sydney", Host: "localhost:5001"}
+	err = db.Create(&realmSydney).Error
 	if err != nil {
 		return err
 	}
 
 	// Make a character.
-	err = db.Create(&database.Character{
+	charJeshua := database.Character{
 		Name: "Jeshua",
-		Object: *db.Create(&database.GameObjectPlayer{
+		Object: database.GameObjectPlayer{
 			GameObjectUnit: database.GameObjectUnit{
 				Race:   database.RaceHuman,
 				Class:  database.ClassWarrior,
@@ -58,13 +58,12 @@ func GenerateTestData(db *gorm.DB) error {
 
 			ZoneID: 1,
 			MapID:  1,
-		}).Value.(*database.GameObjectPlayer),
-		Account: account,
-		Realm:   realm,
-	}).Error
-	if err != nil {
-		return err
+		},
+		AccountID: account.ID,
+		RealmID:   realmSydney.ID,
 	}
+
+	db.Create(&charJeshua)
 
 	return nil
 }
@@ -77,6 +76,8 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
+
+	db = db.Set("gorm:auto_preload", true)
 
 	logrus.Infof("Created in-memory database")
 
@@ -99,7 +100,7 @@ func main() {
 
 	go func() {
 		defer wg.Done()
-		worldserver.RunWorldServer(5001, db)
+		worldserver.RunWorldServer("Sydney", 5001, db)
 	}()
 
 	wg.Wait()

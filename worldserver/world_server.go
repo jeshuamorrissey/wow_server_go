@@ -1,8 +1,10 @@
 package worldserver
 
 import (
+	"fmt"
 	"io"
 
+	"github.com/jeshuamorrissey/wow_server_go/common/database"
 	"github.com/jeshuamorrissey/wow_server_go/common/server"
 	"github.com/jeshuamorrissey/wow_server_go/common/session"
 	"github.com/jeshuamorrissey/wow_server_go/worldserver/packet"
@@ -10,7 +12,7 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-func makeSession(reader io.Reader, writer io.Writer, log *logrus.Entry, db *gorm.DB) *session.Session {
+func makeSession(realm *database.Realm, reader io.Reader, writer io.Writer, log *logrus.Entry, db *gorm.DB) *session.Session {
 	return session.NewSession(
 		readHeader,
 		writeHeader,
@@ -18,7 +20,7 @@ func makeSession(reader io.Reader, writer io.Writer, log *logrus.Entry, db *gorm
 		log,
 		reader,
 		writer,
-		packet.NewState(db, log),
+		packet.NewState(realm, db, log),
 	)
 }
 
@@ -29,6 +31,19 @@ func setupSession(sess *session.Session) {
 
 // RunWorldServer takes as input a database and runs an world server referencing
 // it.
-func RunWorldServer(port int, db *gorm.DB) {
-	server.RunServer("world", port, db, makeSession, setupSession)
+func RunWorldServer(realmName string, port int, db *gorm.DB) {
+	var realm database.Realm
+	err := db.Where("name = ?", realmName).First(&realm).Error
+	if err != nil {
+		panic(fmt.Sprintf("Unknown realm %v", realmName))
+	}
+
+	server.RunServer(
+		"world",
+		port,
+		db,
+		func(reader io.Reader, writer io.Writer, log *logrus.Entry, db *gorm.DB) *session.Session {
+			return makeSession(&realm, reader, writer, log, db)
+		},
+		setupSession)
 }

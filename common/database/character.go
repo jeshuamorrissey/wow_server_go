@@ -12,11 +12,8 @@ type Character struct {
 
 	Name string
 
-	ObjectID  int
-	AccountID int
-	RealmID   int
+	AccountID uint
+	RealmID   uint
 
-	Object  GameObjectPlayer
-	Account Account
-	Realm   Realm
+	Object GameObjectPlayer
 }

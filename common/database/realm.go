@@ -10,4 +10,6 @@ type Realm struct {
 
 	Name string `gorm:"unique"`
 	Host string
+
+	Characters []Character
 }

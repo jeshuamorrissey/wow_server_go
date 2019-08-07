@@ -15,6 +15,8 @@ type Account struct {
 	SaltStr       string
 	SessionKeyStr *string
 
+	Characters []Character
+
 	verifier   *big.Int `gorm:"-"`
 	salt       *big.Int `gorm:"-"`
 	sessionKey *big.Int `gorm:"-"`

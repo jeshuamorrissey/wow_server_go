@@ -128,6 +128,8 @@ type GameObjectPlayer struct {
 
 	ZoneID uint32
 	MapID  uint32
+
+	CharacterID uint
 }
 
 func (obj *GameObjectPlayer) GetTypeID() TypeID { return TypeIDPlayer }

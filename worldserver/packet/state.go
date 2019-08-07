@@ -12,6 +12,7 @@ type State struct {
 	log *logrus.Entry
 
 	Account database.Account
+	Realm   *database.Realm
 
 	// Some counters required for encrypting the header.
 	SendI, SendJ uint8
@@ -19,8 +20,8 @@ type State struct {
 }
 
 // NewState creates a new state based on the given DB connection.
-func NewState(db *gorm.DB, log *logrus.Entry) *State {
-	return &State{db: db, log: log}
+func NewState(realm *database.Realm, db *gorm.DB, log *logrus.Entry) *State {
+	return &State{db: db, log: log, Realm: realm}
 }
 
 // DB returns a reference to the Database object stored in this state.

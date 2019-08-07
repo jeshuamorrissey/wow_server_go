@@ -8,6 +8,7 @@ type Gender uint8
 const (
 	GenderMale   Gender = 0
 	GenderFemale Gender = 1
+	GenderNone   Gender = 2
 )
 
 // Race information.
@@ -16,15 +17,15 @@ type Race uint8
 
 // Race values.
 const (
-	RaceHuman    Race = 0
-	RaceOrc      Race = 1
-	RaceDwarf    Race = 2
-	RaceNightElf Race = 3
-	RaceUndead   Race = 4
-	RaceTauren   Race = 5
-	RaceGnome    Race = 6
-	RaceTroll    Race = 7
-	RaceGoblin   Race = 8
+	RaceHuman    Race = 1
+	RaceOrc      Race = 2
+	RaceDwarf    Race = 3
+	RaceNightElf Race = 4
+	RaceUndead   Race = 5
+	RaceTauren   Race = 6
+	RaceGnome    Race = 7
+	RaceTroll    Race = 8
+	RaceGoblin   Race = 9
 )
 
 // Class information.
