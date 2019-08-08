@@ -5,6 +5,7 @@ import (
 
 	"github.com/jeshuamorrissey/wow_server_go/authserver"
 	"github.com/jeshuamorrissey/wow_server_go/authserver/srp"
+	"github.com/jeshuamorrissey/wow_server_go/common/data"
 	"github.com/jeshuamorrissey/wow_server_go/common/database"
 	"github.com/jeshuamorrissey/wow_server_go/worldserver"
 	"github.com/jinzhu/gorm"
@@ -72,6 +73,16 @@ func main() {
 	logrus.SetFormatter(&logrus.TextFormatter{ForceColors: true})
 	logrus.SetLevel(logrus.TraceLevel)
 
+	// Load constant data.
+	logrus.Info("Loading items.json.gz...")
+	err := data.LoadItems("D:\\Users\\Jeshua\\go\\src\\github.com\\jeshuamorrissey\\wow_server_go\\common\\data\\items.json.gz")
+	if err != nil {
+		panic(err)
+	}
+
+	logrus.Infof("Done! Loaded %v items.", len(data.Items))
+
+	// Setup test database.
 	db, err := gorm.Open("sqlite3", ":memory:")
 	if err != nil {
 		panic(err)

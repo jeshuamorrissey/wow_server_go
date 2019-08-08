@@ -129,6 +129,9 @@ type GameObjectPlayer struct {
 	ZoneID uint32
 	MapID  uint32
 
+	// TODO(jeshua): implement this
+	// Items []GameObjectItem
+
 	CharacterID uint
 }
 
