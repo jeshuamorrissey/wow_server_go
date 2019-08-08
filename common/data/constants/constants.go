@@ -280,3 +280,141 @@ const (
 	SpellCategoryHealthManaPotions SpellCategory = 4
 	SpellCategoryDevourMagic       SpellCategory = 12
 )
+
+// Gender information.
+//go:generate stringer -type=Gender -trimprefix=Gender
+type Gender uint8
+
+// Gender values.
+const (
+	GenderMale   Gender = 0
+	GenderFemale Gender = 1
+	GenderNone   Gender = 2
+)
+
+// Race information.
+//go:generate stringer -type=Race -trimprefix=Race
+type Race uint8
+
+// Race values.
+const (
+	RaceHuman    Race = 1
+	RaceOrc      Race = 2
+	RaceDwarf    Race = 3
+	RaceNightElf Race = 4
+	RaceUndead   Race = 5
+	RaceTauren   Race = 6
+	RaceGnome    Race = 7
+	RaceTroll    Race = 8
+	RaceGoblin   Race = 9
+)
+
+// Class information.
+//go:generate stringer -type=Class -trimprefix=Class
+type Class uint8
+
+// Class values.
+const (
+	ClassWarrior Class = 1
+	ClassPaladin Class = 2
+	ClassHunter  Class = 3
+	ClassRouge   Class = 4
+	ClassPriest  Class = 5
+	ClassShaman  Class = 7
+	ClassMage    Class = 8
+	ClassWarlock Class = 9
+	ClassDruid   Class = 11
+)
+
+// TypeID is a enum value which maps to a object's type ID.
+//go:generate stringer -type=TypeID -trimprefix=TypeID
+type TypeID int
+
+// TypeID values.
+const (
+	TypeIDObject        TypeID = 0
+	TypeIDItem          TypeID = 1
+	TypeIDContainer     TypeID = 2
+	TypeIDUnit          TypeID = 3
+	TypeIDPlayer        TypeID = 4
+	TypeIDGameObject    TypeID = 5
+	TypeIDDynamicObject TypeID = 6
+	TypeIDCorpse        TypeID = 7
+)
+
+// TypeMask is a enum value which maps to a object's type ID.
+//go:generate stringer -type=TypeMask -trimprefix=TypeMask
+type TypeMask int
+
+// TypeMask values.
+const (
+	TypeMaskObject        TypeMask = 0x0001
+	TypeMaskItem          TypeMask = 0x0002
+	TypeMaskContainer     TypeMask = 0x0004
+	TypeMaskUnit          TypeMask = 0x0008
+	TypeMaskPlayer        TypeMask = 0x0010
+	TypeMaskGameObject    TypeMask = 0x0020
+	TypeMaskDynamicObject TypeMask = 0x0040
+	TypeMaskCorpse        TypeMask = 0x0080
+)
+
+// UpdateFlags is a enum value which maps to a object's type ID.
+//go:generate stringer -type=UpdateFlags -trimprefix=UpdateFlags
+type UpdateFlags int
+
+// UpdateFlags values.
+const (
+	UpdateFlagsNone        UpdateFlags = 0x0000
+	UpdateFlagsSelf        UpdateFlags = 0x0001
+	UpdateFlagsTransport   UpdateFlags = 0x0002
+	UpdateFlagsFullGUID    UpdateFlags = 0x0004
+	UpdateFlagsHighGUID    UpdateFlags = 0x0008
+	UpdateFlagsAll         UpdateFlags = 0x0010
+	UpdateFlagsLiving      UpdateFlags = 0x0020
+	UpdateFlagsHasPosition UpdateFlags = 0x0040
+)
+
+// HighGUID is a enum value which maps to a object's type ID.
+//go:generate stringer -type=HighGUID -trimprefix=HighGUID
+type HighGUID uint32
+
+// HighGUID values.
+const (
+	HighGUIDItem          HighGUID = 0x40000000
+	HighGUIDContainer     HighGUID = 0x40000000
+	HighGUIDPlayer        HighGUID = 0x00000000
+	HighGUIDGameobject    HighGUID = 0xF1100000
+	HighGUIDTransport     HighGUID = 0xF1200000
+	HighGUIDUnit          HighGUID = 0xF1300000
+	HighGUIDPet           HighGUID = 0xF1400000
+	HighGUIDDynamicObject HighGUID = 0xF1000000
+	HighGUIDCorpse        HighGUID = 0xF1010000
+	HighGUIDMoTransport   HighGUID = 0x1FC00000
+)
+
+// EquipmentSlot is a enum value which maps to a object's type ID.
+//go:generate stringer -type=EquipmentSlot -trimprefix=EquipmentSlot
+type EquipmentSlot uint32
+
+// EquipmentSlot values.
+const (
+	EquipmentSlotHead      EquipmentSlot = 0
+	EquipmentSlotNeck      EquipmentSlot = 1
+	EquipmentSlotShoulders EquipmentSlot = 2
+	EquipmentSlotBody      EquipmentSlot = 3
+	EquipmentSlotChest     EquipmentSlot = 4
+	EquipmentSlotWaist     EquipmentSlot = 5
+	EquipmentSlotLegs      EquipmentSlot = 6
+	EquipmentSlotFeet      EquipmentSlot = 7
+	EquipmentSlotWrists    EquipmentSlot = 8
+	EquipmentSlotHands     EquipmentSlot = 9
+	EquipmentSlotFinger1   EquipmentSlot = 10
+	EquipmentSlotFinger2   EquipmentSlot = 11
+	EquipmentSlotTrinket1  EquipmentSlot = 12
+	EquipmentSlotTrinket2  EquipmentSlot = 13
+	EquipmentSlotBack      EquipmentSlot = 14
+	EquipmentSlotMainHand  EquipmentSlot = 15
+	EquipmentSlotOffHand   EquipmentSlot = 16
+	EquipmentSlotRanged    EquipmentSlot = 17
+	EquipmentSlotTabard    EquipmentSlot = 18
+)

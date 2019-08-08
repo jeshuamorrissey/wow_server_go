@@ -108,7 +108,7 @@ type Item struct {
 
 var (
 	// Items is a map of item entry --> object.
-	Items map[int]Item
+	Items map[int]*Item
 )
 
 // LoadItems will load the items data from the given compressed JSON file.

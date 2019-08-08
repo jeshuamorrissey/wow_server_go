@@ -5,6 +5,7 @@ import (
 	"encoding/binary"
 	"io"
 
+	c "github.com/jeshuamorrissey/wow_server_go/common/data/constants"
 	"github.com/jeshuamorrissey/wow_server_go/common/database"
 	"github.com/jeshuamorrissey/wow_server_go/common/session"
 )
@@ -69,9 +70,15 @@ func (pkt *ServerCharEnum) Bytes() []byte {
 		binary.Write(buffer, binary.LittleEndian, uint32(0)) // PetLevel
 		binary.Write(buffer, binary.LittleEndian, uint32(0)) // PetFamily
 
-		for i := 0; i < 19; i++ {
-			binary.Write(buffer, binary.LittleEndian, uint32(0)) // ItemDisplayID
-			binary.Write(buffer, binary.LittleEndian, uint8(0))  // ItemInventoryType
+		equipmentMap := char.Object.EquipmentMap()
+		for i := c.EquipmentSlotHead; i <= c.EquipmentSlotTabard; i++ {
+			if item, ok := equipmentMap[i]; ok {
+				binary.Write(buffer, binary.LittleEndian, uint32(item.Template().DisplayID))
+				binary.Write(buffer, binary.LittleEndian, uint8(item.Template().InventoryType))
+			} else {
+				binary.Write(buffer, binary.LittleEndian, uint32(0)) // ItemDisplayID
+				binary.Write(buffer, binary.LittleEndian, uint8(0))  // ItemInventoryType
+			}
 		}
 
 		binary.Write(buffer, binary.LittleEndian, uint32(0)) // FirstBagDisplayID

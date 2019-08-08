@@ -6,6 +6,7 @@ import (
 	"github.com/jeshuamorrissey/wow_server_go/authserver"
 	"github.com/jeshuamorrissey/wow_server_go/authserver/srp"
 	"github.com/jeshuamorrissey/wow_server_go/common/data"
+	c "github.com/jeshuamorrissey/wow_server_go/common/data/constants"
 	"github.com/jeshuamorrissey/wow_server_go/common/database"
 	"github.com/jeshuamorrissey/wow_server_go/worldserver"
 	"github.com/jinzhu/gorm"
@@ -39,9 +40,9 @@ func GenerateTestData(db *gorm.DB) error {
 		Name: "Jeshua",
 		Object: database.GameObjectPlayer{
 			GameObjectUnit: database.GameObjectUnit{
-				Race:   database.RaceHuman,
-				Class:  database.ClassWarrior,
-				Gender: database.GenderMale,
+				Race:   c.RaceHuman,
+				Class:  c.ClassWarrior,
+				Gender: c.GenderMale,
 
 				X: 0.0,
 				Y: 0.0,
@@ -59,6 +60,17 @@ func GenerateTestData(db *gorm.DB) error {
 
 			ZoneID: 1,
 			MapID:  1,
+
+			Equipment: []database.EquippedItem{
+				database.EquippedItem{
+					Slot: c.EquipmentSlotMainHand,
+					Item: database.GameObjectItem{
+						GameObjectBase: database.GameObjectBase{
+							Entry: 25,
+						},
+					},
+				},
+			},
 		},
 		AccountID: account.ID,
 		RealmID:   realmSydney.ID,
@@ -81,6 +93,8 @@ func main() {
 	}
 
 	logrus.Infof("Done! Loaded %v items.", len(data.Items))
+
+	logrus.Infof("%v", data.Items[25])
 
 	// Setup test database.
 	db, err := gorm.Open("sqlite3", ":memory:")
