@@ -19,6 +19,7 @@ type Item struct {
 	// StartQuest TODO
 
 	// Basic item information.
+	Entry              int
 	Bonding            c.Bonding
 	Class              c.ItemClass
 	Description        string

@@ -9,7 +9,8 @@ import (
 type GameObjectItem struct {
 	GameObjectBase
 
-	EquippedItemID uint // may be 0 for items which aren't equipment
+	EquippedItemID     uint // may be 0 for items which aren't equipment
+	GameObjectPlayerID uint // the player this item belongs to
 }
 
 // GetTypeID returns the type of the game object.

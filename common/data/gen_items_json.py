@@ -1,3 +1,4 @@
+import gzip
 import json
 import sqlite3
 
@@ -155,6 +156,7 @@ def LoadRowIntoObject(row):
         'Description': row['description'],
         'DisenchantID': row['DisenchantID'],
         'DisplayID': row['displayid'],
+        'Entry': row['entry'],
         'FoodType': row['FoodType'],
         'InventoryType': row['InventoryType'],
         'ItemLevel': row['ItemLevel'],
@@ -269,8 +271,6 @@ cursor = conn.execute("SELECT * FROM item_template")
 for row in cursor:
     result[row['entry']] = LoadRowIntoObject(row)
 
-import gzip
 
 with gzip.open('items.json.gz', 'w') as f:
     f.write(json.dumps(result).encode('utf-8'))
-    

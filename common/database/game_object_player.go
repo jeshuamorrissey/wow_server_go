@@ -10,7 +10,7 @@ type EquippedItem struct {
 	gorm.Model
 
 	Slot c.EquipmentSlot
-	Item GameObjectItem
+	Item *GameObjectItem
 
 	GameObjectPlayerID uint
 }
@@ -31,7 +31,9 @@ type GameObjectPlayer struct {
 	ZoneID uint32
 	MapID  uint32
 
-	Equipment []EquippedItem
+	Equipment []*EquippedItem
+	Inventory []*BaggedItem
+	Bags      []*GameObjectContainer
 
 	CharacterID uint
 }
@@ -56,7 +58,7 @@ func (obj *GameObjectPlayer) GetHighGUID() c.HighGUID { return c.HighGUIDPlayer 
 func (obj *GameObjectPlayer) EquipmentMap() map[c.EquipmentSlot]*GameObjectItem {
 	result := make(map[c.EquipmentSlot]*GameObjectItem)
 	for _, item := range obj.Equipment {
-		result[item.Slot] = &item.Item
+		result[item.Slot] = item.Item
 	}
 
 	return result

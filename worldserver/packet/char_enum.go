@@ -71,8 +71,8 @@ func (pkt *ServerCharEnum) Bytes() []byte {
 		binary.Write(buffer, binary.LittleEndian, uint32(0)) // PetFamily
 
 		equipmentMap := char.Object.EquipmentMap()
-		for i := c.EquipmentSlotHead; i <= c.EquipmentSlotTabard; i++ {
-			if item, ok := equipmentMap[i]; ok {
+		for slot := c.EquipmentSlotHead; slot <= c.EquipmentSlotTabard; slot++ {
+			if item, ok := equipmentMap[slot]; ok {
 				binary.Write(buffer, binary.LittleEndian, uint32(item.Template().DisplayID))
 				binary.Write(buffer, binary.LittleEndian, uint8(item.Template().InventoryType))
 			} else {
@@ -81,8 +81,14 @@ func (pkt *ServerCharEnum) Bytes() []byte {
 			}
 		}
 
-		binary.Write(buffer, binary.LittleEndian, uint32(0)) // FirstBagDisplayID
-		binary.Write(buffer, binary.LittleEndian, uint8(0))  // FirstBagInventoryType
+		if len(char.Object.Bags) > 0 {
+			binary.Write(buffer, binary.LittleEndian, uint32(char.Object.Bags[0].Template().DisplayID))
+			binary.Write(buffer, binary.LittleEndian, uint8(char.Object.Bags[0].Template().InventoryType))
+		} else {
+			binary.Write(buffer, binary.LittleEndian, uint32(0)) // FirstBagDisplayID
+			binary.Write(buffer, binary.LittleEndian, uint8(0))  // FirstBagInventoryType
+		}
+
 	}
 
 	return buffer.Bytes()

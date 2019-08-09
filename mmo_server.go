@@ -36,6 +36,30 @@ func GenerateTestData(db *gorm.DB) error {
 	}
 
 	// Make a character.
+	equipment := []*database.EquippedItem{}
+	for slot, item := range data.GetStartingEquipment(c.ClassWarrior, c.RaceHuman) {
+		equipment = append(equipment, &database.EquippedItem{
+			Slot: slot,
+			Item: &database.GameObjectItem{
+				GameObjectBase: database.GameObjectBase{
+					Entry: item.Entry,
+				},
+			},
+		})
+	}
+
+	inventory := []*database.BaggedItem{}
+	for i, item := range data.GetStartingItems(c.ClassWarrior, c.RaceHuman) {
+		inventory = append(inventory, &database.BaggedItem{
+			Slot: i,
+			Item: &database.GameObjectItem{
+				GameObjectBase: database.GameObjectBase{
+					Entry: item.Entry,
+				},
+			},
+		})
+	}
+
 	charJeshua := database.Character{
 		Name: "Jeshua",
 		Object: database.GameObjectPlayer{
@@ -61,16 +85,9 @@ func GenerateTestData(db *gorm.DB) error {
 			ZoneID: 1,
 			MapID:  1,
 
-			Equipment: []database.EquippedItem{
-				database.EquippedItem{
-					Slot: c.EquipmentSlotMainHand,
-					Item: database.GameObjectItem{
-						GameObjectBase: database.GameObjectBase{
-							Entry: 25,
-						},
-					},
-				},
-			},
+			Equipment: equipment,
+			Inventory: inventory,
+			Bags:      []*database.GameObjectContainer{},
 		},
 		AccountID: account.ID,
 		RealmID:   realmSydney.ID,
