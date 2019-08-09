@@ -3,6 +3,7 @@ package database
 import (
 	"time"
 
+	"github.com/jeshuamorrissey/wow_server_go/common/data"
 	c "github.com/jeshuamorrissey/wow_server_go/common/data/constants"
 	"github.com/jinzhu/gorm"
 )
@@ -13,7 +14,7 @@ import (
 type Character struct {
 	gorm.Model
 
-	Name      string
+	Name      string `gorm:"unique"`
 	LastLogin *time.Time
 
 	AccountID uint
@@ -48,4 +49,69 @@ func (char *Character) Flags() uint32 {
 	}
 
 	return flags
+}
+
+// NewCharacter makes a new character with some basic information.
+func NewCharacter(
+	name string,
+	account *Account, realm *Realm,
+	class c.Class, race c.Race, gender c.Gender,
+	skinColor, face, hairStyle, hairColor, feature uint8) *Character {
+	equipment := []*EquippedItem{}
+	for slot, item := range data.GetStartingEquipment(class, race) {
+		equipment = append(equipment, &EquippedItem{
+			Slot: slot,
+			Item: &GameObjectItem{
+				GameObjectBase: GameObjectBase{
+					Entry: item.Entry,
+				},
+			},
+		})
+	}
+
+	inventory := []*BaggedItem{}
+	for i, item := range data.GetStartingItems(class, race) {
+		inventory = append(inventory, &BaggedItem{
+			Slot: i,
+			Item: &GameObjectItem{
+				GameObjectBase: GameObjectBase{
+					Entry: item.Entry,
+				},
+			},
+		})
+	}
+
+	return &Character{
+		Name: name,
+		Object: GameObjectPlayer{
+			GameObjectUnit: GameObjectUnit{
+				Race:   race,
+				Class:  class,
+				Gender: gender,
+
+				// TODO(jeshua): make this based on the race.
+				X: 0.0,
+				Y: 0.0,
+				Z: 0.0,
+				O: 0.0,
+			},
+
+			Level: 1,
+
+			SkinColor: skinColor,
+			Face:      face,
+			HairStyle: hairStyle,
+			HairColor: hairColor,
+			Feature:   feature,
+
+			ZoneID: 1,
+			MapID:  1,
+
+			Equipment: equipment,
+			Inventory: inventory,
+			Bags:      []*GameObjectContainer{},
+		},
+		AccountID: account.ID,
+		RealmID:   realm.ID,
+	}
 }

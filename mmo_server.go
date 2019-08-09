@@ -36,64 +36,10 @@ func GenerateTestData(db *gorm.DB) error {
 	}
 
 	// Make a character.
-	equipment := []*database.EquippedItem{}
-	for slot, item := range data.GetStartingEquipment(c.ClassWarrior, c.RaceHuman) {
-		equipment = append(equipment, &database.EquippedItem{
-			Slot: slot,
-			Item: &database.GameObjectItem{
-				GameObjectBase: database.GameObjectBase{
-					Entry: item.Entry,
-				},
-			},
-		})
-	}
-
-	inventory := []*database.BaggedItem{}
-	for i, item := range data.GetStartingItems(c.ClassWarrior, c.RaceHuman) {
-		inventory = append(inventory, &database.BaggedItem{
-			Slot: i,
-			Item: &database.GameObjectItem{
-				GameObjectBase: database.GameObjectBase{
-					Entry: item.Entry,
-				},
-			},
-		})
-	}
-
-	charJeshua := database.Character{
-		Name: "Jeshua",
-		Object: database.GameObjectPlayer{
-			GameObjectUnit: database.GameObjectUnit{
-				Race:   c.RaceHuman,
-				Class:  c.ClassWarrior,
-				Gender: c.GenderMale,
-
-				X: 0.0,
-				Y: 0.0,
-				Z: 0.0,
-				O: 0.0,
-			},
-
-			Level: 1,
-
-			SkinColor: 1,
-			Face:      1,
-			HairStyle: 1,
-			HairColor: 1,
-			Feature:   1,
-
-			ZoneID: 1,
-			MapID:  1,
-
-			Equipment: equipment,
-			Inventory: inventory,
-			Bags:      []*database.GameObjectContainer{},
-		},
-		AccountID: account.ID,
-		RealmID:   realmSydney.ID,
-	}
-
-	db.Create(&charJeshua)
+	db.Create(database.NewCharacter(
+		"Jeshua", &account, &realmSydney,
+		c.ClassWarrior, c.RaceHuman, c.GenderMale,
+		1, 1, 1, 1, 1))
 
 	return nil
 }
@@ -110,8 +56,6 @@ func main() {
 	}
 
 	logrus.Infof("Done! Loaded %v items.", len(data.Items))
-
-	logrus.Infof("%v", data.Items[25])
 
 	// Setup test database.
 	db, err := gorm.Open("sqlite3", ":memory:")

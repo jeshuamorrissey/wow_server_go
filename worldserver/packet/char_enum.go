@@ -10,7 +10,7 @@ import (
 	"github.com/jeshuamorrissey/wow_server_go/common/session"
 )
 
-// ClientCharEnum is sent from the client periodically.
+// ClientCharEnum is sent from the client when first connecting.
 type ClientCharEnum struct {
 }
 

@@ -1,5 +1,11 @@
 package constants
 
+// Misc constants that don't belong to an enum.
+const (
+	MinPlayerNameLength = 2
+	MaxPlayerNameLength = 12
+)
+
 // SpellSchool information.
 //go:generate stringer -type=SpellSchool -trimprefix=SpellSchool
 type SpellSchool uint8
