@@ -418,3 +418,19 @@ const (
 	EquipmentSlotRanged    EquipmentSlot = 17
 	EquipmentSlotTabard    EquipmentSlot = 18
 )
+
+// CharacterFlag is a enum value which maps to a object's type ID.
+//go:generate stringer -type=CharacterFlag -trimprefix=CharacterFlag
+type CharacterFlag uint32
+
+// CharacterFlag values.
+const (
+	CharacterFlagNone              CharacterFlag = 0x00000000
+	CharacterFlagLockedForTransfer CharacterFlag = 0x00000004
+	CharacterFlagHideHelm          CharacterFlag = 0x00000400
+	CharacterFlagHideCloak         CharacterFlag = 0x00000800
+	CharacterFlagGhost             CharacterFlag = 0x00002000
+	CharacterFlagRename            CharacterFlag = 0x00004000
+	CharacterFlagLockedByBilling   CharacterFlag = 0x01000000
+	CharacterFlagDeclined          CharacterFlag = 0x02000000
+)

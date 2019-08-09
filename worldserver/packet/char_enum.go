@@ -62,10 +62,16 @@ func (pkt *ServerCharEnum) Bytes() []byte {
 		binary.Write(buffer, binary.LittleEndian, char.Object.Y)
 		binary.Write(buffer, binary.LittleEndian, char.Object.Z)
 
-		// TODO(jeshua): implement the following fields.
+		// TODO(jeshua): implement the following fields with comments.
 		binary.Write(buffer, binary.LittleEndian, uint32(0)) // GuildID
-		binary.Write(buffer, binary.LittleEndian, uint32(0)) // Flags
-		binary.Write(buffer, binary.LittleEndian, uint8(0))  // FirstLogin
+		binary.Write(buffer, binary.LittleEndian, char.Flags())
+
+		if char.LastLogin == nil {
+			buffer.WriteByte(1)
+		} else {
+			buffer.WriteByte(0)
+		}
+
 		binary.Write(buffer, binary.LittleEndian, uint32(0)) // PetID
 		binary.Write(buffer, binary.LittleEndian, uint32(0)) // PetLevel
 		binary.Write(buffer, binary.LittleEndian, uint32(0)) // PetFamily
@@ -76,8 +82,8 @@ func (pkt *ServerCharEnum) Bytes() []byte {
 				binary.Write(buffer, binary.LittleEndian, uint32(item.Template().DisplayID))
 				binary.Write(buffer, binary.LittleEndian, uint8(item.Template().InventoryType))
 			} else {
-				binary.Write(buffer, binary.LittleEndian, uint32(0)) // ItemDisplayID
-				binary.Write(buffer, binary.LittleEndian, uint8(0))  // ItemInventoryType
+				binary.Write(buffer, binary.LittleEndian, uint32(0))
+				binary.Write(buffer, binary.LittleEndian, uint8(0))
 			}
 		}
 
@@ -85,8 +91,8 @@ func (pkt *ServerCharEnum) Bytes() []byte {
 			binary.Write(buffer, binary.LittleEndian, uint32(char.Object.Bags[0].Template().DisplayID))
 			binary.Write(buffer, binary.LittleEndian, uint8(char.Object.Bags[0].Template().InventoryType))
 		} else {
-			binary.Write(buffer, binary.LittleEndian, uint32(0)) // FirstBagDisplayID
-			binary.Write(buffer, binary.LittleEndian, uint8(0))  // FirstBagInventoryType
+			binary.Write(buffer, binary.LittleEndian, uint32(0))
+			binary.Write(buffer, binary.LittleEndian, uint8(0))
 		}
 
 	}
