@@ -55,7 +55,23 @@ func main() {
 		panic(err)
 	}
 
-	logrus.Infof("Done! Loaded %v items.", len(data.Items))
+	logrus.Info("Loading starting_items.json...")
+	err = data.LoadStartingItems("D:\\Users\\Jeshua\\go\\src\\github.com\\jeshuamorrissey\\wow_server_go\\common\\data\\starting_items.json")
+	if err != nil {
+		panic(err)
+	}
+
+	logrus.Info("Loading starting_stats.json...")
+	err = data.LoadStartingStats("D:\\Users\\Jeshua\\go\\src\\github.com\\jeshuamorrissey\\wow_server_go\\common\\data\\starting_stats.json")
+	if err != nil {
+		panic(err)
+	}
+
+	logrus.Info("Loading starting_locations.json...")
+	err = data.LoadStartingLocations("D:\\Users\\Jeshua\\go\\src\\github.com\\jeshuamorrissey\\wow_server_go\\common\\data\\starting_locations.json")
+	if err != nil {
+		panic(err)
+	}
 
 	// Setup test database.
 	db, err := gorm.Open("sqlite3", ":memory:")

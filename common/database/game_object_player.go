@@ -28,8 +28,8 @@ type GameObjectPlayer struct {
 	HairColor uint8
 	Feature   uint8
 
-	ZoneID uint32
-	MapID  uint32
+	ZoneID int
+	MapID  int
 
 	Equipment []*EquippedItem
 	Inventory []*BaggedItem

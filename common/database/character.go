@@ -57,8 +57,10 @@ func NewCharacter(
 	account *Account, realm *Realm,
 	class c.Class, race c.Race, gender c.Gender,
 	skinColor, face, hairStyle, hairColor, feature uint8) *Character {
+	startingEquipment, startingItems := data.GetStartingItems(class, race)
+
 	equipment := []*EquippedItem{}
-	for slot, item := range data.GetStartingEquipment(class, race) {
+	for slot, item := range startingEquipment {
 		equipment = append(equipment, &EquippedItem{
 			Slot: slot,
 			Item: &GameObjectItem{
@@ -70,7 +72,7 @@ func NewCharacter(
 	}
 
 	inventory := []*BaggedItem{}
-	for i, item := range data.GetStartingItems(class, race) {
+	for i, item := range startingItems {
 		inventory = append(inventory, &BaggedItem{
 			Slot: i,
 			Item: &GameObjectItem{
@@ -81,6 +83,7 @@ func NewCharacter(
 		})
 	}
 
+	startingLocation := data.GetStartingLocation(class, race)
 	return &Character{
 		Name: name,
 		Object: GameObjectPlayer{
@@ -89,11 +92,10 @@ func NewCharacter(
 				Class:  class,
 				Gender: gender,
 
-				// TODO(jeshua): make this based on the race.
-				X: 0.0,
-				Y: 0.0,
-				Z: 0.0,
-				O: 0.0,
+				X: startingLocation.X,
+				Y: startingLocation.Y,
+				Z: startingLocation.Z,
+				O: startingLocation.O,
 			},
 
 			Level: 1,
@@ -104,8 +106,8 @@ func NewCharacter(
 			HairColor: hairColor,
 			Feature:   feature,
 
-			ZoneID: 1,
-			MapID:  1,
+			ZoneID: startingLocation.Zone,
+			MapID:  startingLocation.Map,
 
 			Equipment: equipment,
 			Inventory: inventory,
