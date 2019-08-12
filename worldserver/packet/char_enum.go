@@ -5,6 +5,8 @@ import (
 	"encoding/binary"
 	"io"
 
+	"github.com/jeshuamorrissey/wow_server_go/worldserver/objects"
+
 	c "github.com/jeshuamorrissey/wow_server_go/common/data/constants"
 	"github.com/jeshuamorrissey/wow_server_go/common/database"
 	"github.com/jeshuamorrissey/wow_server_go/common/session"
@@ -44,7 +46,13 @@ func (pkt *ServerCharEnum) Bytes(stateBase session.State) []byte {
 	buffer.WriteByte(uint8(len(pkt.Characters))) // number of characters
 
 	for _, char := range pkt.Characters {
-		charObj := char.Object(state.OM())
+
+		if !state.OM().Exists(char.GUID) {
+			state.Log().Errorf("GameObject doesn't exist for character %v!", char.Name)
+			continue
+		}
+
+		charObj := state.OM().Get(char.GUID).(*objects.Player)
 		binary.Write(buffer, binary.LittleEndian, charObj.GUID().High())
 		binary.Write(buffer, binary.LittleEndian, charObj.GUID().Low())
 		buffer.WriteString(char.Name)

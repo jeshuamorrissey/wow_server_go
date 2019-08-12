@@ -21,23 +21,13 @@ type Character struct {
 	AccountID uint
 	RealmID   uint
 
-	GUID   objects.GUID
-	object *objects.Player `gorm:"-"`
+	GUID objects.GUID
 
 	// Flags.
 	HideHelm        bool
 	HideCloak       bool
 	IsGhost         bool
 	RenameNextLogin bool
-}
-
-// Object returns the in-game object representing the character.
-func (char *Character) Object(om *objects.ObjectManager) *objects.Player {
-	if char.object == nil {
-		char.object = om.Objects[char.GUID].(*objects.Player)
-	}
-
-	return char.object
 }
 
 // Flags returns an set of flags based on the character's state.

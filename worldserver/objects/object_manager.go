@@ -18,7 +18,7 @@ var (
 // ObjectManager manages in-game objects, which are accessed using their GUID.
 type ObjectManager struct {
 	objectsLock sync.Mutex
-	Objects     map[GUID]GameObject
+	objects     map[GUID]GameObject
 
 	updatesLock sync.Mutex
 	updates     []GUID
@@ -29,7 +29,7 @@ type ObjectManager struct {
 func (om *ObjectManager) Create(obj GameObject) GameObject {
 	om.objectsLock.Lock()
 	obj.SetGUID(nextGUID)
-	om.Objects[obj.GUID()] = obj
+	om.objects[obj.GUID()] = obj
 	nextGUID++
 	om.objectsLock.Unlock()
 	return obj
@@ -38,7 +38,7 @@ func (om *ObjectManager) Create(obj GameObject) GameObject {
 // NewObjectManager initialzies an ObjectManager object.
 func NewObjectManager() *ObjectManager {
 	om := new(ObjectManager)
-	om.Objects = make(map[GUID]GameObject)
+	om.objects = make(map[GUID]GameObject)
 	om.players = make(map[GUID]func(GameObject))
 	om.updates = make([]GUID, 0)
 	return om
@@ -50,6 +50,22 @@ func (om *ObjectManager) Update(guid GUID) {
 	om.updatesLock.Lock()
 	om.updates = append(om.updates, guid)
 	om.updatesLock.Unlock()
+}
+
+// Get will fetch the game object with the given GUID and return it. `nil` will be
+// returned if no object with that GUID exists.
+func (om *ObjectManager) Get(guid GUID) GameObject {
+	if obj, ok := om.objects[guid]; ok {
+		return obj
+	}
+
+	return nil
+}
+
+// Exists will return true iff and item with the given GUID exists.
+func (om *ObjectManager) Exists(guid GUID) bool {
+	_, ok := om.objects[guid]
+	return ok
 }
 
 // Register notes that the given player is expecting to receive updates.
@@ -69,13 +85,13 @@ func (om *ObjectManager) Run() {
 		// For each update that has happened, go through each player and see if
 		// they should be notified of an update to that object.
 		for _, updatedGUID := range updates {
-			updatedObj := om.Objects[updatedGUID]
+			updatedObj := om.Get(updatedGUID)
 
 			for playerGUID, updateFunc := range om.players {
 				// If the updated object is a player/unit, check to see if
 				// the locations are close enough.
 				updatedObjLocation := updatedObj.GetLocation()
-				playerLocation := om.Objects[playerGUID].GetLocation()
+				playerLocation := om.Get(playerGUID).GetLocation()
 
 				if updatedObjLocation != nil && playerLocation != nil {
 					distance := updatedObjLocation.Distance(playerLocation)
