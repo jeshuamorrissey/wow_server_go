@@ -16,7 +16,7 @@ var (
 // StartingLocation contains details about the starting location of a class.
 type StartingLocation struct {
 	Map, Zone  int
-	X, Y, Z, O float32
+	X, Y, Z, O float64
 }
 
 // LoadStartingLocations reads the starting item JSON file and

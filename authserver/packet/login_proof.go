@@ -47,7 +47,7 @@ type ServerLoginProof struct {
 }
 
 // Bytes writes out the packet to an array of bytes.
-func (pkt *ServerLoginProof) Bytes() []byte {
+func (pkt *ServerLoginProof) Bytes(stateBase session.State) []byte {
 	buffer := bytes.NewBufferString("")
 
 	buffer.WriteByte(uint8(pkt.Error))

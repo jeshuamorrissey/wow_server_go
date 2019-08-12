@@ -4,6 +4,7 @@ package constants
 const (
 	MinPlayerNameLength = 2
 	MaxPlayerNameLength = 12
+	NumBagSlots         = 4
 )
 
 // SpellSchool information.
@@ -439,4 +440,310 @@ const (
 	CharacterFlagRename            CharacterFlag = 0x00004000
 	CharacterFlagLockedByBilling   CharacterFlag = 0x01000000
 	CharacterFlagDeclined          CharacterFlag = 0x02000000
+)
+
+// UpdateField is a enum value which maps to a object's type ID.
+//go:generate stringer -type=UpdateField -trimprefix=UpdateField
+type UpdateField uint32
+
+// UpdateField values.
+const (
+	UpdateFieldGUIDLow  UpdateField = 0
+	UpdateFieldGUIDHigh UpdateField = 1
+	UpdateFieldType     UpdateField = 2
+	UpdateFieldEntry    UpdateField = 3
+	UpdateFieldScaleX   UpdateField = 4
+
+	UpdateFieldItemOwner               UpdateField = 6
+	UpdateFieldItemContained           UpdateField = 8
+	UpdateFieldItemCreator             UpdateField = 10
+	UpdateFieldItemGiftCreator         UpdateField = 12
+	UpdateFieldItemStackCount          UpdateField = 14
+	UpdateFieldItemDuration            UpdateField = 15
+	UpdateFieldItemSpellCharges        UpdateField = 16
+	UpdateFieldItemFlags               UpdateField = 21
+	UpdateFieldItemEnchantmentID       UpdateField = 22
+	UpdateFieldItemEnchantmentDuration UpdateField = 23
+	UpdateFieldItemEnchantmentCharges  UpdateField = 24
+	UpdateFieldItemPropertySeed        UpdateField = 43
+	UpdateFieldItemRandomPropertiesID  UpdateField = 44
+	UpdateFieldItemItemTextID          UpdateField = 45
+	UpdateFieldItemDurability          UpdateField = 46
+	UpdateFieldItemMaxDurability       UpdateField = 47
+
+	UpdateFieldContainerNumSlots UpdateField = 48
+	UpdateFieldContainerSlot1    UpdateField = 50
+	UpdateFieldContainerSlotLast UpdateField = 104
+
+	UpdateFieldUnitCharmLow                    UpdateField = 6
+	UpdateFieldUnitCharmHigh                   UpdateField = 7
+	UpdateFieldUnitSummonLow                   UpdateField = 8
+	UpdateFieldUnitSummonHigh                  UpdateField = 9
+	UpdateFieldUnitCharmedbyLow                UpdateField = 10
+	UpdateFieldUnitCharmedbyHigh               UpdateField = 11
+	UpdateFieldUnitSummonedbyLow               UpdateField = 12
+	UpdateFieldUnitSummonedbyHigh              UpdateField = 13
+	UpdateFieldUnitCreatedbyLow                UpdateField = 14
+	UpdateFieldUnitCreatedbyHigh               UpdateField = 15
+	UpdateFieldUnitTargetLow                   UpdateField = 16
+	UpdateFieldUnitTargetHigh                  UpdateField = 17
+	UpdateFieldUnitPersuadedLow                UpdateField = 18
+	UpdateFieldUnitPersuadedHigh               UpdateField = 19
+	UpdateFieldUnitChannelObjectLow            UpdateField = 20
+	UpdateFieldUnitChannelObjectHigh           UpdateField = 21
+	UpdateFieldUnitHealth                      UpdateField = 22
+	UpdateFieldUnitPowerStart                  UpdateField = 23
+	UpdateFieldUnitMaxHealth                   UpdateField = 28
+	UpdateFieldUnitMaxPowerStart               UpdateField = 29
+	UpdateFieldUnitLevel                       UpdateField = 34
+	UpdateFieldUnitFactiontemplate             UpdateField = 35
+	UpdateFieldUnitBytes0                      UpdateField = 36
+	UpdateFieldUnitVirtualItemDisplay          UpdateField = 37
+	UpdateFieldUnitVirtualItemInfo             UpdateField = 40
+	UpdateFieldUnitFlags                       UpdateField = 46
+	UpdateFieldUnitAura                        UpdateField = 47
+	UpdateFieldUnitAuraLast                    UpdateField = 94
+	UpdateFieldUnitAuraflags                   UpdateField = 95
+	UpdateFieldUnitAuraflags01                 UpdateField = 96
+	UpdateFieldUnitAuraflags02                 UpdateField = 97
+	UpdateFieldUnitAuraflags03                 UpdateField = 98
+	UpdateFieldUnitAuraflags04                 UpdateField = 99
+	UpdateFieldUnitAuraflags05                 UpdateField = 100
+	UpdateFieldUnitAuralevels                  UpdateField = 101
+	UpdateFieldUnitAuralevelsLast              UpdateField = 112
+	UpdateFieldUnitAuraapplications            UpdateField = 113
+	UpdateFieldUnitAuraapplicationsLast        UpdateField = 124
+	UpdateFieldUnitAurastate                   UpdateField = 125
+	UpdateFieldUnitBaseattacktime              UpdateField = 126
+	UpdateFieldUnitOffhandattacktime           UpdateField = 127
+	UpdateFieldUnitRangedattacktime            UpdateField = 128
+	UpdateFieldUnitBoundingradius              UpdateField = 129
+	UpdateFieldUnitCombatreach                 UpdateField = 130
+	UpdateFieldUnitDisplayid                   UpdateField = 131
+	UpdateFieldUnitNativedisplayid             UpdateField = 132
+	UpdateFieldUnitMountdisplayid              UpdateField = 133
+	UpdateFieldUnitMindamage                   UpdateField = 134
+	UpdateFieldUnitMaxdamage                   UpdateField = 135
+	UpdateFieldUnitMinoffhanddamage            UpdateField = 136
+	UpdateFieldUnitMaxoffhanddamage            UpdateField = 137
+	UpdateFieldUnitBytes1                      UpdateField = 138
+	UpdateFieldUnitPetnumber                   UpdateField = 139
+	UpdateFieldUnitPetNameTimestamp            UpdateField = 140
+	UpdateFieldUnitPetexperience               UpdateField = 141
+	UpdateFieldUnitPetnextlevelexp             UpdateField = 142
+	UpdateFieldUnitDynamicFlags                UpdateField = 143
+	UpdateFieldUnitChannelSpell                UpdateField = 144
+	UpdateFieldUnitModCastSpeed                UpdateField = 145
+	UpdateFieldUnitCreatedBySpell              UpdateField = 146
+	UpdateFieldUnitNpcFlags                    UpdateField = 147
+	UpdateFieldUnitNpcEmotestate               UpdateField = 148
+	UpdateFieldUnitTrainingPoints              UpdateField = 149
+	UpdateFieldUnitStrength                    UpdateField = 150
+	UpdateFieldUnitAgility                     UpdateField = 151
+	UpdateFieldUnitStamina                     UpdateField = 152
+	UpdateFieldUnitIntellect                   UpdateField = 153
+	UpdateFieldUnitSpirit                      UpdateField = 154
+	UpdateFieldUnitArmor                       UpdateField = 155
+	UpdateFieldUnitHolyResist                  UpdateField = 156
+	UpdateFieldUnitFireResist                  UpdateField = 157
+	UpdateFieldUnitNatureResist                UpdateField = 158
+	UpdateFieldUnitFrostResist                 UpdateField = 159
+	UpdateFieldUnitShadowResist                UpdateField = 160
+	UpdateFieldUnitArcaneResist                UpdateField = 161
+	UpdateFieldUnitBaseMana                    UpdateField = 162
+	UpdateFieldUnitBaseHealth                  UpdateField = 163
+	UpdateFieldUnitBytes2                      UpdateField = 164
+	UpdateFieldUnitAttackPower                 UpdateField = 165
+	UpdateFieldUnitAttackPowerMods             UpdateField = 166
+	UpdateFieldUnitAttackPowerMultiplier       UpdateField = 167
+	UpdateFieldUnitRangedAttackPower           UpdateField = 168
+	UpdateFieldUnitRangedAttackPowerMods       UpdateField = 169
+	UpdateFieldUnitRangedAttackPowerMultiplier UpdateField = 170
+	UpdateFieldUnitMinrangeddamage             UpdateField = 171
+	UpdateFieldUnitMaxrangeddamage             UpdateField = 172
+	UpdateFieldUnitPowerCostModifier           UpdateField = 173
+	UpdateFieldUnitPowerCostModifier01         UpdateField = 174
+	UpdateFieldUnitPowerCostModifier02         UpdateField = 175
+	UpdateFieldUnitPowerCostModifier03         UpdateField = 176
+	UpdateFieldUnitPowerCostModifier04         UpdateField = 177
+	UpdateFieldUnitPowerCostModifier05         UpdateField = 178
+	UpdateFieldUnitPowerCostModifier06         UpdateField = 179
+	UpdateFieldUnitPowerCostMultiplier         UpdateField = 180
+	UpdateFieldUnitPowerCostMultiplier01       UpdateField = 181
+	UpdateFieldUnitPowerCostMultiplier02       UpdateField = 182
+	UpdateFieldUnitPowerCostMultiplier03       UpdateField = 183
+	UpdateFieldUnitPowerCostMultiplier04       UpdateField = 184
+	UpdateFieldUnitPowerCostMultiplier05       UpdateField = 185
+	UpdateFieldUnitPowerCostMultiplier06       UpdateField = 186
+	UpdateFieldUnitPadding                     UpdateField = 187
+
+	UpdateFieldPlayerDuelArbiter                UpdateField = 188
+	UpdateFieldPlayerFlags                      UpdateField = 190
+	UpdateFieldPlayerGuildid                    UpdateField = 191
+	UpdateFieldPlayerGuildrank                  UpdateField = 192
+	UpdateFieldPlayerBytes                      UpdateField = 193
+	UpdateFieldPlayerBytes2                     UpdateField = 194
+	UpdateFieldPlayerBytes3                     UpdateField = 195
+	UpdateFieldPlayerDuelTeam                   UpdateField = 196
+	UpdateFieldPlayerGuildTimestamp             UpdateField = 197
+	UpdateFieldPlayerQuestStart                 UpdateField = 198
+	UpdateFieldPlayerQuestLog11                 UpdateField = 198
+	UpdateFieldPlayerQuestLog12                 UpdateField = 199
+	UpdateFieldPlayerQuestLog13                 UpdateField = 200
+	UpdateFieldPlayerQuestLogLast1              UpdateField = 255
+	UpdateFieldPlayerQuestLogLast2              UpdateField = 256
+	UpdateFieldPlayerQuestLogLast3              UpdateField = 257
+	UpdateFieldPlayerVisibleItem1Creator        UpdateField = 258
+	UpdateFieldPlayerVisibleItemEntryStart      UpdateField = 260
+	UpdateFieldPlayerVisibleItem10Ench          UpdateField = 261
+	UpdateFieldPlayerVisibleItem1Properties     UpdateField = 268
+	UpdateFieldPlayerVisibleItem1Pad            UpdateField = 269
+	UpdateFieldPlayerVisibleItemLastCreator     UpdateField = 474
+	UpdateFieldPlayerVisibleItemLast0           UpdateField = 476
+	UpdateFieldPlayerVisibleItemLastProperties  UpdateField = 484
+	UpdateFieldPlayerVisibleItemLastPad         UpdateField = 485
+	UpdateFieldPlayerInventoryStart             UpdateField = 486
+	UpdateFieldPlayerPackSlot1                  UpdateField = 532
+	UpdateFieldPlayerPackSlotLast               UpdateField = 562
+	UpdateFieldPlayerBankSlot1                  UpdateField = 564
+	UpdateFieldPlayerBankSlotLast               UpdateField = 610
+	UpdateFieldPlayerBankbagSlot1               UpdateField = 612
+	UpdateFieldPlayerBankbagSlotLast            UpdateField = 622
+	UpdateFieldPlayerVendorbuybackSlot1         UpdateField = 624
+	UpdateFieldPlayerVendorbuybackSlotLast      UpdateField = 646
+	UpdateFieldPlayerKeyringSlot1               UpdateField = 648
+	UpdateFieldPlayerKeyringSlotLast            UpdateField = 710
+	UpdateFieldPlayerFarsight                   UpdateField = 712
+	UpdateFieldPlayerComboTarget                UpdateField = 714
+	UpdateFieldPlayerXp                         UpdateField = 716
+	UpdateFieldPlayerNextLevelXp                UpdateField = 717
+	UpdateFieldPlayerSkillInfo11                UpdateField = 718
+	UpdateFieldPlayerCharacterPoints1           UpdateField = 1102
+	UpdateFieldPlayerCharacterPoints2           UpdateField = 1103
+	UpdateFieldPlayerTrackCreatures             UpdateField = 1104
+	UpdateFieldPlayerTrackResources             UpdateField = 1105
+	UpdateFieldPlayerBlockPercentage            UpdateField = 1106
+	UpdateFieldPlayerDodgePercentage            UpdateField = 1107
+	UpdateFieldPlayerParryPercentage            UpdateField = 1108
+	UpdateFieldPlayerCritPercentage             UpdateField = 1109
+	UpdateFieldPlayerRangedCritPercentage       UpdateField = 1110
+	UpdateFieldPlayerExploredZones1             UpdateField = 1111
+	UpdateFieldPlayerRestStateExperience        UpdateField = 1175
+	UpdateFieldPlayerCoinage                    UpdateField = 1176
+	UpdateFieldPlayerPosstat0                   UpdateField = 1177
+	UpdateFieldPlayerPosstat1                   UpdateField = 1178
+	UpdateFieldPlayerPosstat2                   UpdateField = 1179
+	UpdateFieldPlayerPosstat3                   UpdateField = 1180
+	UpdateFieldPlayerPosstat4                   UpdateField = 1181
+	UpdateFieldPlayerNegstat0                   UpdateField = 1182
+	UpdateFieldPlayerNegstat1                   UpdateField = 1183
+	UpdateFieldPlayerNegstat2                   UpdateField = 1184
+	UpdateFieldPlayerNegstat3                   UpdateField = 1185
+	UpdateFieldPlayerNegstat4                   UpdateField = 1186
+	UpdateFieldPlayerResistancebuffmodspositive UpdateField = 1187
+	UpdateFieldPlayerResistancebuffmodsnegative UpdateField = 1194
+	UpdateFieldPlayerModDamageDonePos           UpdateField = 1201
+	UpdateFieldPlayerModDamageDoneNeg           UpdateField = 1208
+	UpdateFieldPlayerModDamageDonePct           UpdateField = 1215
+	UpdateFieldPlayerFieldBytes                 UpdateField = 1222
+	UpdateFieldPlayerAmmoID                     UpdateField = 1223
+	UpdateFieldPlayerSelfResSpell               UpdateField = 1224
+	UpdateFieldPlayerPvpMedals                  UpdateField = 1225
+	UpdateFieldPlayerBuybackPrice1              UpdateField = 1226
+	UpdateFieldPlayerBuybackPriceLast           UpdateField = 1237
+	UpdateFieldPlayerBuybackTimestamp1          UpdateField = 1238
+	UpdateFieldPlayerBuybackTimestampLast       UpdateField = 1249
+	UpdateFieldPlayerSessionKills               UpdateField = 1250
+	UpdateFieldPlayerYesterdayKills             UpdateField = 1251
+	UpdateFieldPlayerLastWeekKills              UpdateField = 1252
+	UpdateFieldPlayerThisWeekKills              UpdateField = 1253
+	UpdateFieldPlayerThisWeekContribution       UpdateField = 1254
+	UpdateFieldPlayerLifetimeHonorableKills     UpdateField = 1255
+	UpdateFieldPlayerLifetimeDishonorableKills  UpdateField = 1256
+	UpdateFieldPlayerYesterdayContribution      UpdateField = 1257
+	UpdateFieldPlayerLastWeekContribution       UpdateField = 1258
+	UpdateFieldPlayerLastWeekRank               UpdateField = 1259
+	UpdateFieldPlayerBytes2b                    UpdateField = 1260
+	UpdateFieldPlayerWatchedFactionIndex        UpdateField = 1261
+	UpdateFieldPlayerCombatRating1              UpdateField = 1262
+)
+
+// ItemFlag is a enum value which maps to a object's type ID.
+//go:generate stringer -type=ItemFlag -trimprefix=ItemFlag
+type ItemFlag uint32
+
+// ItemFlag values.
+const (
+	ItemFlagNone     ItemFlag = 0x00000000
+	ItemFlagBound    ItemFlag = 0x00000001
+	ItemFlagUnlocked ItemFlag = 0x00000004
+	ItemFlagWrapped  ItemFlag = 0x00000008
+	ItemFlagReadable ItemFlag = 0x00000200
+)
+
+// Power is a enum value which maps to a object's type ID.
+//go:generate stringer -type=Power -trimprefix=Power
+type Power uint32
+
+// Power values.
+const (
+	PowerMana      Power = 0
+	PowerRage      Power = 1
+	PowerFocus     Power = 2
+	PowerEnergy    Power = 3
+	PowerHappiness Power = 4
+)
+
+// Team is a enum value which maps to a object's type ID.
+//go:generate stringer -type=Team -trimprefix=Team
+type Team uint32
+
+// Team values.
+const (
+	TeamAlliance Team = 67
+	TeamHorde    Team = 469
+)
+
+// StandState is a enum value which maps to a object's type ID.
+//go:generate stringer -type=StandState -trimprefix=StandState
+type StandState uint32
+
+// StandState values.
+const (
+	StandStateStand          StandState = 0
+	StandStateSit            StandState = 1
+	StandStateSitChair       StandState = 2
+	StandStateSleep          StandState = 3
+	StandStateSitLowChair    StandState = 4
+	StandStateSitMediumChair StandState = 5
+	StandStateSitHighChair   StandState = 6
+	StandStateDead           StandState = 7
+	StandStateKneel          StandState = 8
+)
+
+// Byte1Flags is a enum value which maps to a object's type ID.
+//go:generate stringer -type=Byte1Flags -trimprefix=Byte1Flags
+type Byte1Flags uint32
+
+// Byte1Flags values.
+const (
+	Byte1FlagsAlwaysStand Byte1Flags = 0x01
+	Byte1FlagsCreep       Byte1Flags = 0x02
+	Byte1FlagsUntrackable Byte1Flags = 0x04
+	Byte1FlagsAll         Byte1Flags = 0xFF
+)
+
+// Byte2Flags is a enum value which maps to a object's type ID.
+//go:generate stringer -type=Byte2Flags -trimprefix=Byte2Flags
+type Byte2Flags uint32
+
+// Byte2Flags values.
+const (
+	Byte2FlagsNone             Byte2Flags = 0x00
+	Byte2FlagsDetectAmore0     Byte2Flags = 0x02
+	Byte2FlagsDetectAmore1     Byte2Flags = 0x04
+	Byte2FlagsDetectAmore2     Byte2Flags = 0x08
+	Byte2FlagsDetectAmore3     Byte2Flags = 0x10
+	Byte2FlagsStealth          Byte2Flags = 0x20
+	Byte2FlagsInvisibilityGlow Byte2Flags = 0x40
 )

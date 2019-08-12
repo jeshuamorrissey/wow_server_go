@@ -3,6 +3,8 @@ package main
 import (
 	"sync"
 
+	"github.com/jeshuamorrissey/wow_server_go/worldserver/objects"
+
 	"github.com/jeshuamorrissey/wow_server_go/authserver"
 	"github.com/jeshuamorrissey/wow_server_go/authserver/srp"
 	"github.com/jeshuamorrissey/wow_server_go/common/data"
@@ -18,7 +20,7 @@ import (
 
 // GenerateTestData will generate all data required to have a reasonable test of the
 // game system.
-func GenerateTestData(db *gorm.DB) error {
+func GenerateTestData(om *objects.ObjectManager, db *gorm.DB) error {
 	// Generate some accounts.
 	salt := srp.GenerateSalt()
 	verifier := srp.GenerateVerifier("JESHUA", "JESHUA", salt)
@@ -37,7 +39,7 @@ func GenerateTestData(db *gorm.DB) error {
 
 	// Make a character.
 	db.Create(database.NewCharacter(
-		"Jeshua", &account, &realmSydney,
+		om, "Jeshua", &account, &realmSydney,
 		c.ClassWarrior, c.RaceHuman, c.GenderMale,
 		1, 1, 1, 1, 1))
 
@@ -51,6 +53,12 @@ func main() {
 	// Load constant data.
 	logrus.Info("Loading items.json.gz...")
 	err := data.LoadItems("D:\\Users\\Jeshua\\go\\src\\github.com\\jeshuamorrissey\\wow_server_go\\common\\data\\items.json.gz")
+	if err != nil {
+		panic(err)
+	}
+
+	logrus.Info("Loading units.json.gz...")
+	err = data.LoadUnits("D:\\Users\\Jeshua\\go\\src\\github.com\\jeshuamorrissey\\wow_server_go\\common\\data\\units.json.gz")
 	if err != nil {
 		panic(err)
 	}
@@ -73,6 +81,9 @@ func main() {
 		panic(err)
 	}
 
+	// Setup object manager.
+	om := objects.NewObjectManager()
+
 	// Setup test database.
 	db, err := gorm.Open("sqlite3", ":memory:")
 	if err != nil {
@@ -88,7 +99,7 @@ func main() {
 	defer db.Close()
 
 	// Create database testdata.
-	err = GenerateTestData(db)
+	err = GenerateTestData(om, db)
 	if err != nil {
 		logrus.Fatalf("Failed to generate test data: %v\n", err)
 	}
@@ -102,7 +113,7 @@ func main() {
 
 	go func() {
 		defer wg.Done()
-		worldserver.RunWorldServer("Sydney", 5001, db)
+		worldserver.RunWorldServer("Sydney", 5001, om, db)
 	}()
 
 	wg.Wait()

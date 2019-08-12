@@ -34,7 +34,7 @@ type ServerRealmlist struct {
 }
 
 // Bytes converts the ServerRealmlist packet to an array of bytes.
-func (pkt *ServerRealmlist) Bytes() []byte {
+func (pkt *ServerRealmlist) Bytes(stateBase session.State) []byte {
 	realmsBuffer := bytes.NewBufferString("")
 
 	binary.Write(realmsBuffer, binary.LittleEndian, uint32(0)) // unk

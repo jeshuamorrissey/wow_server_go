@@ -33,34 +33,36 @@ func (pkt *ClientCharEnum) Handle(stateBase session.State) ([]session.ServerPack
 
 // ServerCharEnum is sent back in response to ClientPing.
 type ServerCharEnum struct {
-	Characters []database.Character
+	Characters []*database.Character
 }
 
 // Bytes writes out the packet to an array of bytes.
-func (pkt *ServerCharEnum) Bytes() []byte {
+func (pkt *ServerCharEnum) Bytes(stateBase session.State) []byte {
+	state := stateBase.(*State)
 	buffer := bytes.NewBufferString("")
 
 	buffer.WriteByte(uint8(len(pkt.Characters))) // number of characters
 
 	for _, char := range pkt.Characters {
-		binary.Write(buffer, binary.LittleEndian, char.Object.GetHighGUID())
-		binary.Write(buffer, binary.LittleEndian, uint32(char.Object.Model.ID))
+		charObj := char.Object(state.OM())
+		binary.Write(buffer, binary.LittleEndian, charObj.GUID().High())
+		binary.Write(buffer, binary.LittleEndian, charObj.GUID().Low())
 		buffer.WriteString(char.Name)
 		buffer.WriteByte(0)
-		buffer.WriteByte(uint8(char.Object.Race))
-		buffer.WriteByte(uint8(char.Object.Class))
-		buffer.WriteByte(uint8(char.Object.Gender))
-		buffer.WriteByte(char.Object.SkinColor)
-		buffer.WriteByte(char.Object.Face)
-		buffer.WriteByte(char.Object.HairStyle)
-		buffer.WriteByte(char.Object.HairColor)
-		buffer.WriteByte(char.Object.Feature)
-		buffer.WriteByte(char.Object.Level)
-		binary.Write(buffer, binary.LittleEndian, uint32(char.Object.ZoneID))
-		binary.Write(buffer, binary.LittleEndian, uint32(char.Object.MapID))
-		binary.Write(buffer, binary.LittleEndian, char.Object.X)
-		binary.Write(buffer, binary.LittleEndian, char.Object.Y)
-		binary.Write(buffer, binary.LittleEndian, char.Object.Z)
+		buffer.WriteByte(uint8(charObj.Race))
+		buffer.WriteByte(uint8(charObj.Class))
+		buffer.WriteByte(uint8(charObj.Gender))
+		buffer.WriteByte(uint8(charObj.SkinColor))
+		buffer.WriteByte(uint8(charObj.Face))
+		buffer.WriteByte(uint8(charObj.HairStyle))
+		buffer.WriteByte(uint8(charObj.HairColor))
+		buffer.WriteByte(uint8(charObj.Feature))
+		buffer.WriteByte(uint8(charObj.Level))
+		binary.Write(buffer, binary.LittleEndian, uint32(charObj.ZoneID))
+		binary.Write(buffer, binary.LittleEndian, uint32(charObj.MapID))
+		binary.Write(buffer, binary.LittleEndian, float32(charObj.Location.X))
+		binary.Write(buffer, binary.LittleEndian, float32(charObj.Location.Y))
+		binary.Write(buffer, binary.LittleEndian, float32(charObj.Location.Z))
 
 		// TODO(jeshua): implement the following fields with comments.
 		binary.Write(buffer, binary.LittleEndian, uint32(0)) // GuildID
@@ -76,9 +78,8 @@ func (pkt *ServerCharEnum) Bytes() []byte {
 		binary.Write(buffer, binary.LittleEndian, uint32(0)) // PetLevel
 		binary.Write(buffer, binary.LittleEndian, uint32(0)) // PetFamily
 
-		equipmentMap := char.Object.EquipmentMap()
 		for slot := c.EquipmentSlotHead; slot <= c.EquipmentSlotTabard; slot++ {
-			if item, ok := equipmentMap[slot]; ok {
+			if item, ok := charObj.Equipment[slot]; ok {
 				binary.Write(buffer, binary.LittleEndian, uint32(item.Template().DisplayID))
 				binary.Write(buffer, binary.LittleEndian, uint8(item.Template().InventoryType))
 			} else {
@@ -87,12 +88,14 @@ func (pkt *ServerCharEnum) Bytes() []byte {
 			}
 		}
 
-		if len(char.Object.Bags) > 0 {
-			binary.Write(buffer, binary.LittleEndian, uint32(char.Object.Bags[0].Template().DisplayID))
-			binary.Write(buffer, binary.LittleEndian, uint8(char.Object.Bags[0].Template().InventoryType))
+		firstBag := charObj.FirstBag()
+		if firstBag != nil {
+			binary.Write(buffer, binary.LittleEndian, uint32(firstBag.Template().DisplayID))
+			binary.Write(buffer, binary.LittleEndian, uint8(firstBag.Template().InventoryType))
 		} else {
 			binary.Write(buffer, binary.LittleEndian, uint32(0))
 			binary.Write(buffer, binary.LittleEndian, uint8(0))
+
 		}
 
 	}

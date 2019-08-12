@@ -84,6 +84,7 @@ func (pkt *ClientCharCreate) Handle(stateBase session.State) ([]session.ServerPa
 
 	// Make the character.
 	err = state.DB().Create(database.NewCharacter(
+		state.OM(),
 		pkt.Name, &state.Account, state.Realm,
 		pkt.Class, pkt.Race, pkt.Gender,
 		pkt.SkinColor, pkt.Face, pkt.HairStyle, pkt.HairColor, pkt.Feature)).Error
@@ -101,7 +102,7 @@ type ServerCharCreate struct {
 }
 
 // Bytes writes out the packet to an array of bytes.
-func (pkt *ServerCharCreate) Bytes() []byte {
+func (pkt *ServerCharCreate) Bytes(stateBase session.State) []byte {
 	buffer := bytes.NewBufferString("")
 
 	buffer.WriteByte(uint8(pkt.Error))

@@ -14,7 +14,7 @@ type ServerAuthResponse struct {
 }
 
 // Bytes writes out the packet to an array of bytes.
-func (pkt *ServerAuthResponse) Bytes() []byte {
+func (pkt *ServerAuthResponse) Bytes(stateBase session.State) []byte {
 	buffer := bytes.NewBufferString("")
 
 	binary.Write(buffer, binary.LittleEndian, pkt.Error)

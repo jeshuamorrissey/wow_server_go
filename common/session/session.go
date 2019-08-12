@@ -109,7 +109,7 @@ func (s *Session) SendPacket(pkt ServerPacket) error {
 	s.log.Tracef("--> %v", pkt.OpCode().String())
 
 	// Write the header.
-	pktData := pkt.Bytes()
+	pktData := pkt.Bytes(s.state)
 	header, err := s.writeHeader(s.state, len(pktData), pkt.OpCode())
 	if err != nil {
 		return err

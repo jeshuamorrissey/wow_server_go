@@ -29,15 +29,8 @@ func (pkt *ClientCharDelete) Handle(stateBase session.State) ([]session.ServerPa
 	response.Error = CharErrorCodeDeleteSuccess
 
 	// Get the object.
-	var charObj database.GameObjectPlayer
-	err := stateBase.DB().Where("ID = ?", pkt.ID).First(&charObj).Error
-	if err != nil {
-		response.Error = CharErrorCodeDeleteFailed
-		return []session.ServerPacket{response}, nil
-	}
-
 	var char database.Character
-	err = stateBase.DB().Where("ID = ?", charObj.CharacterID).First(&char).Error
+	err := stateBase.DB().Where("GUID = ?", uint64(pkt.HighGUID)<<32|uint64(pkt.ID)).First(&char).Error
 	if err != nil {
 		response.Error = CharErrorCodeDeleteFailed
 		return []session.ServerPacket{response}, nil
@@ -54,7 +47,7 @@ type ServerCharDelete struct {
 }
 
 // Bytes writes out the packet to an array of bytes.
-func (pkt *ServerCharDelete) Bytes() []byte {
+func (pkt *ServerCharDelete) Bytes(stateBase session.State) []byte {
 	buffer := bytes.NewBufferString("")
 
 	buffer.WriteByte(uint8(pkt.Error))

@@ -58,7 +58,7 @@ type ServerLoginChallenge struct {
 }
 
 // Bytes writes out the packet to an array of bytes.
-func (pkt *ServerLoginChallenge) Bytes() []byte {
+func (pkt *ServerLoginChallenge) Bytes(stateBase session.State) []byte {
 	buffer := bytes.NewBufferString("")
 
 	buffer.WriteByte(0) // unk1

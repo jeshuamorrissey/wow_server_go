@@ -5,6 +5,7 @@ import (
 
 	"github.com/jeshuamorrissey/wow_server_go/common/data"
 	c "github.com/jeshuamorrissey/wow_server_go/common/data/constants"
+	"github.com/jeshuamorrissey/wow_server_go/worldserver/objects"
 	"github.com/jinzhu/gorm"
 )
 
@@ -20,13 +21,23 @@ type Character struct {
 	AccountID uint
 	RealmID   uint
 
-	Object GameObjectPlayer
+	GUID   objects.GUID
+	object *objects.Player `gorm:"-"`
 
 	// Flags.
 	HideHelm        bool
 	HideCloak       bool
 	IsGhost         bool
 	RenameNextLogin bool
+}
+
+// Object returns the in-game object representing the character.
+func (char *Character) Object(om *objects.ObjectManager) *objects.Player {
+	if char.object == nil {
+		char.object = om.Objects[char.GUID].(*objects.Player)
+	}
+
+	return char.object
 }
 
 // Flags returns an set of flags based on the character's state.
@@ -53,52 +64,54 @@ func (char *Character) Flags() uint32 {
 
 // NewCharacter makes a new character with some basic information.
 func NewCharacter(
+	om *objects.ObjectManager,
 	name string,
 	account *Account, realm *Realm,
 	class c.Class, race c.Race, gender c.Gender,
 	skinColor, face, hairStyle, hairColor, feature uint8) *Character {
 	startingEquipment, startingItems := data.GetStartingItems(class, race)
 
-	equipment := []*EquippedItem{}
+	equipment := make(map[c.EquipmentSlot]*objects.Item)
 	for slot, item := range startingEquipment {
-		equipment = append(equipment, &EquippedItem{
-			Slot: slot,
-			Item: &GameObjectItem{
-				GameObjectBase: GameObjectBase{
-					Entry: item.Entry,
-				},
+		equipment[slot] = om.Create(&objects.Item{
+			BaseGameObject: objects.BaseGameObject{
+				Entry: item.Entry,
 			},
-		})
+		}).(*objects.Item)
 	}
 
-	inventory := []*BaggedItem{}
+	inventory := make(map[int]*objects.Item)
 	for i, item := range startingItems {
-		inventory = append(inventory, &BaggedItem{
-			Slot: i,
-			Item: &GameObjectItem{
-				GameObjectBase: GameObjectBase{
-					Entry: item.Entry,
-				},
+		inventory[i] = om.Create(&objects.Item{
+			BaseGameObject: objects.BaseGameObject{
+				Entry: item.Entry,
 			},
-		})
+		}).(*objects.Item)
 	}
 
 	startingLocation := data.GetStartingLocation(class, race)
+
 	return &Character{
 		Name: name,
-		Object: GameObjectPlayer{
-			GameObjectUnit: GameObjectUnit{
+		GUID: om.Create(&objects.Player{
+			Unit: objects.Unit{
+				BaseGameObject: objects.BaseGameObject{
+					Entry:  0,
+					ScaleX: 1.0,
+				},
+
+				Location: objects.Location{
+					X: startingLocation.X,
+					Y: startingLocation.Y,
+					Z: startingLocation.Z,
+					O: startingLocation.O,
+				},
+
+				Level:  1,
 				Race:   race,
 				Class:  class,
 				Gender: gender,
-
-				X: startingLocation.X,
-				Y: startingLocation.Y,
-				Z: startingLocation.Z,
-				O: startingLocation.O,
 			},
-
-			Level: 1,
 
 			SkinColor: skinColor,
 			Face:      face,
@@ -111,8 +124,7 @@ func NewCharacter(
 
 			Equipment: equipment,
 			Inventory: inventory,
-			Bags:      []*GameObjectContainer{},
-		},
+		}).GUID(),
 		AccountID: account.ID,
 		RealmID:   realm.ID,
 	}

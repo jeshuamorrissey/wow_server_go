@@ -9,7 +9,7 @@ type ServerPacket interface {
 	OpCode() OpCode
 
 	// Bytes writes out the packet as a byte array.
-	Bytes() []byte
+	Bytes(State) []byte
 }
 
 // ClientPacket is a type of packet which can have it's contents filled in

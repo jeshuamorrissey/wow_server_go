@@ -13,7 +13,7 @@ type ServerPong struct {
 }
 
 // Bytes writes out the packet to an array of bytes.
-func (pkt *ServerPong) Bytes() []byte {
+func (pkt *ServerPong) Bytes(stateBase session.State) []byte {
 	buffer := bytes.NewBufferString("")
 
 	binary.Write(buffer, binary.LittleEndian, pkt.Pong)
