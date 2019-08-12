@@ -20,7 +20,7 @@ func (o *Container) SetGUID(guid int) { o.guid = GUID(int(c.HighGUIDContainer)<<
 func (o *Container) HighGUID() c.HighGUID { return c.HighGUIDContainer }
 
 // Location returns the location of the object.
-func (o *Container) Location() *Location { return nil }
+func (o *Container) Location() *Location { return o.Container.GetLocation() }
 
 // Fields returns the update fields of the object.
 func (o *Container) Fields() map[c.UpdateField]interface{} {

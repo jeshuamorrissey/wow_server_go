@@ -104,6 +104,8 @@ func main() {
 		logrus.Fatalf("Failed to generate test data: %v\n", err)
 	}
 
+	go om.Run()
+
 	var wg sync.WaitGroup
 	wg.Add(2)
 	go func() {

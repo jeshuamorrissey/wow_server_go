@@ -20,9 +20,12 @@ type ObjectManager struct {
 	objectsLock sync.Mutex
 	objects     map[GUID]GameObject
 
-	updatesLock sync.Mutex
-	updates     []GUID
-	players     map[GUID]func(GameObject)
+	updatesLock               sync.Mutex
+	updatesAvailableCondition sync.Cond
+	updates                   []GUID
+
+	playersLock sync.Mutex
+	players     map[GUID]func([]GameObject)
 }
 
 // Create will make a new object in the object manager.
@@ -39,7 +42,7 @@ func (om *ObjectManager) Create(obj GameObject) GameObject {
 func NewObjectManager() *ObjectManager {
 	om := new(ObjectManager)
 	om.objects = make(map[GUID]GameObject)
-	om.players = make(map[GUID]func(GameObject))
+	om.players = make(map[GUID]func([]GameObject))
 	om.updates = make([]GUID, 0)
 	return om
 }
@@ -49,6 +52,7 @@ func NewObjectManager() *ObjectManager {
 func (om *ObjectManager) Update(guid GUID) {
 	om.updatesLock.Lock()
 	om.updates = append(om.updates, guid)
+	om.updatesAvailableCondition.Signal()
 	om.updatesLock.Unlock()
 }
 
@@ -69,37 +73,43 @@ func (om *ObjectManager) Exists(guid GUID) bool {
 }
 
 // Register notes that the given player is expecting to receive updates.
-func (om *ObjectManager) Register(player GameObject, updateFunc func(GameObject)) {
+func (om *ObjectManager) Register(player GameObject, updateFunc func([]GameObject)) {
+	om.playersLock.Lock()
 	om.players[player.GUID()] = updateFunc
+	om.playersLock.Unlock()
 }
 
 // Run takes control of the thread and watches for object updates and distributes
 // them to all registered players (if it makes sense to do so).
 func (om *ObjectManager) Run() {
 	for {
+		om.updatesAvailableCondition.Wait()
+
 		om.updatesLock.Lock()
 		updates := om.updates[:]
 		om.updates = make([]GUID, 0)
 		om.updatesLock.Unlock()
 
-		// For each update that has happened, go through each player and see if
-		// they should be notified of an update to that object.
-		for _, updatedGUID := range updates {
-			updatedObj := om.Get(updatedGUID)
+		for playerGUID, updateFunc := range om.players {
+			playerLocation := om.Get(playerGUID).GetLocation()
+			updatesToSend := make([]GameObject, len(updates))
 
-			for playerGUID, updateFunc := range om.players {
+			for _, updatedGUID := range updates {
+				updatedObj := om.Get(updatedGUID)
+
 				// If the updated object is a player/unit, check to see if
 				// the locations are close enough.
 				updatedObjLocation := updatedObj.GetLocation()
-				playerLocation := om.Get(playerGUID).GetLocation()
 
 				if updatedObjLocation != nil && playerLocation != nil {
 					distance := updatedObjLocation.Distance(playerLocation)
 					if distance < ObjectMaxUpdateDistance {
-						updateFunc(updatedObj)
+						updatesToSend = append(updatesToSend, updatedObj)
 					}
 				}
 			}
+
+			updateFunc(updatesToSend)
 		}
 	}
 }

@@ -5,6 +5,7 @@ import (
 	c "github.com/jeshuamorrissey/wow_server_go/common/data/constants"
 )
 
+// Unit represents some creature within the game world (i.e. an NPC).
 type Unit struct {
 	BaseGameObject
 

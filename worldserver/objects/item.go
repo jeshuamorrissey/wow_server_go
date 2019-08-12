@@ -23,10 +23,10 @@ type Item struct {
 	IsReadable bool
 
 	// Relationships.
-	Owner       GUID
-	Container   GUID
-	Creator     GUID
-	GiftCreator GUID
+	Owner       GameObject
+	Container   GameObject
+	Creator     GameObject
+	GiftCreator GameObject
 }
 
 // GUID returns the guid of the object.
@@ -39,19 +39,19 @@ func (o *Item) SetGUID(guid int) { o.guid = GUID(int(c.HighGUIDItem)<<32 | guid)
 func (o *Item) HighGUID() c.HighGUID { return c.HighGUIDItem }
 
 // GetLocation returns the location of the object.
-func (o *Item) GetLocation() *Location { return nil }
+func (o *Item) GetLocation() *Location { return o.Container.GetLocation() }
 
 // Fields returns the update fields of the object.
 func (o *Item) Fields() map[c.UpdateField]interface{} {
 	fields := map[c.UpdateField]interface{}{
-		c.UpdateFieldItemOwner:               o.Owner.Low(),
-		c.UpdateFieldItemOwner + 1:           o.Owner.High(),
-		c.UpdateFieldItemContained:           o.Container.Low(),
-		c.UpdateFieldItemContained + 1:       o.Container.High(),
-		c.UpdateFieldItemCreator:             o.Creator.Low(),
-		c.UpdateFieldItemCreator + 1:         o.Creator.High(),
-		c.UpdateFieldItemGiftCreator:         o.GiftCreator.Low(),
-		c.UpdateFieldItemGiftCreator + 1:     o.GiftCreator.High(),
+		c.UpdateFieldItemOwner:               o.Owner.GUID().Low(),
+		c.UpdateFieldItemOwner + 1:           o.Owner.GUID().High(),
+		c.UpdateFieldItemContained:           o.Container.GUID().Low(),
+		c.UpdateFieldItemContained + 1:       o.Container.GUID().High(),
+		c.UpdateFieldItemCreator:             o.Creator.GUID().Low(),
+		c.UpdateFieldItemCreator + 1:         o.Creator.GUID().High(),
+		c.UpdateFieldItemGiftCreator:         o.GiftCreator.GUID().Low(),
+		c.UpdateFieldItemGiftCreator + 1:     o.GiftCreator.GUID().High(),
 		c.UpdateFieldItemStackCount:          o.StackCount,
 		c.UpdateFieldItemDuration:            o.DurationRemaining.Second(),
 		c.UpdateFieldItemSpellCharges:        o.ChargesRemaining,
