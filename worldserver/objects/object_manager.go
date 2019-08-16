@@ -21,7 +21,8 @@ type ObjectManager struct {
 	objects     map[GUID]GameObject
 
 	updatesLock               sync.Mutex
-	updatesAvailableCondition sync.Cond
+	updatesAvailableMutex     sync.Mutex
+	updatesAvailableCondition *sync.Cond
 	updates                   []GUID
 
 	playersLock sync.Mutex
@@ -44,6 +45,7 @@ func NewObjectManager() *ObjectManager {
 	om.objects = make(map[GUID]GameObject)
 	om.players = make(map[GUID]func([]GameObject))
 	om.updates = make([]GUID, 0)
+	om.updatesAvailableCondition = sync.NewCond(&om.updatesAvailableMutex)
 	return om
 }
 
@@ -83,7 +85,9 @@ func (om *ObjectManager) Register(player GameObject, updateFunc func([]GameObjec
 // them to all registered players (if it makes sense to do so).
 func (om *ObjectManager) Run() {
 	for {
+		om.updatesAvailableMutex.Lock()
 		om.updatesAvailableCondition.Wait()
+		om.updatesAvailableMutex.Unlock()
 
 		om.updatesLock.Lock()
 		updates := om.updates[:]

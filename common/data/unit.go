@@ -16,12 +16,7 @@ type Unit struct {
 	MinLevel int
 	MaxLevel int
 
-	Models []struct {
-		ID             int
-		BoundingRadius float32
-		CombatReach    float32
-		Gender         c.Gender
-	}
+	Models []ModelInfo
 
 	FactionAlliance      int
 	FactionHorde         int
@@ -126,6 +121,14 @@ type Unit struct {
 	IsMiningLoot   bool
 	CanAssist      bool
 	IsEngineerLoot bool
+}
+
+// ModelInfo contains information about a in-game model.
+type ModelInfo struct {
+	ID             int
+	BoundingRadius float32
+	CombatReach    float32
+	Gender         c.Gender
 }
 
 var (
@@ -281,4 +284,157 @@ func (u *Unit) CreatureTypeFlags() int {
 		flags |= 0x00008000
 	}
 	return flags
+}
+
+// GetPlayerModelInfo gets the ModelInfo structure for player races.
+// Taken from ChrRaces.dbc.
+func GetPlayerModelInfo(race c.Race, gender c.Gender) ModelInfo {
+	if gender == c.GenderMale {
+		switch race {
+		case c.RaceHuman:
+			return ModelInfo{
+				ID:             49,
+				BoundingRadius: 0.306,
+				CombatReach:    1.5,
+				Gender:         gender,
+			}
+		case c.RaceOrc:
+			return ModelInfo{
+				ID:             51,
+				BoundingRadius: 0.372,
+				CombatReach:    1.5,
+				Gender:         gender,
+			}
+		case c.RaceDwarf:
+			return ModelInfo{
+				ID:             53,
+				BoundingRadius: 0.347,
+				CombatReach:    1.5,
+				Gender:         gender,
+			}
+		case c.RaceNightElf:
+			return ModelInfo{
+				ID:             55,
+				BoundingRadius: 0.389,
+				CombatReach:    1.5,
+				Gender:         gender,
+			}
+		case c.RaceUndead:
+			return ModelInfo{
+				ID:             57,
+				BoundingRadius: 0.383,
+				CombatReach:    1.5,
+				Gender:         gender,
+			}
+		case c.RaceTauren:
+			return ModelInfo{
+				ID:             59,
+				BoundingRadius: 0.9747,
+				CombatReach:    1.5,
+				Gender:         gender,
+			}
+		case c.RaceGnome:
+			return ModelInfo{
+				ID:             1563,
+				BoundingRadius: 0.3519,
+				CombatReach:    1.5,
+				Gender:         gender,
+			}
+		case c.RaceTroll:
+			return ModelInfo{
+				ID:             1478,
+				BoundingRadius: 0.306,
+				CombatReach:    1.5,
+				Gender:         gender,
+			}
+		case c.RaceGoblin:
+			return ModelInfo{
+				ID:             1140,
+				BoundingRadius: 0.347222,
+				CombatReach:    1.5,
+				Gender:         gender,
+			}
+		}
+	} else {
+		switch race {
+		case c.RaceHuman:
+			return ModelInfo{
+				ID:             50,
+				BoundingRadius: 0.208,
+				CombatReach:    1.5,
+				Gender:         gender,
+			}
+		case c.RaceOrc:
+			return ModelInfo{
+				ID:             52,
+				BoundingRadius: 0.236,
+				CombatReach:    1.5,
+				Gender:         gender,
+			}
+		case c.RaceDwarf:
+			return ModelInfo{
+				ID:             54,
+				BoundingRadius: 0.347,
+				CombatReach:    1.5,
+				Gender:         gender,
+			}
+		case c.RaceNightElf:
+			return ModelInfo{
+				ID:             56,
+				BoundingRadius: 0.306,
+				CombatReach:    1.5,
+				Gender:         gender,
+			}
+		case c.RaceUndead:
+			return ModelInfo{
+				ID:             58,
+				BoundingRadius: 0.383,
+				CombatReach:    1.5,
+				Gender:         gender,
+			}
+		case c.RaceTauren:
+			return ModelInfo{
+				ID:             60,
+				BoundingRadius: 0.8725,
+				CombatReach:    1.5,
+				Gender:         gender,
+			}
+		case c.RaceGnome:
+			return ModelInfo{
+				ID:             1564,
+				BoundingRadius: 0.3519,
+				CombatReach:    1.5,
+				Gender:         gender,
+			}
+		case c.RaceTroll:
+			return ModelInfo{
+				ID:             1479,
+				BoundingRadius: 0.306,
+				CombatReach:    1.5,
+				Gender:         gender,
+			}
+		case c.RaceGoblin:
+			return ModelInfo{
+				ID:             1140,
+				BoundingRadius: 0.347222,
+				CombatReach:    1.5,
+				Gender:         gender,
+			}
+		}
+	}
+
+	return ModelInfo{}
+}
+
+// GetPlayerScale returns the ScaleX factor for a given race/class/gender.
+func GetPlayerScale(race c.Race, gender c.Gender) float32 {
+	if race == c.RaceTauren {
+		if gender == c.GenderFemale {
+			return 1.25
+		} else {
+			return 1.35
+		}
+	}
+
+	return 1.0
 }

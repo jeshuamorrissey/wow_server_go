@@ -147,7 +147,7 @@ func (o *Unit) Fields() map[c.UpdateField]interface{} {
 		c.UpdateFieldUnitArcaneResist:                                 o.Resistances[c.SpellSchoolArcane],
 		c.UpdateFieldUnitBaseMana:                                     o.BasePower,
 		c.UpdateFieldUnitBaseHealth:                                   o.BaseHealth,
-		c.UpdateFieldUnitBytes2:                                       o.bytes2(),
+		c.UpdateFieldUnitBytes2:                                       0, // TODO
 		c.UpdateFieldUnitAttackPower:                                  tmpl.MeleeAttackPower,
 		c.UpdateFieldUnitAttackPowerMods:                              0, // TODO
 		c.UpdateFieldUnitAttackPowerMultiplier:                        tmpl.PowerMultiplier,
@@ -192,28 +192,4 @@ func (o *Unit) Fields() map[c.UpdateField]interface{} {
 
 func (o *Unit) template() *data.Unit {
 	return data.Units[o.Entry]
-}
-
-func (o *Unit) bytes2() int {
-	var flags int
-	if o.CanDetectAmore0 {
-		flags |= int(c.Byte2FlagsDetectAmore0)
-	}
-	if o.CanDetectAmore1 {
-		flags |= int(c.Byte2FlagsDetectAmore1)
-	}
-	if o.CanDetectAmore2 {
-		flags |= int(c.Byte2FlagsDetectAmore2)
-	}
-	if o.CanDetectAmore3 {
-		flags |= int(c.Byte2FlagsDetectAmore3)
-	}
-	if o.IsStealth {
-		flags |= int(c.Byte2FlagsStealth)
-	}
-	if o.HasInvisibilityGlow {
-		flags |= int(c.Byte2FlagsInvisibilityGlow)
-	}
-
-	return flags
 }

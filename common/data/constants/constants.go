@@ -442,6 +442,41 @@ const (
 	CharacterFlagDeclined          CharacterFlag = 0x02000000
 )
 
+// PlayerFlag is a enum value which maps to a object's type ID.
+//go:generate stringer -type=PlayerFlag -trimprefix=PlayerFlag
+type PlayerFlag uint32
+
+// PlayerFlag values.
+const (
+	PlayerFlagsGroupLeader     PlayerFlag = 0x00000001
+	PlayerFlagsAFK             PlayerFlag = 0x00000002
+	PlayerFlagsDND             PlayerFlag = 0x00000004
+	PlayerFlagsGM              PlayerFlag = 0x00000008
+	PlayerFlagsGhost           PlayerFlag = 0x00000010
+	PlayerFlagsResting         PlayerFlag = 0x00000020
+	PlayerFlagsFFAPVP          PlayerFlag = 0x00000080
+	PlayerFlagsContestedPVP    PlayerFlag = 0x00000100
+	PlayerFlagsInPVP           PlayerFlag = 0x00000200
+	PlayerFlagsHideHelm        PlayerFlag = 0x00000400
+	PlayerFlagsHideCloak       PlayerFlag = 0x00000800
+	PlayerFlagsPartialPlayTime PlayerFlag = 0x00001000
+	PlayerFlagsNoPlayTime      PlayerFlag = 0x00002000
+	PlayerFlagsSanctuary       PlayerFlag = 0x00010000
+	PlayerFlagsTaxiBenchmark   PlayerFlag = 0x00020000
+	PlayerFlagsPVPTimer        PlayerFlag = 0x00040000
+)
+
+// PlayerBytes is a enum value which maps to a object's type ID.
+//go:generate stringer -type=PlayerBytes -trimprefix=PlayerBytes
+type PlayerBytes uint32
+
+// PlayerBytes values.
+const (
+	PlayerBytesTrackStealthed  PlayerBytes = 0x02
+	PlayerBytesReleaseTimer    PlayerBytes = 0x08
+	PlayerBytesNoReleaseWindow PlayerBytes = 0x10
+)
+
 // UpdateField is a enum value which maps to a object's type ID.
 //go:generate stringer -type=UpdateField -trimprefix=UpdateField
 type UpdateField uint32
@@ -595,7 +630,7 @@ const (
 	UpdateFieldPlayerQuestLogLast3              UpdateField = 257
 	UpdateFieldPlayerVisibleItem1Creator        UpdateField = 258
 	UpdateFieldPlayerVisibleItemEntryStart      UpdateField = 260
-	UpdateFieldPlayerVisibleItem10Ench          UpdateField = 261
+	UpdateFieldPlayerVisibleItem1Ench           UpdateField = 261
 	UpdateFieldPlayerVisibleItem1Properties     UpdateField = 268
 	UpdateFieldPlayerVisibleItem1Pad            UpdateField = 269
 	UpdateFieldPlayerVisibleItemLastCreator     UpdateField = 474
@@ -603,6 +638,7 @@ const (
 	UpdateFieldPlayerVisibleItemLastProperties  UpdateField = 484
 	UpdateFieldPlayerVisibleItemLastPad         UpdateField = 485
 	UpdateFieldPlayerInventoryStart             UpdateField = 486
+	UpdateFieldPlayerBagStart                   UpdateField = 524
 	UpdateFieldPlayerPackSlot1                  UpdateField = 532
 	UpdateFieldPlayerPackSlotLast               UpdateField = 562
 	UpdateFieldPlayerBankSlot1                  UpdateField = 564

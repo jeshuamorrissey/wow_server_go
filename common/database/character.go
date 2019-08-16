@@ -87,7 +87,7 @@ func NewCharacter(
 			Unit: objects.Unit{
 				BaseGameObject: objects.BaseGameObject{
 					Entry:  0,
-					ScaleX: 1.0,
+					ScaleX: data.GetPlayerScale(race, gender),
 				},
 
 				Location: objects.Location{
