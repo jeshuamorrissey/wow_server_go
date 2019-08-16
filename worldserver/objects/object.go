@@ -10,6 +10,10 @@ type GameObject interface {
 	SetGUID(int)
 	HighGUID() c.HighGUID
 	GetLocation() *Location
+
+	MovementUpdate() []byte
+
+	NumFields() int
 	Fields() map[c.UpdateField]interface{}
 }
 
@@ -31,6 +35,12 @@ func (o *BaseGameObject) HighGUID() c.HighGUID { return 0 }
 
 // GetLocation returns the location of the object.
 func (o *BaseGameObject) GetLocation() *Location { return nil }
+
+// MovementUpdate returns a bytes representation of a movement update.
+func (o *BaseGameObject) MovementUpdate() []byte { return []byte{} }
+
+// NumFields returns the number of fields available for this object.
+func (o *BaseGameObject) NumFields() int { return 6 }
 
 // Fields returns the update fields of the object.
 func (o *BaseGameObject) Fields() map[c.UpdateField]interface{} {

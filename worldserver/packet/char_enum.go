@@ -53,8 +53,8 @@ func (pkt *ServerCharEnum) Bytes(stateBase session.State) []byte {
 		}
 
 		charObj := state.OM().Get(char.GUID).(*objects.Player)
-		binary.Write(buffer, binary.LittleEndian, charObj.GUID().High())
 		binary.Write(buffer, binary.LittleEndian, charObj.GUID().Low())
+		binary.Write(buffer, binary.LittleEndian, charObj.GUID().High())
 		buffer.WriteString(char.Name)
 		buffer.WriteByte(0)
 		buffer.WriteByte(uint8(charObj.Race))

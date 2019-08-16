@@ -41,6 +41,12 @@ func (o *Item) HighGUID() c.HighGUID { return c.HighGUIDItem }
 // GetLocation returns the location of the object.
 func (o *Item) GetLocation() *Location { return o.Container.GetLocation() }
 
+// MovementUpdate returns a bytes representation of a movement update.
+func (o *Item) MovementUpdate() []byte { return []byte{} }
+
+// NumFields returns the number of fields available for this object.
+func (o *Item) NumFields() int { return 48 }
+
 // Fields returns the update fields of the object.
 func (o *Item) Fields() map[c.UpdateField]interface{} {
 	fields := map[c.UpdateField]interface{}{

@@ -1,6 +1,7 @@
 package objects
 
 import (
+	"encoding/binary"
 	"math"
 
 	c "github.com/jeshuamorrissey/wow_server_go/common/data/constants"
@@ -19,6 +20,23 @@ func (guid GUID) High() uint32 {
 // by the server.
 func (guid GUID) Low() uint32 {
 	return uint32(guid)
+}
+
+// Pack returns a minimal version of the GUID as an array of bytes.
+func (guid GUID) Pack() []byte {
+	guidBytes := make([]byte, 8)
+	binary.LittleEndian.PutUint64(guidBytes, uint64(guid))
+
+	mask := uint8(0)
+	packedGUID := make([]byte, 9)
+	for i, b := range guidBytes {
+		if b != 0 {
+			mask |= (1 << uint(i))
+			packedGUID = append(packedGUID, b)
+		}
+	}
+
+	return append([]byte{mask}, packedGUID...)
 }
 
 // Location represents a location in 3D space.

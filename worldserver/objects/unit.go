@@ -1,6 +1,9 @@
 package objects
 
 import (
+	"bytes"
+	"encoding/binary"
+
 	"github.com/jeshuamorrissey/wow_server_go/common/data"
 	c "github.com/jeshuamorrissey/wow_server_go/common/data/constants"
 )
@@ -11,6 +14,7 @@ type Unit struct {
 
 	// Basic information.
 	Location         Location
+	Pitch            float32
 	Level            int
 	Race             c.Race
 	Class            c.Class
@@ -21,6 +25,18 @@ type Unit struct {
 	Byte1Flags       c.Byte1Flags
 	EmoteState       int
 	TrainingPoints   int
+
+	SpeedWalk         float32
+	SpeedRun          float32
+	SpeedRunBackward  float32
+	SpeedSwim         float32
+	SpeedSwimBackward float32
+	SpeedTurn         float32
+
+	Velocity float32
+	SinAngle float32
+	CosAngle float32
+	XYSpeed  float32
 
 	// Stats.
 	BaseHealth int
@@ -47,6 +63,11 @@ type Unit struct {
 	IsStealth           bool
 	HasInvisibilityGlow bool
 
+	IsSwimming bool
+	IsFalling  bool
+
+	Transport *Unit
+
 	// Relationships.
 	Charm      GUID
 	CharmedBy  GUID
@@ -68,6 +89,59 @@ func (o *Unit) HighGUID() c.HighGUID { return c.HighGUIDUnit }
 
 // GetLocation returns the location of the object.
 func (o *Unit) GetLocation() *Location { return &o.Location }
+
+// MovementUpdate returns a bytes representation of a movement update.
+func (o *Unit) MovementUpdate() []byte {
+	buffer := bytes.NewBufferString("")
+
+	// MoveFlags
+	binary.Write(buffer, binary.LittleEndian, uint32(0)) // Time
+
+	binary.Write(buffer, binary.LittleEndian, float32(o.Location.X))
+	binary.Write(buffer, binary.LittleEndian, float32(o.Location.Y))
+	binary.Write(buffer, binary.LittleEndian, float32(o.Location.Z))
+	binary.Write(buffer, binary.LittleEndian, float32(o.Location.O))
+
+	if o.Transport != nil {
+		binary.Write(buffer, binary.LittleEndian, uint64(o.Transport.GUID()))
+		binary.Write(buffer, binary.LittleEndian, float32(o.Transport.Location.X))
+		binary.Write(buffer, binary.LittleEndian, float32(o.Transport.Location.Y))
+		binary.Write(buffer, binary.LittleEndian, float32(o.Transport.Location.Z))
+		binary.Write(buffer, binary.LittleEndian, float32(o.Transport.Location.O))
+		binary.Write(buffer, binary.LittleEndian, uint32(0)) // Time
+	}
+
+	if o.IsSwimming {
+		binary.Write(buffer, binary.LittleEndian, float32(o.Pitch))
+	}
+
+	if o.Transport == nil {
+		binary.Write(buffer, binary.LittleEndian, uint32(0)) // LastFallTime
+	}
+
+	if o.IsFalling {
+		binary.Write(buffer, binary.LittleEndian, float32(o.Velocity))
+		binary.Write(buffer, binary.LittleEndian, float32(o.SinAngle))
+		binary.Write(buffer, binary.LittleEndian, float32(o.CosAngle))
+		binary.Write(buffer, binary.LittleEndian, float32(o.XYSpeed))
+	}
+
+	// SplineElevation update goes HERE.
+
+	binary.Write(buffer, binary.LittleEndian, float32(o.SpeedWalk))
+	binary.Write(buffer, binary.LittleEndian, float32(o.SpeedRun))
+	binary.Write(buffer, binary.LittleEndian, float32(o.SpeedRunBackward))
+	binary.Write(buffer, binary.LittleEndian, float32(o.SpeedSwim))
+	binary.Write(buffer, binary.LittleEndian, float32(o.SpeedSwimBackward))
+	binary.Write(buffer, binary.LittleEndian, float32(o.SpeedTurn))
+
+	// Spline update goes HERE.
+
+	return buffer.Bytes()
+}
+
+// NumFields returns the number of fields available for this object.
+func (o *Unit) NumFields() int { return 188 }
 
 // Fields returns the update fields of the object.
 func (o *Unit) Fields() map[c.UpdateField]interface{} {

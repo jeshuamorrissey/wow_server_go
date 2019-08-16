@@ -22,6 +22,12 @@ func (o *Container) HighGUID() c.HighGUID { return c.HighGUIDContainer }
 // Location returns the location of the object.
 func (o *Container) Location() *Location { return o.Container.GetLocation() }
 
+// MovementUpdate returns a bytes representation of a movement update.
+func (o *Container) MovementUpdate() []byte { return []byte{} }
+
+// NumFields returns the number of fields available for this object.
+func (o *Container) NumFields() int { return 106 }
+
 // Fields returns the update fields of the object.
 func (o *Container) Fields() map[c.UpdateField]interface{} {
 	fields := map[c.UpdateField]interface{}{

@@ -61,6 +61,12 @@ func (o *Player) HighGUID() c.HighGUID { return c.HighGUIDPlayer }
 // GetLocation returns the location of the object.
 func (o *Player) GetLocation() *Location { return &o.Location }
 
+// MovementUpdate returns a bytes representation of a movement update.
+func (o *Player) MovementUpdate() []byte { return o.Unit.MovementUpdate() }
+
+// NumFields returns the number of fields available for this object.
+func (o *Player) NumFields() int { return 1282 }
+
 // Fields returns the update fields of the object.
 func (o *Player) Fields() map[c.UpdateField]interface{} {
 	modelInfo := data.GetPlayerModelInfo(o.Race, o.Gender)

@@ -18,6 +18,7 @@ var (
 		packet.OpCodeClientCharDelete:  func() session.ClientPacket { return new(packet.ClientCharDelete) },
 		packet.OpCodeClientCharEnum:    func() session.ClientPacket { return new(packet.ClientCharEnum) },
 		packet.OpCodeClientPing:        func() session.ClientPacket { return new(packet.ClientPing) },
+		packet.OpCodeClientPlayerLogin: func() session.ClientPacket { return new(packet.ClientPlayerLogin) },
 	}
 )
 

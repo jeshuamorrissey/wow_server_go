@@ -783,3 +783,17 @@ const (
 	Byte2FlagsStealth          Byte2Flags = 0x20
 	Byte2FlagsInvisibilityGlow Byte2Flags = 0x40
 )
+
+// UpdateType is a enum value which maps to a object's type ID.
+//go:generate stringer -type=UpdateType -trimprefix=UpdateType
+type UpdateType uint8
+
+// Byte2Flags values.
+const (
+	UpdateTypeValues            UpdateType = 0
+	UpdateTypeMovement          UpdateType = 1
+	UpdateTypeCreateObject      UpdateType = 2
+	UpdateTypeCreateObject2     UpdateType = 3
+	UpdateTypeOutOfRangeObjects UpdateType = 4
+	UpdateTypeNearObjects       UpdateType = 5
+)

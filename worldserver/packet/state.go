@@ -15,6 +15,7 @@ type State struct {
 
 	Account database.Account
 	Realm   *database.Realm
+	Player  *objects.Player
 
 	// Some counters required for encrypting the header.
 	SendI, SendJ uint8
