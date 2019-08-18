@@ -8,6 +8,7 @@ import (
 
 	"github.com/jeshuamorrissey/wow_server_go/common"
 	c "github.com/jeshuamorrissey/wow_server_go/common/data/constants"
+	"github.com/jeshuamorrissey/wow_server_go/common/session"
 	"github.com/jeshuamorrissey/wow_server_go/worldserver/objects"
 )
 
@@ -32,6 +33,7 @@ func (u *OutOfRangeUpdate) UpdateType() c.UpdateType { return c.UpdateTypeOutOfR
 // Update represents a generic game object update.
 type Update struct {
 	updateType c.UpdateType
+	IsSelf     bool
 	Object     objects.GameObject
 	Victim     objects.GameObject
 	WorldTime  uint32
@@ -54,7 +56,7 @@ func (u *Update) FieldsUpdate() []byte {
 			binary.Write(fields, binary.LittleEndian, value)
 			mask.SetBit(mask, int(field), 1)
 		default:
-			panic(fmt.Sprintf("Unknown field type %T in update fields", value))
+			panic(fmt.Sprintf("Unknown field type %T in update fields (%v)", value, field))
 		}
 	}
 
@@ -69,7 +71,7 @@ func (u *Update) FieldsUpdate() []byte {
 }
 
 // Bytes converts the packet into an array of bytes.
-func (pkt *ServerUpdateObject) Bytes() []byte {
+func (pkt *ServerUpdateObject) Bytes(stateBase session.State) []byte {
 	buffer := bytes.NewBufferString("")
 
 	binary.Write(buffer, binary.LittleEndian, len(pkt.Updates))
@@ -90,6 +92,11 @@ func (pkt *ServerUpdateObject) Bytes() []byte {
 
 			if update.UpdateType() != c.UpdateTypeValues {
 				updateFlags := objects.UpdateFlags(objUpdate.Object)
+
+				if objUpdate.IsSelf {
+					updateFlags |= c.UpdateFlagsSelf
+				}
+
 				buffer.WriteByte(uint8(objects.TypeID(objUpdate.Object)))
 				buffer.WriteByte(uint8(updateFlags))
 
@@ -120,6 +127,6 @@ func (pkt *ServerUpdateObject) Bytes() []byte {
 }
 
 // OpCode returns the OpCode of the packet.
-func (pkt *ServerUpdateObject) OpCode() OpCode {
+func (pkt *ServerUpdateObject) OpCode() session.OpCode {
 	return OpCodeServerUpdateObject
 }

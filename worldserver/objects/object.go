@@ -45,10 +45,10 @@ func (o *BaseGameObject) NumFields() int { return 6 }
 // Fields returns the update fields of the object.
 func (o *BaseGameObject) Fields() map[c.UpdateField]interface{} {
 	return map[c.UpdateField]interface{}{
-		c.UpdateFieldGUIDLow:  o.guid.Low(),
-		c.UpdateFieldGUIDHigh: o.guid.High(),
-		c.UpdateFieldType:     TypeMask(o),
-		c.UpdateFieldEntry:    o.Entry,
-		c.UpdateFieldScaleX:   o.ScaleX,
+		c.UpdateFieldGUIDLow:  uint32(o.guid.Low()),
+		c.UpdateFieldGUIDHigh: uint32(o.guid.High()),
+		c.UpdateFieldType:     uint32(TypeMask(o)),
+		c.UpdateFieldEntry:    uint32(o.Entry),
+		c.UpdateFieldScaleX:   float32(o.ScaleX),
 	}
 }

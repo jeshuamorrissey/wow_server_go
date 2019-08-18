@@ -6,6 +6,8 @@ import (
 	"io"
 
 	"github.com/jeshuamorrissey/wow_server_go/common"
+	c "github.com/jeshuamorrissey/wow_server_go/common/data/constants"
+	"github.com/jeshuamorrissey/wow_server_go/worldserver/objects"
 	"github.com/jinzhu/gorm"
 	"github.com/sirupsen/logrus"
 )
@@ -28,6 +30,9 @@ type State interface {
 	// AddLogField adds a new field to the log entry this state should
 	// use.
 	AddLogField(string, interface{})
+
+	SetSession(*Session)
+	Session() *Session
 }
 
 // Session management utility.
@@ -50,6 +55,9 @@ type Session struct {
 	// The I/O for this session. Usually will be socket conns.
 	input  io.Reader
 	output io.Writer
+
+	// Update object field cache.
+	updateFieldCache map[objects.GUID]map[c.UpdateField]interface{}
 
 	state State
 }

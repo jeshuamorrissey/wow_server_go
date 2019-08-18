@@ -15,15 +15,19 @@ import (
 )
 
 func makeSession(om *objects.ObjectManager, realm *database.Realm, reader io.Reader, writer io.Writer, log *logrus.Entry, db *gorm.DB) *session.Session {
-	return session.NewSession(
+	state := packet.NewState(om, realm, db, log)
+	session := session.NewSession(
 		readHeader,
 		writeHeader,
 		opCodeToPacket,
 		log,
 		reader,
 		writer,
-		packet.NewState(om, realm, db, log),
+		state,
 	)
+
+	state.SetSession(session)
+	return session
 }
 
 func setupSession(sess *session.Session) {
