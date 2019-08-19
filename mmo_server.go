@@ -8,7 +8,7 @@ import (
 	"github.com/jeshuamorrissey/wow_server_go/authserver"
 	"github.com/jeshuamorrissey/wow_server_go/authserver/srp"
 	"github.com/jeshuamorrissey/wow_server_go/common/data"
-	c "github.com/jeshuamorrissey/wow_server_go/common/data/constants"
+	c "github.com/jeshuamorrissey/wow_server_go/worldserver/data/dbc/constants"
 	"github.com/jeshuamorrissey/wow_server_go/common/database"
 	"github.com/jeshuamorrissey/wow_server_go/worldserver"
 	"github.com/jinzhu/gorm"

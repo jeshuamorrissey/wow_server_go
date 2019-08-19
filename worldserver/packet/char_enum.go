@@ -5,11 +5,10 @@ import (
 	"encoding/binary"
 	"io"
 
-	"github.com/jeshuamorrissey/wow_server_go/worldserver/objects"
-
-	c "github.com/jeshuamorrissey/wow_server_go/common/data/constants"
 	"github.com/jeshuamorrissey/wow_server_go/common/database"
 	"github.com/jeshuamorrissey/wow_server_go/common/session"
+	c "github.com/jeshuamorrissey/wow_server_go/worldserver/data/dbc/constants"
+	"github.com/jeshuamorrissey/wow_server_go/worldserver/data/object"
 )
 
 // ClientCharEnum is sent from the client when first connecting.
@@ -39,8 +38,7 @@ type ServerCharEnum struct {
 }
 
 // Bytes writes out the packet to an array of bytes.
-func (pkt *ServerCharEnum) Bytes(stateBase session.State) []byte {
-	state := stateBase.(*State)
+func (pkt *ServerCharEnum) Bytes(state *State) []byte {
 	buffer := bytes.NewBufferString("")
 
 	buffer.WriteByte(uint8(len(pkt.Characters))) // number of characters
@@ -52,7 +50,7 @@ func (pkt *ServerCharEnum) Bytes(stateBase session.State) []byte {
 			continue
 		}
 
-		charObj := state.OM().Get(char.GUID).(*objects.Player)
+		charObj := state.OM().Get(char.GUID).(*object.Player)
 		binary.Write(buffer, binary.LittleEndian, charObj.GUID().Low())
 		binary.Write(buffer, binary.LittleEndian, charObj.GUID().High())
 		buffer.WriteString(char.Name)

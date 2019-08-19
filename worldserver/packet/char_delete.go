@@ -7,8 +7,8 @@ import (
 
 	"github.com/jeshuamorrissey/wow_server_go/common/database"
 
-	c "github.com/jeshuamorrissey/wow_server_go/common/data/constants"
 	"github.com/jeshuamorrissey/wow_server_go/common/session"
+	c "github.com/jeshuamorrissey/wow_server_go/worldserver/data/dbc/constants"
 )
 
 // ClientCharDelete is sent from the client when deleting a character.

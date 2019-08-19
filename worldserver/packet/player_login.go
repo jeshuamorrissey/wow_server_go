@@ -4,14 +4,14 @@ import (
 	"encoding/binary"
 	"io"
 
-	c "github.com/jeshuamorrissey/wow_server_go/common/data/constants"
 	"github.com/jeshuamorrissey/wow_server_go/common/session"
-	"github.com/jeshuamorrissey/wow_server_go/worldserver/objects"
+	c "github.com/jeshuamorrissey/wow_server_go/worldserver/data/dbc/constants"
+	"github.com/jeshuamorrissey/wow_server_go/worldserver/data/object"
 )
 
 // ClientPlayerLogin is sent from the client periodically.
 type ClientPlayerLogin struct {
-	GUID objects.GUID
+	GUID object.GUID
 }
 
 func (pkt *ClientPlayerLogin) Read(buffer io.Reader) error {
@@ -28,10 +28,10 @@ func (pkt *ClientPlayerLogin) Handle(stateBase session.State) ([]session.ServerP
 		return []session.ServerPacket{}, nil
 	}
 
-	player := state.OM().Get(pkt.GUID).(*objects.Player)
+	player := state.OM().Get(pkt.GUID).(*object.Player)
 	stateBase.Log().Infof("player = %v", player)
 
-	state.OM().Register(player, func(updates map[c.UpdateType][]objects.GameObject) {
+	state.OM().Register(player, func(updates map[c.UpdateType][]object.GameObject) {
 		for updateType, objs := range updates {
 			pkt := new(ServerUpdateObject)
 			pkt.Updates = make([]ObjectUpdate, 0)

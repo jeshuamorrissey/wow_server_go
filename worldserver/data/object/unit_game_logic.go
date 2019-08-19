@@ -1,6 +1,6 @@
-package objects
+package object
 
-import c "github.com/jeshuamorrissey/wow_server_go/common/data/constants"
+import c "github.com/jeshuamorrissey/wow_server_go/worldserver/data/dbc/constants"
 
 // Constants related to unit logic.
 const (

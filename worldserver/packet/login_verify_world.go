@@ -4,14 +4,13 @@ import (
 	"bytes"
 	"encoding/binary"
 
-	"github.com/jeshuamorrissey/wow_server_go/worldserver/objects"
-
 	"github.com/jeshuamorrissey/wow_server_go/common/session"
+	"github.com/jeshuamorrissey/wow_server_go/worldserver/data/object"
 )
 
 // ServerLoginVerifyWorld is sent back in response to ClientPing.
 type ServerLoginVerifyWorld struct {
-	Character *objects.Player
+	Character *object.Player
 }
 
 // Bytes writes out the packet to an array of bytes.

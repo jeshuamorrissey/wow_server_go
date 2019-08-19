@@ -6,8 +6,8 @@ import (
 	"io"
 
 	"github.com/jeshuamorrissey/wow_server_go/common"
-	c "github.com/jeshuamorrissey/wow_server_go/common/data/constants"
-	"github.com/jeshuamorrissey/wow_server_go/worldserver/objects"
+	c "github.com/jeshuamorrissey/wow_server_go/worldserver/data/dbc/constants"
+	"github.com/jeshuamorrissey/wow_server_go/worldserver/data/object"
 	"github.com/jinzhu/gorm"
 	"github.com/sirupsen/logrus"
 )
@@ -57,7 +57,7 @@ type Session struct {
 	output io.Writer
 
 	// Update object field cache.
-	updateFieldCache map[objects.GUID]map[c.UpdateField]interface{}
+	updateFieldCache map[object.GUID]map[c.UpdateField]interface{}
 
 	state State
 }

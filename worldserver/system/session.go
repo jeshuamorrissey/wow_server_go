@@ -8,17 +8,13 @@ import (
 	"io"
 
 	"github.com/jeshuamorrissey/wow_server_go/common"
-	"github.com/jeshuamorrissey/wow_server_go/common/database"
-	"github.com/jeshuamorrissey/wow_server_go/worldserver/objects"
+	"github.com/jeshuamorrissey/wow_server_go/worldserver/data/object"
+	"github.com/jeshuamorrissey/wow_server_go/worldserver/packet"
 	"github.com/sirupsen/logrus"
 )
 
 // Session represents a single client connection to the World Server.
 type Session struct {
-	// log is a logrus entry that should be used when logging anything
-	// from within this session.
-	log *logrus.Entry
-
 	// The input/output ports for this session.
 	input  io.Reader
 	output io.Writer
@@ -26,21 +22,36 @@ type Session struct {
 	// A mapping of opCode --> callback to create the client packet.
 	opCodeToPacket map[OpCode]func() ClientPacket
 
-	// Account is the currently connected account. If `nil`, no account
-	// has connected yet.
-	Account *database.Account
-
-	// Character is the currently logged in character. If `nil`, no
-	// character is currently logged in.
-	Character *objects.Player
+	// State that is to be passed to each handler.
+	state *packet.State
 
 	// Private data required to encrypt/decrypt packet headers.
 	sendI, sendJ, recvI, recvJ uint8
 }
 
+// NewSession constructs a new session object and returns it.
+func NewSession(
+	input io.Reader,
+	output io.Writer,
+	opCodeToPacket map[OpCode]func() ClientPacket,
+	objectManager *object.Manager,
+	log *logrus.Entry) *Session {
+	return &Session{
+		input:          input,
+		ouptut:         output,
+		opCodeToPacket: opCodeToPacket,
+		state: &packet.State{
+			Log:           log,
+			Account:       nil,
+			Character:     nil,
+			ObjectManager: objectManager,
+		},
+	}
+}
+
 // Send sends a single packet to this session's client.
 func (s *Session) Send(pkt ServerPacket) error {
-	s.log.Tracef("--> %s", pkt.OpCode())
+	s.state.Log.Tracef("--> %s", pkt.OpCode())
 
 	pktData, err := pkt.ToBytes(s)
 	if err != nil {
@@ -70,7 +81,7 @@ func (s *Session) Run() {
 	for {
 		packet, err := s.readPacket()
 		if err != nil {
-			s.log.Warnf("Terminating connection: %v\n", err)
+			s.state.Log.Warnf("Terminating connection: %v\n", err)
 			return
 		}
 
@@ -82,7 +93,7 @@ func (s *Session) Run() {
 		// Load and then handle the packet.
 		responses, err := packet.Handle(s)
 		if err != nil {
-			s.log.Warnf("Error while handling packet %s: %v", packet.OpCode(), err)
+			s.state.Log.Warnf("Error while handling packet %s: %v", packet.OpCode(), err)
 			continue
 		}
 
@@ -105,14 +116,14 @@ func (s *Session) readPacket() (ClientPacket, error) {
 
 	builder, ok := s.opCodeToPacket[opCode]
 	if !ok {
-		s.log.Warnf("<-- %v [UNHANDLED]", opCode.String())
+		s.state.Log.Warnf("<-- %v [UNHANDLED]", opCode.String())
 		return nil, nil
 	}
 
 	pkt := builder()
 	pkt.FromBytes(s, bytes.NewReader(data))
 
-	s.log.Tracef("<-- %s", opCode)
+	s.state.Log.Tracef("<-- %s", opCode)
 
 	return pkt, nil
 }

@@ -9,9 +9,9 @@ import (
 	"strings"
 
 	"github.com/jeshuamorrissey/wow_server_go/common"
-	c "github.com/jeshuamorrissey/wow_server_go/common/data/constants"
 	"github.com/jeshuamorrissey/wow_server_go/common/database"
 	"github.com/jeshuamorrissey/wow_server_go/common/session"
+	c "github.com/jeshuamorrissey/wow_server_go/worldserver/data/dbc/constants"
 	"github.com/jinzhu/gorm"
 )
 
@@ -63,8 +63,7 @@ func (pkt *ClientCharCreate) Read(bufferBase io.Reader) error {
 }
 
 // Handle will ensure that the given account exists.
-func (pkt *ClientCharCreate) Handle(stateBase session.State) ([]session.ServerPacket, error) {
-	state := stateBase.(*State)
+func (pkt *ClientCharCreate) Handle(state *State) ([]session.ServerPacket, error) {
 	response := new(ServerCharCreate)
 	response.Error = CharErrorCodeCreateSuccess
 
@@ -76,15 +75,15 @@ func (pkt *ClientCharCreate) Handle(stateBase session.State) ([]session.ServerPa
 
 	// Check if name already exists.
 	var char database.Character
-	err := state.DB().Where(&database.Character{Name: pkt.Name}).First(&char).Error
+	err := state.DB.Where(&database.Character{Name: pkt.Name}).First(&char).Error
 	if err != gorm.ErrRecordNotFound {
 		response.Error = CharErrorCodeCreateNameInUse
 		return []session.ServerPacket{response}, nil
 	}
 
 	// Make the character.
-	err = state.DB().Create(database.NewCharacter(
-		state.OM(),
+	err = state.DB.Create(database.NewCharacter(
+		state.OM,
 		pkt.Name, &state.Account, state.Realm,
 		pkt.Class, pkt.Race, pkt.Gender,
 		pkt.SkinColor, pkt.Face, pkt.HairStyle, pkt.HairColor, pkt.Feature)).Error

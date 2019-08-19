@@ -1,11 +1,11 @@
-package data
+package dbc
 
 import (
 	"compress/gzip"
 	"encoding/json"
 	"os"
 
-	c "github.com/jeshuamorrissey/wow_server_go/common/data/constants"
+	c "github.com/jeshuamorrissey/wow_server_go/worldserver/data/dbc/constants"
 )
 
 // Unit represents a template within the world.
@@ -431,9 +431,9 @@ func GetPlayerScale(race c.Race, gender c.Gender) float32 {
 	if race == c.RaceTauren {
 		if gender == c.GenderFemale {
 			return 1.25
-		} else {
-			return 1.35
 		}
+
+		return 1.35
 	}
 
 	return 1.0

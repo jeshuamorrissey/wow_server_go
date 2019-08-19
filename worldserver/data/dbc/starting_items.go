@@ -1,11 +1,11 @@
-package data
+package dbc
 
 import (
 	"encoding/json"
 	"fmt"
 	"os"
 
-	c "github.com/jeshuamorrissey/wow_server_go/common/data/constants"
+	c "github.com/jeshuamorrissey/wow_server_go/worldserver/data/dbc/constants"
 )
 
 var (

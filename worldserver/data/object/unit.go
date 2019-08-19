@@ -1,19 +1,20 @@
-package objects
+package object
 
 import (
 	"bytes"
 	"encoding/binary"
 
-	"github.com/jeshuamorrissey/wow_server_go/common/data"
-	c "github.com/jeshuamorrissey/wow_server_go/common/data/constants"
+	"github.com/jeshuamorrissey/wow_server_go/worldserver/data/dbc"
+	c "github.com/jeshuamorrissey/wow_server_go/worldserver/data/dbc/constants"
+	"github.com/sirupsen/logrus"
 )
 
-// Unit represents some creature within the game world (i.e. an NPC).
+// Unit represents an instance of an in-game monster.
 type Unit struct {
-	BaseGameObject
+	gameObject
 
 	// Basic information.
-	Location         Location
+	location         Location
 	Pitch            float32
 	Level            int
 	Race             c.Race
@@ -52,8 +53,8 @@ type Unit struct {
 
 	Resistances map[c.SpellSchool]int
 
-	// Display items (virtual).
-	VirtualItems []*data.Item
+	// Display items (virtual). List of entries.
+	VirtualItems []int
 
 	// Flags
 	CanDetectAmore0     bool
@@ -66,7 +67,7 @@ type Unit struct {
 	IsSwimming bool
 	IsFalling  bool
 
-	Transport *Unit
+	Transport GUID
 
 	// Relationships.
 	Charm      GUID
@@ -78,97 +79,101 @@ type Unit struct {
 	Persuaded  GUID
 }
 
-// GUID returns the guid of the object.
-func (o *Unit) GUID() GUID { return o.BaseGameObject.GUID() }
+// Manager returns the manager associated with this object.
+func (u *Unit) Manager() *Manager { return u.gameObject.Manager() }
 
-// SetGUID updates the GUID value of the object.
-func (o *Unit) SetGUID(guid int) { o.guid = GUID(uint64(c.HighGUIDUnit)<<32 | uint64(guid)) }
+// SetManager updates the manager associated with this object.
+func (u *Unit) SetManager(manager *Manager) { u.gameObject.SetManager(manager) }
 
-// HighGUID returns the high GUID component for an object.
-func (o *Unit) HighGUID() c.HighGUID { return c.HighGUIDUnit }
+// GUID returns the globally-unique ID of the object.
+func (u *Unit) GUID() GUID { return u.gameObject.GUID() }
 
-// GetLocation returns the location of the object.
-func (o *Unit) GetLocation() *Location { return &o.Location }
+// SetGUID updates this object's GUID to the given value.
+func (u *Unit) SetGUID(guid GUID) { u.gameObject.SetGUID(guid) }
 
-// MovementUpdate returns a bytes representation of a movement update.
-func (o *Unit) MovementUpdate() []byte {
+// Location returns the location of the object.
+func (u *Unit) Location() *Location { return &u.location }
+
+// MovementUpdate calculates and returns the movement update for the
+// object.
+func (u *Unit) MovementUpdate() []byte {
 	buffer := bytes.NewBufferString("")
 
 	// MoveFlags
 	binary.Write(buffer, binary.LittleEndian, uint32(0)) // Time
 
-	binary.Write(buffer, binary.LittleEndian, float32(o.Location.X))
-	binary.Write(buffer, binary.LittleEndian, float32(o.Location.Y))
-	binary.Write(buffer, binary.LittleEndian, float32(o.Location.Z))
-	binary.Write(buffer, binary.LittleEndian, float32(o.Location.O))
+	binary.Write(buffer, binary.LittleEndian, float32(u.location.X))
+	binary.Write(buffer, binary.LittleEndian, float32(u.location.Y))
+	binary.Write(buffer, binary.LittleEndian, float32(u.location.Z))
+	binary.Write(buffer, binary.LittleEndian, float32(u.location.O))
 
-	if o.Transport != nil {
-		binary.Write(buffer, binary.LittleEndian, uint64(o.Transport.GUID()))
-		binary.Write(buffer, binary.LittleEndian, float32(o.Transport.Location.X))
-		binary.Write(buffer, binary.LittleEndian, float32(o.Transport.Location.Y))
-		binary.Write(buffer, binary.LittleEndian, float32(o.Transport.Location.Z))
-		binary.Write(buffer, binary.LittleEndian, float32(o.Transport.Location.O))
+	transportObj, err := u.Manager().Get(u.Transport)
+	if err != nil {
+		binary.Write(buffer, binary.LittleEndian, uint64(u.Transport))
+		binary.Write(buffer, binary.LittleEndian, float32(transportObj.Location().X))
+		binary.Write(buffer, binary.LittleEndian, float32(transportObj.Location().Y))
+		binary.Write(buffer, binary.LittleEndian, float32(transportObj.Location().Z))
+		binary.Write(buffer, binary.LittleEndian, float32(transportObj.Location().O))
 		binary.Write(buffer, binary.LittleEndian, uint32(0)) // Time
 	}
 
-	if o.IsSwimming {
-		binary.Write(buffer, binary.LittleEndian, float32(o.Pitch))
+	if u.IsSwimming {
+		binary.Write(buffer, binary.LittleEndian, float32(u.Pitch))
 	}
 
-	if o.Transport == nil {
+	if u.Transport == 0 {
 		binary.Write(buffer, binary.LittleEndian, uint32(0)) // LastFallTime
 	}
 
-	if o.IsFalling {
-		binary.Write(buffer, binary.LittleEndian, float32(o.Velocity))
-		binary.Write(buffer, binary.LittleEndian, float32(o.SinAngle))
-		binary.Write(buffer, binary.LittleEndian, float32(o.CosAngle))
-		binary.Write(buffer, binary.LittleEndian, float32(o.XYSpeed))
+	if u.IsFalling {
+		binary.Write(buffer, binary.LittleEndian, float32(u.Velocity))
+		binary.Write(buffer, binary.LittleEndian, float32(u.SinAngle))
+		binary.Write(buffer, binary.LittleEndian, float32(u.CosAngle))
+		binary.Write(buffer, binary.LittleEndian, float32(u.XYSpeed))
 	}
 
 	// SplineElevation update goes HERE.
 
-	binary.Write(buffer, binary.LittleEndian, float32(o.SpeedWalk))
-	binary.Write(buffer, binary.LittleEndian, float32(o.SpeedRun))
-	binary.Write(buffer, binary.LittleEndian, float32(o.SpeedRunBackward))
-	binary.Write(buffer, binary.LittleEndian, float32(o.SpeedSwim))
-	binary.Write(buffer, binary.LittleEndian, float32(o.SpeedSwimBackward))
-	binary.Write(buffer, binary.LittleEndian, float32(o.SpeedTurn))
+	binary.Write(buffer, binary.LittleEndian, float32(u.SpeedWalk))
+	binary.Write(buffer, binary.LittleEndian, float32(u.SpeedRun))
+	binary.Write(buffer, binary.LittleEndian, float32(u.SpeedRunBackward))
+	binary.Write(buffer, binary.LittleEndian, float32(u.SpeedSwim))
+	binary.Write(buffer, binary.LittleEndian, float32(u.SpeedSwimBackward))
+	binary.Write(buffer, binary.LittleEndian, float32(u.SpeedTurn))
 
 	// Spline update goes HERE.
 
 	return buffer.Bytes()
+
 }
 
-// NumFields returns the number of fields available for this object.
-func (o *Unit) NumFields() int { return 188 }
-
-// Fields returns the update fields of the object.
-func (o *Unit) Fields() map[c.UpdateField]interface{} {
-	tmpl := o.template()
+// UpdateFields populates and returns the updated fields for the
+// object.
+func (u *Unit) UpdateFields() map[c.UpdateField]interface{} {
+	tmpl := u.Template()
 	fields := map[c.UpdateField]interface{}{
-		c.UpdateFieldUnitCharmLow:                                     o.Charm.Low(),
-		c.UpdateFieldUnitCharmHigh:                                    o.Charm.High(),
-		c.UpdateFieldUnitSummonLow:                                    o.Summon.Low(),
-		c.UpdateFieldUnitSummonHigh:                                   o.Summon.High(),
-		c.UpdateFieldUnitCharmedbyLow:                                 o.CharmedBy.Low(),
-		c.UpdateFieldUnitCharmedbyHigh:                                o.CharmedBy.High(),
-		c.UpdateFieldUnitSummonedbyLow:                                o.SummonedBy.Low(),
-		c.UpdateFieldUnitSummonedbyHigh:                               o.SummonedBy.High(),
-		c.UpdateFieldUnitCreatedbyLow:                                 o.CreatedBy.Low(),
-		c.UpdateFieldUnitCreatedbyHigh:                                o.CreatedBy.High(),
-		c.UpdateFieldUnitTargetLow:                                    o.Target.Low(),
-		c.UpdateFieldUnitTargetHigh:                                   o.Target.High(),
-		c.UpdateFieldUnitPersuadedLow:                                 o.Persuaded.Low(),
-		c.UpdateFieldUnitPersuadedHigh:                                o.Persuaded.High(),
+		c.UpdateFieldUnitCharmLow:                                     u.Charm.Low(),
+		c.UpdateFieldUnitCharmHigh:                                    u.Charm.High(),
+		c.UpdateFieldUnitSummonLow:                                    u.Summon.Low(),
+		c.UpdateFieldUnitSummonHigh:                                   u.Summon.High(),
+		c.UpdateFieldUnitCharmedbyLow:                                 u.CharmedBy.Low(),
+		c.UpdateFieldUnitCharmedbyHigh:                                u.CharmedBy.High(),
+		c.UpdateFieldUnitSummonedbyLow:                                u.SummonedBy.Low(),
+		c.UpdateFieldUnitSummonedbyHigh:                               u.SummonedBy.High(),
+		c.UpdateFieldUnitCreatedbyLow:                                 u.CreatedBy.Low(),
+		c.UpdateFieldUnitCreatedbyHigh:                                u.CreatedBy.High(),
+		c.UpdateFieldUnitTargetLow:                                    u.Target.Low(),
+		c.UpdateFieldUnitTargetHigh:                                   u.Target.High(),
+		c.UpdateFieldUnitPersuadedLow:                                 u.Persuaded.Low(),
+		c.UpdateFieldUnitPersuadedHigh:                                u.Persuaded.High(),
 		c.UpdateFieldUnitChannelObjectLow:                             0, // TODO
 		c.UpdateFieldUnitChannelObjectHigh:                            0, // TODO
-		c.UpdateFieldUnitHealth:                                       o.Health,
-		c.UpdateFieldUnitPowerStart + c.UpdateField(o.powerType()):    o.Power,
-		c.UpdateFieldUnitMaxHealth:                                    o.maxHealth(),
-		c.UpdateFieldUnitMaxPowerStart + c.UpdateField(o.powerType()): o.maxPower(),
-		c.UpdateFieldUnitLevel:                                        o.Level,
-		c.UpdateFieldUnitBytes0:                                       int(o.Race) | int(o.Class)<<8 | int(o.Gender)<<16,
+		c.UpdateFieldUnitHealth:                                       u.Health,
+		c.UpdateFieldUnitPowerStart + c.UpdateField(u.powerType()):    u.Power,
+		c.UpdateFieldUnitMaxHealth:                                    u.maxHealth(),
+		c.UpdateFieldUnitMaxPowerStart + c.UpdateField(u.powerType()): u.maxPower(),
+		c.UpdateFieldUnitLevel:                                        u.Level,
+		c.UpdateFieldUnitBytes0:                                       int(u.Race) | int(u.Class)<<8 | int(u.Gender)<<16,
 		c.UpdateFieldUnitFlags:                                        tmpl.Flags(),
 		c.UpdateFieldUnitAura:                                         0, // TODO
 		c.UpdateFieldUnitAuraLast:                                     0, // TODO
@@ -195,7 +200,7 @@ func (o *Unit) Fields() map[c.UpdateField]interface{} {
 		c.UpdateFieldUnitMaxdamage:                                    tmpl.MaxMeleeDmg,
 		c.UpdateFieldUnitMinoffhanddamage:                             tmpl.MinMeleeDmg,
 		c.UpdateFieldUnitMaxoffhanddamage:                             tmpl.MaxMeleeDmg,
-		c.UpdateFieldUnitBytes1:                                       int(o.Byte1Flags)<<24 | o.FreeTalentPoints<<16 | int(o.StandState),
+		c.UpdateFieldUnitBytes1:                                       int(u.Byte1Flags)<<24 | u.FreeTalentPoints<<16 | int(u.StandState),
 		c.UpdateFieldUnitPetnumber:                                    0, // TODO
 		c.UpdateFieldUnitPetNameTimestamp:                             0, // TODO
 		c.UpdateFieldUnitPetexperience:                                0, // TODO
@@ -205,22 +210,22 @@ func (o *Unit) Fields() map[c.UpdateField]interface{} {
 		c.UpdateFieldUnitModCastSpeed:                                 1.0,
 		c.UpdateFieldUnitCreatedBySpell:                               0, // TODO
 		c.UpdateFieldUnitNpcFlags:                                     tmpl.Flags(),
-		c.UpdateFieldUnitNpcEmotestate:                                o.EmoteState,
-		c.UpdateFieldUnitTrainingPoints:                               o.TrainingPoints,
-		c.UpdateFieldUnitStrength:                                     o.Strength,
-		c.UpdateFieldUnitAgility:                                      o.Agility,
-		c.UpdateFieldUnitStamina:                                      o.Stamina,
-		c.UpdateFieldUnitIntellect:                                    o.Intellect,
-		c.UpdateFieldUnitSpirit:                                       o.Spirit,
-		c.UpdateFieldUnitArmor:                                        o.Resistances[c.SpellSchoolPhysical],
-		c.UpdateFieldUnitHolyResist:                                   o.Resistances[c.SpellSchoolHoly],
-		c.UpdateFieldUnitFireResist:                                   o.Resistances[c.SpellSchoolFire],
-		c.UpdateFieldUnitNatureResist:                                 o.Resistances[c.SpellSchoolNature],
-		c.UpdateFieldUnitFrostResist:                                  o.Resistances[c.SpellSchoolFrost],
-		c.UpdateFieldUnitShadowResist:                                 o.Resistances[c.SpellSchoolShadow],
-		c.UpdateFieldUnitArcaneResist:                                 o.Resistances[c.SpellSchoolArcane],
-		c.UpdateFieldUnitBaseMana:                                     o.BasePower,
-		c.UpdateFieldUnitBaseHealth:                                   o.BaseHealth,
+		c.UpdateFieldUnitNpcEmotestate:                                u.EmoteState,
+		c.UpdateFieldUnitTrainingPoints:                               u.TrainingPoints,
+		c.UpdateFieldUnitStrength:                                     u.Strength,
+		c.UpdateFieldUnitAgility:                                      u.Agility,
+		c.UpdateFieldUnitStamina:                                      u.Stamina,
+		c.UpdateFieldUnitIntellect:                                    u.Intellect,
+		c.UpdateFieldUnitSpirit:                                       u.Spirit,
+		c.UpdateFieldUnitArmor:                                        u.Resistances[c.SpellSchoolPhysical],
+		c.UpdateFieldUnitHolyResist:                                   u.Resistances[c.SpellSchoolHoly],
+		c.UpdateFieldUnitFireResist:                                   u.Resistances[c.SpellSchoolFire],
+		c.UpdateFieldUnitNatureResist:                                 u.Resistances[c.SpellSchoolNature],
+		c.UpdateFieldUnitFrostResist:                                  u.Resistances[c.SpellSchoolFrost],
+		c.UpdateFieldUnitShadowResist:                                 u.Resistances[c.SpellSchoolShadow],
+		c.UpdateFieldUnitArcaneResist:                                 u.Resistances[c.SpellSchoolArcane],
+		c.UpdateFieldUnitBaseMana:                                     u.BasePower,
+		c.UpdateFieldUnitBaseHealth:                                   u.BaseHealth,
 		c.UpdateFieldUnitBytes2:                                       0, // TODO
 		c.UpdateFieldUnitAttackPower:                                  tmpl.MeleeAttackPower,
 		c.UpdateFieldUnitAttackPowerMods:                              0, // TODO
@@ -246,13 +251,22 @@ func (o *Unit) Fields() map[c.UpdateField]interface{} {
 		c.UpdateFieldUnitPowerCostMultiplier06:                        0, // TODO
 	}
 
-	if o.Team == c.TeamAlliance {
-		fields[c.UpdateFieldUnitFactiontemplate] = o.template().FactionAlliance
+	if u.Team == c.TeamAlliance {
+		fields[c.UpdateFieldUnitFactiontemplate] = tmpl.FactionAlliance
 	} else {
-		fields[c.UpdateFieldUnitFactiontemplate] = o.template().FactionHorde
+		fields[c.UpdateFieldUnitFactiontemplate] = tmpl.FactionHorde
 	}
 
-	for i, item := range o.VirtualItems {
+	for i, itemEntry := range u.VirtualItems {
+		item, ok := dbc.Items[itemEntry]
+		if !ok {
+			u.Manager().log.WithFields(logrus.Fields{
+				"unit":       u.GUID(),
+				"item_entry": itemEntry,
+				"item_slot":  i,
+			}).Errorf("Unknown VirtualItem")
+		}
+
 		displayField := c.UpdateFieldUnitVirtualItemDisplay + c.UpdateField(i)
 		fields[displayField] = item.DisplayID
 
@@ -261,9 +275,15 @@ func (o *Unit) Fields() map[c.UpdateField]interface{} {
 		fields[infoField+1] = item.SheathType
 	}
 
-	return mergeUpdateFields(fields, o.BaseGameObject.Fields())
+	baseFields := u.gameObject.UpdateFields()
+	for k, v := range baseFields {
+		fields[k] = v
+	}
+
+	return fields
 }
 
-func (o *Unit) template() *data.Unit {
-	return data.Units[o.Entry]
+// Template returns the item template this object is based on.
+func (u *Unit) Template() *dbc.Unit {
+	return dbc.Units[int(u.Entry)]
 }

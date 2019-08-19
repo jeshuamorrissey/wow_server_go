@@ -1,11 +1,12 @@
-package objects
+package object
 
 import (
-	"github.com/jeshuamorrissey/wow_server_go/common/data"
-	c "github.com/jeshuamorrissey/wow_server_go/common/data/constants"
+	"github.com/jeshuamorrissey/wow_server_go/worldserver/data/dbc"
+	c "github.com/jeshuamorrissey/wow_server_go/worldserver/data/dbc/constants"
+	"github.com/sirupsen/logrus"
 )
 
-// Player represents the game object for a player-controlled character.
+// Player represents an instance of an in-game player.
 type Player struct {
 	Unit
 
@@ -18,9 +19,9 @@ type Player struct {
 	ZoneID int
 	MapID  int
 
-	Equipment map[c.EquipmentSlot]*Item
-	Inventory map[int]*Item
-	Bags      map[int]*Container
+	Equipment map[c.EquipmentSlot]GUID
+	Inventory map[int]GUID
+	Bags      map[int]GUID
 
 	DrunkValue int
 	XP         int
@@ -49,51 +50,53 @@ type Player struct {
 	HideReleaseSpirit          bool
 }
 
-// GUID returns the guid of the object.
-func (o *Player) GUID() GUID { return o.Unit.GUID() }
+// Manager returns the manager associated with this object.
+func (p *Player) Manager() *Manager { return p.gameObject.Manager() }
 
-// SetGUID updates the GUID value of the object.
-func (o *Player) SetGUID(guid int) { o.guid = GUID(int(c.HighGUIDPlayer)<<32 | guid) }
+// SetManager updates the manager associated with this object.
+func (p *Player) SetManager(manager *Manager) { p.gameObject.SetManager(manager) }
 
-// HighGUID returns the high GUID component for an object.
-func (o *Player) HighGUID() c.HighGUID { return c.HighGUIDPlayer }
+// GUID returns the globally-unique ID of the object.
+func (p *Player) GUID() GUID { return p.gameObject.GUID() }
 
-// GetLocation returns the location of the object.
-func (o *Player) GetLocation() *Location { return &o.Location }
+// SetGUID updates this object's GUID to the given value.
+func (p *Player) SetGUID(guid GUID) { p.gameObject.SetGUID(guid) }
 
-// MovementUpdate returns a bytes representation of a movement update.
-func (o *Player) MovementUpdate() []byte { return o.Unit.MovementUpdate() }
+// Location returns the location of the object.
+func (p *Player) Location() *Location { return &p.location }
 
-// NumFields returns the number of fields available for this object.
-func (o *Player) NumFields() int { return 1282 }
+// MovementUpdate calculates and returns the movement update for the
+// object.
+func (p *Player) MovementUpdate() []byte { return p.Unit.MovementUpdate() }
 
-// Fields returns the update fields of the object.
-func (o *Player) Fields() map[c.UpdateField]interface{} {
-	modelInfo := data.GetPlayerModelInfo(o.Race, o.Gender)
+// UpdateFields populates and returns the updated fields for the
+// object.
+func (p *Player) UpdateFields() map[c.UpdateField]interface{} {
+	modelInfo := dbc.GetPlayerModelInfo(p.Race, p.Gender)
 
 	fields := map[c.UpdateField]interface{}{
-		c.UpdateFieldUnitCharmLow:                                     uint32(o.Charm.Low()),
-		c.UpdateFieldUnitCharmHigh:                                    uint32(o.Charm.High()),
-		c.UpdateFieldUnitSummonLow:                                    uint32(o.Summon.Low()),
-		c.UpdateFieldUnitSummonHigh:                                   uint32(o.Summon.High()),
-		c.UpdateFieldUnitCharmedbyLow:                                 uint32(o.CharmedBy.Low()),
-		c.UpdateFieldUnitCharmedbyHigh:                                uint32(o.CharmedBy.High()),
-		c.UpdateFieldUnitSummonedbyLow:                                uint32(o.SummonedBy.Low()),
-		c.UpdateFieldUnitSummonedbyHigh:                               uint32(o.SummonedBy.High()),
-		c.UpdateFieldUnitCreatedbyLow:                                 uint32(o.CreatedBy.Low()),
-		c.UpdateFieldUnitCreatedbyHigh:                                uint32(o.CreatedBy.High()),
-		c.UpdateFieldUnitTargetLow:                                    uint32(o.Target.Low()),
-		c.UpdateFieldUnitTargetHigh:                                   uint32(o.Target.High()),
-		c.UpdateFieldUnitPersuadedLow:                                 uint32(o.Persuaded.Low()),
-		c.UpdateFieldUnitPersuadedHigh:                                uint32(o.Persuaded.High()),
+		c.UpdateFieldUnitCharmLow:                                     uint32(p.Charm.Low()),
+		c.UpdateFieldUnitCharmHigh:                                    uint32(p.Charm.High()),
+		c.UpdateFieldUnitSummonLow:                                    uint32(p.Summon.Low()),
+		c.UpdateFieldUnitSummonHigh:                                   uint32(p.Summon.High()),
+		c.UpdateFieldUnitCharmedbyLow:                                 uint32(p.CharmedBy.Low()),
+		c.UpdateFieldUnitCharmedbyHigh:                                uint32(p.CharmedBy.High()),
+		c.UpdateFieldUnitSummonedbyLow:                                uint32(p.SummonedBy.Low()),
+		c.UpdateFieldUnitSummonedbyHigh:                               uint32(p.SummonedBy.High()),
+		c.UpdateFieldUnitCreatedbyLow:                                 uint32(p.CreatedBy.Low()),
+		c.UpdateFieldUnitCreatedbyHigh:                                uint32(p.CreatedBy.High()),
+		c.UpdateFieldUnitTargetLow:                                    uint32(p.Target.Low()),
+		c.UpdateFieldUnitTargetHigh:                                   uint32(p.Target.High()),
+		c.UpdateFieldUnitPersuadedLow:                                 uint32(p.Persuaded.Low()),
+		c.UpdateFieldUnitPersuadedHigh:                                uint32(p.Persuaded.High()),
 		c.UpdateFieldUnitChannelObjectLow:                             uint32(0), // TODO
 		c.UpdateFieldUnitChannelObjectHigh:                            uint32(0), // TODO
-		c.UpdateFieldUnitHealth:                                       uint32(o.Health),
-		c.UpdateFieldUnitPowerStart + c.UpdateField(o.powerType()):    uint32(o.Power),
-		c.UpdateFieldUnitMaxHealth:                                    uint32(o.maxHealth()),
-		c.UpdateFieldUnitMaxPowerStart + c.UpdateField(o.powerType()): uint32(o.maxPower()),
-		c.UpdateFieldUnitLevel:                                        uint32(o.Level),
-		c.UpdateFieldUnitBytes0:                                       uint32(o.Race) | uint32(o.Class)<<8 | uint32(o.Gender)<<16,
+		c.UpdateFieldUnitHealth:                                       uint32(p.Health),
+		c.UpdateFieldUnitPowerStart + c.UpdateField(p.powerType()):    uint32(p.Power),
+		c.UpdateFieldUnitMaxHealth:                                    uint32(p.maxHealth()),
+		c.UpdateFieldUnitMaxPowerStart + c.UpdateField(p.powerType()): uint32(p.maxPower()),
+		c.UpdateFieldUnitLevel:                                        uint32(p.Level),
+		c.UpdateFieldUnitBytes0:                                       uint32(p.Race) | uint32(p.Class)<<8 | uint32(p.Gender)<<16,
 		c.UpdateFieldUnitAura:                                         uint32(0), // TODO
 		c.UpdateFieldUnitAuraLast:                                     uint32(0), // TODO
 		c.UpdateFieldUnitAuraflags:                                    uint32(0), // TODO
@@ -113,7 +116,7 @@ func (o *Player) Fields() map[c.UpdateField]interface{} {
 		c.UpdateFieldUnitDisplayid:                                    uint32(modelInfo.ID),
 		c.UpdateFieldUnitNativedisplayid:                              uint32(modelInfo.ID),
 		c.UpdateFieldUnitMountdisplayid:                               uint32(0), // TODO
-		c.UpdateFieldUnitBytes1:                                       uint32(o.Byte1Flags)<<24 | uint32(o.FreeTalentPoints)<<16 | uint32(o.StandState),
+		c.UpdateFieldUnitBytes1:                                       uint32(p.Byte1Flags)<<24 | uint32(p.FreeTalentPoints)<<16 | uint32(p.StandState),
 		c.UpdateFieldUnitPetnumber:                                    uint32(0), // TODO
 		c.UpdateFieldUnitPetNameTimestamp:                             uint32(0), // TODO
 		c.UpdateFieldUnitPetexperience:                                uint32(0), // TODO
@@ -123,22 +126,22 @@ func (o *Player) Fields() map[c.UpdateField]interface{} {
 		c.UpdateFieldUnitModCastSpeed:                                 float32(1.0),
 		c.UpdateFieldUnitCreatedBySpell:                               uint32(0), // TODO
 		c.UpdateFieldUnitNpcFlags:                                     uint32(0), // TODO
-		c.UpdateFieldUnitNpcEmotestate:                                uint32(o.EmoteState),
-		c.UpdateFieldUnitTrainingPoints:                               uint32(o.TrainingPoints),
-		c.UpdateFieldUnitStrength:                                     uint32(o.Strength),
-		c.UpdateFieldUnitAgility:                                      uint32(o.Agility),
-		c.UpdateFieldUnitStamina:                                      uint32(o.Stamina),
-		c.UpdateFieldUnitIntellect:                                    uint32(o.Intellect),
-		c.UpdateFieldUnitSpirit:                                       uint32(o.Spirit),
-		c.UpdateFieldUnitArmor:                                        uint32(o.Resistances[c.SpellSchoolPhysical]),
-		c.UpdateFieldUnitHolyResist:                                   uint32(o.Resistances[c.SpellSchoolHoly]),
-		c.UpdateFieldUnitFireResist:                                   uint32(o.Resistances[c.SpellSchoolFire]),
-		c.UpdateFieldUnitNatureResist:                                 uint32(o.Resistances[c.SpellSchoolNature]),
-		c.UpdateFieldUnitFrostResist:                                  uint32(o.Resistances[c.SpellSchoolFrost]),
-		c.UpdateFieldUnitShadowResist:                                 uint32(o.Resistances[c.SpellSchoolShadow]),
-		c.UpdateFieldUnitArcaneResist:                                 uint32(o.Resistances[c.SpellSchoolArcane]),
-		c.UpdateFieldUnitBaseMana:                                     uint32(o.BasePower),
-		c.UpdateFieldUnitBaseHealth:                                   uint32(o.BaseHealth),
+		c.UpdateFieldUnitNpcEmotestate:                                uint32(p.EmoteState),
+		c.UpdateFieldUnitTrainingPoints:                               uint32(p.TrainingPoints),
+		c.UpdateFieldUnitStrength:                                     uint32(p.Strength),
+		c.UpdateFieldUnitAgility:                                      uint32(p.Agility),
+		c.UpdateFieldUnitStamina:                                      uint32(p.Stamina),
+		c.UpdateFieldUnitIntellect:                                    uint32(p.Intellect),
+		c.UpdateFieldUnitSpirit:                                       uint32(p.Spirit),
+		c.UpdateFieldUnitArmor:                                        uint32(p.Resistances[c.SpellSchoolPhysical]),
+		c.UpdateFieldUnitHolyResist:                                   uint32(p.Resistances[c.SpellSchoolHoly]),
+		c.UpdateFieldUnitFireResist:                                   uint32(p.Resistances[c.SpellSchoolFire]),
+		c.UpdateFieldUnitNatureResist:                                 uint32(p.Resistances[c.SpellSchoolNature]),
+		c.UpdateFieldUnitFrostResist:                                  uint32(p.Resistances[c.SpellSchoolFrost]),
+		c.UpdateFieldUnitShadowResist:                                 uint32(p.Resistances[c.SpellSchoolShadow]),
+		c.UpdateFieldUnitArcaneResist:                                 uint32(p.Resistances[c.SpellSchoolArcane]),
+		c.UpdateFieldUnitBaseMana:                                     uint32(p.BasePower),
+		c.UpdateFieldUnitBaseHealth:                                   uint32(p.BaseHealth),
 		c.UpdateFieldUnitBytes2:                                       uint32(0), // TODO
 		c.UpdateFieldUnitAttackPower:                                  uint32(0), // TODO
 		c.UpdateFieldUnitAttackPowerMods:                              uint32(0), // TODO
@@ -164,12 +167,12 @@ func (o *Player) Fields() map[c.UpdateField]interface{} {
 		c.UpdateFieldUnitPowerCostMultiplier06:                        uint32(0), // TODO
 
 		c.UpdateFieldPlayerDuelArbiter:                uint32(0), // TODO
-		c.UpdateFieldPlayerFlags:                      uint32(o.flags()),
+		c.UpdateFieldPlayerFlags:                      uint32(p.flags()),
 		c.UpdateFieldPlayerGuildid:                    uint32(0), // TODO
 		c.UpdateFieldPlayerGuildrank:                  uint32(0), // TODO
-		c.UpdateFieldPlayerBytes:                      uint32(o.SkinColor) | uint32(o.Face)<<8 | uint32(o.HairStyle)<<16 | uint32(o.HairColor)<<24,
-		c.UpdateFieldPlayerBytes2:                     uint32(o.Feature),
-		c.UpdateFieldPlayerBytes3:                     uint32(o.Gender) | uint32(o.DrunkValue)&0xFFFE,
+		c.UpdateFieldPlayerBytes:                      uint32(p.SkinColor) | uint32(p.Face)<<8 | uint32(p.HairStyle)<<16 | uint32(p.HairColor)<<24,
+		c.UpdateFieldPlayerBytes2:                     uint32(p.Feature),
+		c.UpdateFieldPlayerBytes3:                     uint32(p.Gender) | uint32(p.DrunkValue)&0xFFFE,
 		c.UpdateFieldPlayerDuelTeam:                   uint32(0), // TODO
 		c.UpdateFieldPlayerGuildTimestamp:             uint32(0), // TODO
 		c.UpdateFieldPlayerQuestStart:                 uint32(0), // TODO
@@ -183,7 +186,7 @@ func (o *Player) Fields() map[c.UpdateField]interface{} {
 		c.UpdateFieldPlayerKeyringSlotLast:            uint32(0), // TODO
 		c.UpdateFieldPlayerFarsight:                   uint32(0), // TODO
 		c.UpdateFieldPlayerComboTarget:                uint32(0), // TODO
-		c.UpdateFieldPlayerXp:                         uint32(o.XP),
+		c.UpdateFieldPlayerXp:                         uint32(p.XP),
 		c.UpdateFieldPlayerNextLevelXp:                uint32(0), // TODO
 		c.UpdateFieldPlayerSkillInfo11:                uint32(0), // TODO
 		c.UpdateFieldPlayerCharacterPoints1:           uint32(0), // TODO
@@ -197,7 +200,7 @@ func (o *Player) Fields() map[c.UpdateField]interface{} {
 		c.UpdateFieldPlayerRangedCritPercentage:       uint32(0), // TODO
 		c.UpdateFieldPlayerExploredZones1:             uint32(0), // TODO
 		c.UpdateFieldPlayerRestStateExperience:        uint32(0), // TODO
-		c.UpdateFieldPlayerCoinage:                    uint32(o.Money),
+		c.UpdateFieldPlayerCoinage:                    uint32(p.Money),
 		c.UpdateFieldPlayerPosstat0:                   uint32(0), // TODO
 		c.UpdateFieldPlayerPosstat1:                   uint32(0), // TODO
 		c.UpdateFieldPlayerPosstat2:                   uint32(0), // TODO
@@ -236,7 +239,19 @@ func (o *Player) Fields() map[c.UpdateField]interface{} {
 		c.UpdateFieldPlayerCombatRating1:              uint32(0), // TODO
 	}
 
-	for slot, item := range o.Equipment {
+	for slot, itemGUID := range p.Equipment {
+		itemBase, err := p.Manager().Get(itemGUID)
+		if err != nil {
+			p.Manager().log.WithFields(logrus.Fields{
+				"player":    p.GUID(),
+				"slot":      slot.String(),
+				"item_guid": itemGUID,
+			}).Errorf("Unknown equipped item")
+			continue
+		}
+
+		item := itemBase.(*Item)
+
 		slotField := c.UpdateFieldPlayerInventoryStart + c.UpdateField(slot*2)
 		fields[slotField] = uint32(item.GUID().Low())
 		fields[slotField+1] = uint32(item.GUID().High())
@@ -244,9 +259,10 @@ func (o *Player) Fields() map[c.UpdateField]interface{} {
 		visibleItemSlot := c.UpdateField(slot * 12)
 		fields[c.UpdateFieldPlayerVisibleItemEntryStart+visibleItemSlot] = uint32(item.Template().Entry)
 
-		if item.Creator != nil {
-			fields[c.UpdateFieldPlayerVisibleItem1Creator+visibleItemSlot] = uint32(item.Creator.GUID().Low())
-			fields[c.UpdateFieldPlayerVisibleItem1Creator+visibleItemSlot+1] = uint32(item.Creator.GUID().High())
+		_, err = p.Manager().Get(item.Creator)
+		if err != nil {
+			fields[c.UpdateFieldPlayerVisibleItem1Creator+visibleItemSlot] = uint32(item.Creator.Low())
+			fields[c.UpdateFieldPlayerVisibleItem1Creator+visibleItemSlot+1] = uint32(item.Creator.High())
 		}
 
 		if slot == c.EquipmentSlotMainHand {
@@ -264,123 +280,76 @@ func (o *Player) Fields() map[c.UpdateField]interface{} {
 		}
 	}
 
-	for slot, bag := range o.Bags {
+	for slot, bag := range p.Bags {
 		slotField := c.UpdateFieldPlayerBagStart + c.UpdateField(slot*2)
-		fields[slotField] = uint32(bag.GUID().Low())
-		fields[slotField+1] = uint32(bag.GUID().High())
+		fields[slotField] = uint32(bag.Low())
+		fields[slotField+1] = uint32(bag.High())
 	}
 
-	for slot, item := range o.Inventory {
+	for slot, item := range p.Inventory {
 		slotField := c.UpdateFieldPlayerPackSlot1 + c.UpdateField(slot*2)
-		fields[slotField] = uint32(item.GUID().Low())
-		fields[slotField+1] = uint32(item.GUID().High())
+		fields[slotField] = uint32(item.Low())
+		fields[slotField+1] = uint32(item.High())
 	}
 
-	return mergeUpdateFields(fields, o.BaseGameObject.Fields())
+	baseFields := p.gameObject.UpdateFields()
+	for k, v := range baseFields {
+		fields[k] = v
+	}
 
+	return fields
 }
 
-func (o *Player) flags() uint32 {
+func (p *Player) flags() uint32 {
 	var flags uint32
-	if o.IsGroupLeader {
+	if p.IsGroupLeader {
 		flags |= uint32(c.PlayerFlagsGroupLeader)
 	}
-	if o.IsAFK {
+	if p.IsAFK {
 		flags |= uint32(c.PlayerFlagsAFK)
 	}
-	if o.IsDND {
+	if p.IsDND {
 		flags |= uint32(c.PlayerFlagsDND)
 	}
-	if o.IsGM {
+	if p.IsGM {
 		flags |= uint32(c.PlayerFlagsGM)
 	}
-	if o.IsGhost {
+	if p.IsGhost {
 		flags |= uint32(c.PlayerFlagsGhost)
 	}
-	if o.IsResting {
+	if p.IsResting {
 		flags |= uint32(c.PlayerFlagsResting)
 	}
-	if o.IsFFAPVP {
+	if p.IsFFAPVP {
 		flags |= uint32(c.PlayerFlagsFFAPVP)
 	}
-	if o.IsContestedPVP {
+	if p.IsContestedPVP {
 		flags |= uint32(c.PlayerFlagsContestedPVP)
 	}
-	if o.IsInPVP {
+	if p.IsInPVP {
 		flags |= uint32(c.PlayerFlagsInPVP)
 	}
-	if o.HideHelm {
+	if p.HideHelm {
 		flags |= uint32(c.PlayerFlagsHideHelm)
 	}
-	if o.HideCloak {
+	if p.HideCloak {
 		flags |= uint32(c.PlayerFlagsHideCloak)
 	}
-	if o.IsPartialPlayTime {
+	if p.IsPartialPlayTime {
 		flags |= uint32(c.PlayerFlagsPartialPlayTime)
 	}
-	if o.IsNoPlayTime {
+	if p.IsNoPlayTime {
 		flags |= uint32(c.PlayerFlagsNoPlayTime)
 	}
-	if o.IsInSanctuary {
+	if p.IsInSanctuary {
 		flags |= uint32(c.PlayerFlagsSanctuary)
 	}
-	if o.IsTaxiBenchmark {
+	if p.IsTaxiBenchmark {
 		flags |= uint32(c.PlayerFlagsTaxiBenchmark)
 	}
-	if o.IsPVPTimer {
+	if p.IsPVPTimer {
 		flags |= uint32(c.PlayerFlagsPVPTimer)
 	}
 
 	return flags
-}
-
-func (o *Player) bytes() uint32 {
-	var bytes uint32
-	if o.IsTrackStealthed {
-		bytes |= uint32(c.PlayerBytesTrackStealthed)
-	}
-	if o.ShowAutoReleaseSpiritTimer {
-		bytes |= uint32(c.PlayerBytesReleaseTimer)
-	}
-	if o.HideReleaseSpirit {
-		bytes |= uint32(c.PlayerBytesNoReleaseWindow)
-	}
-
-	return bytes
-}
-
-func (o *Player) bytes2() int {
-	var flags int
-	if o.CanDetectAmore0 {
-		flags |= int(c.Byte2FlagsDetectAmore0)
-	}
-	if o.CanDetectAmore1 {
-		flags |= int(c.Byte2FlagsDetectAmore1)
-	}
-	if o.CanDetectAmore2 {
-		flags |= int(c.Byte2FlagsDetectAmore2)
-	}
-	if o.CanDetectAmore3 {
-		flags |= int(c.Byte2FlagsDetectAmore3)
-	}
-	if o.IsStealth {
-		flags |= int(c.Byte2FlagsStealth)
-	}
-	if o.HasInvisibilityGlow {
-		flags |= int(c.Byte2FlagsInvisibilityGlow)
-	}
-
-	return flags
-}
-
-// FirstBag returns the first bag in the player's inventory, or
-// nil if there are no bags.
-func (o *Player) FirstBag() *Container {
-	for i := 0; i < c.NumBagSlots; i++ {
-		if bag, ok := o.Bags[i]; ok {
-			return bag
-		}
-	}
-
-	return nil
 }

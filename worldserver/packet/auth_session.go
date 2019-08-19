@@ -5,7 +5,6 @@ import (
 	"io"
 
 	"github.com/jeshuamorrissey/wow_server_go/common/database"
-	"github.com/jeshuamorrissey/wow_server_go/common/session"
 	"github.com/jinzhu/gorm"
 )
 
@@ -20,7 +19,8 @@ type ClientAuthSession struct {
 	AddonsCompressed []byte
 }
 
-func (pkt *ClientAuthSession) Read(buffer io.Reader) error {
+// FromBytes reads a ClientAuthSession pcket from the byter buffer.
+func (pkt *ClientAuthSession) FromBytes(state *State, buffer io.Reader) error {
 	var unk uint32
 
 	binary.Read(buffer, binary.LittleEndian, &pkt.BuildNumber)
@@ -44,12 +44,11 @@ func (pkt *ClientAuthSession) Read(buffer io.Reader) error {
 }
 
 // Handle will ensure that the given account exists.
-func (pkt *ClientAuthSession) Handle(stateBase session.State) ([]session.ServerPacket, error) {
-	state := stateBase.(*State)
+func (pkt *ClientAuthSession) Handle(state *State) ([]ServerPacket, error) {
 	response := new(ServerAuthResponse)
 	response.Error = AuthOK
 
-	err := stateBase.DB().Where(&database.Account{Name: string(pkt.AccountName)}).First(&state.Account).Error
+	err := state.DB.Where(&database.Account{Name: string(pkt.AccountName)}).First(&state.Account).Error
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
 			response.Error = AuthUnknownAccount
@@ -65,9 +64,9 @@ func (pkt *ClientAuthSession) Handle(stateBase session.State) ([]session.ServerP
 	}
 
 	if response.Error == AuthOK {
-		stateBase.AddLogField("account", state.Account.Name)
-		stateBase.Log().Infof("Account %v authenticated!", state.Account.Name)
+		state.Log = state.Log.WithField("account", state.Account.Name)
+		state.Log.Infof("Account %v authenticated!", state.Account.Name)
 	}
 
-	return []session.ServerPacket{response}, nil
+	return []ServerPacket{response}, nil
 }

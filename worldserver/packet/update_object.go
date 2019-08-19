@@ -7,9 +7,9 @@ import (
 	"math/big"
 
 	"github.com/jeshuamorrissey/wow_server_go/common"
-	c "github.com/jeshuamorrissey/wow_server_go/common/data/constants"
 	"github.com/jeshuamorrissey/wow_server_go/common/session"
-	"github.com/jeshuamorrissey/wow_server_go/worldserver/objects"
+	c "github.com/jeshuamorrissey/wow_server_go/worldserver/data/dbc/constants"
+	"github.com/jeshuamorrissey/wow_server_go/worldserver/data/object"
 )
 
 // ServerUpdateObject is the UPDATE_OBJECT packet.
@@ -24,7 +24,7 @@ type ObjectUpdate interface {
 
 // OutOfRangeUpdate represents making a series of objects out of range.
 type OutOfRangeUpdate struct {
-	GUIDS []objects.GUID
+	GUIDS []object.GUID
 }
 
 // UpdateType returns the update type in this structure.
@@ -34,8 +34,8 @@ func (u *OutOfRangeUpdate) UpdateType() c.UpdateType { return c.UpdateTypeOutOfR
 type Update struct {
 	updateType c.UpdateType
 	IsSelf     bool
-	Object     objects.GameObject
-	Victim     objects.GameObject
+	Object     object.Object
+	Victim     object.Object
 	WorldTime  uint32
 }
 
@@ -91,13 +91,13 @@ func (pkt *ServerUpdateObject) Bytes(stateBase session.State) []byte {
 			buffer.Write(objUpdate.Object.GUID().Pack())
 
 			if update.UpdateType() != c.UpdateTypeValues {
-				updateFlags := objects.UpdateFlags(objUpdate.Object)
+				updateFlags := object.UpdateFlags(objUpdate.Object)
 
 				if objUpdate.IsSelf {
 					updateFlags |= c.UpdateFlagsSelf
 				}
 
-				buffer.WriteByte(uint8(objects.TypeID(objUpdate.Object)))
+				buffer.WriteByte(uint8(object.TypeID(objUpdate.Object)))
 				buffer.WriteByte(uint8(updateFlags))
 
 				buffer.Write(objUpdate.Object.MovementUpdate())

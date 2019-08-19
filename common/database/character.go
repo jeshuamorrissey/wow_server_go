@@ -3,8 +3,8 @@ package database
 import (
 	"time"
 
-	c "github.com/jeshuamorrissey/wow_server_go/common/data/constants"
-	"github.com/jeshuamorrissey/wow_server_go/worldserver/objects"
+	c "github.com/jeshuamorrissey/wow_server_go/worldserver/data/dbc/constants"
+	"github.com/jeshuamorrissey/wow_server_go/worldserver/data/object"
 	"github.com/jinzhu/gorm"
 )
 
@@ -20,13 +20,24 @@ type Character struct {
 	AccountID uint
 	RealmID   uint
 
-	GUID objects.GUID
+	GUID object.GUID
 
 	// Flags.
 	HideHelm        bool
 	HideCloak       bool
 	IsGhost         bool
 	RenameNextLogin bool
+}
+
+// NewCharacter creates a new character entry in the database and
+// returns a pointer to it.
+func NewCharacter(
+	om *object.Manager,
+	name string,
+	race c.Race, class c.Class, gender c.Gender,
+	skinColor, face, hairStyle, hairColor, feature uint8) *Character {
+	// TODO(jeshua): re-implement this.
+	return nil
 }
 
 // Flags returns an set of flags based on the character's state.
