@@ -47,7 +47,7 @@ func (u *Update) FieldsUpdate() []byte {
 	mask := big.NewInt(0)
 	fields := bytes.NewBufferString("")
 
-	for field, valueGeneric := range u.Object.Fields() {
+	for field, valueGeneric := range u.Object.UpdateFields() {
 		switch value := valueGeneric.(type) {
 		case float32:
 			binary.Write(fields, binary.LittleEndian, value)
@@ -60,7 +60,7 @@ func (u *Update) FieldsUpdate() []byte {
 		}
 	}
 
-	nBlocks := uint8((u.Object.NumFields() + 32 - 1) / 32)
+	nBlocks := uint8((len(u.Object.UpdateFields()) + 32 - 1) / 32)
 	nBytes := uint8((nBlocks * 32) / 8)
 
 	fieldBytes := make([]byte, 0)

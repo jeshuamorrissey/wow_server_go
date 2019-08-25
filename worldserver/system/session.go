@@ -8,8 +8,10 @@ import (
 	"io"
 
 	"github.com/jeshuamorrissey/wow_server_go/common"
+	"github.com/jeshuamorrissey/wow_server_go/common/database"
 	"github.com/jeshuamorrissey/wow_server_go/worldserver/data/object"
 	"github.com/jeshuamorrissey/wow_server_go/worldserver/packet"
+	"github.com/jinzhu/gorm"
 	"github.com/sirupsen/logrus"
 )
 
@@ -20,7 +22,7 @@ type Session struct {
 	output io.Writer
 
 	// A mapping of opCode --> callback to create the client packet.
-	opCodeToPacket map[OpCode]func() ClientPacket
+	opCodeToPacket map[packet.OpCode]func() packet.ClientPacket
 
 	// State that is to be passed to each handler.
 	state *packet.State
@@ -33,27 +35,33 @@ type Session struct {
 func NewSession(
 	input io.Reader,
 	output io.Writer,
-	opCodeToPacket map[OpCode]func() ClientPacket,
+	opCodeToPacket map[packet.OpCode]func() packet.ClientPacket,
+	db *gorm.DB,
 	objectManager *object.Manager,
-	log *logrus.Entry) *Session {
+	log *logrus.Entry,
+	realm *database.Realm) *Session {
 	return &Session{
 		input:          input,
-		ouptut:         output,
+		output:         output,
 		opCodeToPacket: opCodeToPacket,
 		state: &packet.State{
-			Log:           log,
-			Account:       nil,
-			Character:     nil,
-			ObjectManager: objectManager,
+			Log: log,
+
+			DB: db,
+			OM: objectManager,
+
+			Realm:     realm,
+			Account:   nil,
+			Character: nil,
 		},
 	}
 }
 
 // Send sends a single packet to this session's client.
-func (s *Session) Send(pkt ServerPacket) error {
+func (s *Session) Send(pkt packet.ServerPacket) error {
 	s.state.Log.Tracef("--> %s", pkt.OpCode())
 
-	pktData, err := pkt.ToBytes(s)
+	pktData, err := pkt.ToBytes(s.state)
 	if err != nil {
 		return err
 	}
@@ -91,7 +99,7 @@ func (s *Session) Run() {
 		}
 
 		// Load and then handle the packet.
-		responses, err := packet.Handle(s)
+		responses, err := packet.Handle(s.state)
 		if err != nil {
 			s.state.Log.Warnf("Error while handling packet %s: %v", packet.OpCode(), err)
 			continue
@@ -103,7 +111,7 @@ func (s *Session) Run() {
 	}
 }
 
-func (s *Session) readPacket() (ClientPacket, error) {
+func (s *Session) readPacket() (packet.ClientPacket, error) {
 	opCode, length, err := s.readHeader()
 	if err != nil {
 		return nil, err
@@ -121,27 +129,27 @@ func (s *Session) readPacket() (ClientPacket, error) {
 	}
 
 	pkt := builder()
-	pkt.FromBytes(s, bytes.NewReader(data))
+	pkt.FromBytes(s.state, bytes.NewReader(data))
 
 	s.state.Log.Tracef("<-- %s", opCode)
 
 	return pkt, nil
 }
 
-func (s *Session) readHeader() (OpCode, int, error) {
+func (s *Session) readHeader() (packet.OpCode, int, error) {
 	headerData := make([]byte, 6)
 	n, err := s.input.Read(headerData)
 	if err != nil {
-		return nil, 0, fmt.Errorf("erorr while reading header: %v", err)
+		return packet.OpCode(0), 0, fmt.Errorf("erorr while reading header: %v", err)
 	}
 
 	if n != len(headerData) {
-		return nil, 0, errors.New("short read when reading opcode data")
+		return packet.OpCode(0), 0, errors.New("short read when reading opcode data")
 	}
 
 	// If there is a session key in the state, then we need to decrypt.
-	if s.Account.SessionKey() != nil {
-		sessionKeyBytes := common.ReverseBytes(s.Account.SessionKey().Bytes())
+	if s.state.Account != nil && s.state.Account.SessionKey() != nil {
+		sessionKeyBytes := common.ReverseBytes(s.state.Account.SessionKey().Bytes())
 
 		for i := 0; i < 6; i++ {
 			s.recvI %= uint8(len(sessionKeyBytes))
@@ -154,12 +162,12 @@ func (s *Session) readHeader() (OpCode, int, error) {
 
 	// In the world server, the length is the first 2 bytes in the pkt.
 	length := int(binary.BigEndian.Uint16(headerData[:2]))
-	opCode := OpCode(binary.LittleEndian.Uint32(headerData[2:]))
+	opCode := packet.OpCode(binary.LittleEndian.Uint32(headerData[2:]))
 
 	return opCode, length - 4, nil
 }
 
-func (s *Session) writeHeader(packetLen int, opCode OpCode) error {
+func (s *Session) writeHeader(packetLen int, opCode packet.OpCode) error {
 	lengthData := make([]byte, 2)
 	opCodeData := make([]byte, 2)
 
@@ -171,8 +179,8 @@ func (s *Session) writeHeader(packetLen int, opCode OpCode) error {
 	header = append(header, opCodeData...)
 
 	// If there is a session key in the state, then we need to encrypt.
-	if s.Account != nil && s.Account.SessionKey() != nil {
-		sessionKeyBytes := common.ReverseBytes(s.Account.SessionKey().Bytes())
+	if s.state.Account != nil && s.state.Account.SessionKey() != nil {
+		sessionKeyBytes := common.ReverseBytes(s.state.Account.SessionKey().Bytes())
 
 		for i := 0; i < 4; i++ {
 			s.sendI %= uint8(len(sessionKeyBytes))

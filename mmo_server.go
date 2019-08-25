@@ -3,14 +3,14 @@ package main
 import (
 	"sync"
 
-	"github.com/jeshuamorrissey/wow_server_go/worldserver/objects"
+	"github.com/jeshuamorrissey/wow_server_go/worldserver/data/dbc"
+	"github.com/jeshuamorrissey/wow_server_go/worldserver/data/object"
 
 	"github.com/jeshuamorrissey/wow_server_go/authserver"
 	"github.com/jeshuamorrissey/wow_server_go/authserver/srp"
-	"github.com/jeshuamorrissey/wow_server_go/common/data"
-	c "github.com/jeshuamorrissey/wow_server_go/worldserver/data/dbc/constants"
 	"github.com/jeshuamorrissey/wow_server_go/common/database"
 	"github.com/jeshuamorrissey/wow_server_go/worldserver"
+	c "github.com/jeshuamorrissey/wow_server_go/worldserver/data/dbc/constants"
 	"github.com/jinzhu/gorm"
 	"github.com/sirupsen/logrus"
 
@@ -20,7 +20,7 @@ import (
 
 // GenerateTestData will generate all data required to have a reasonable test of the
 // game system.
-func GenerateTestData(om *objects.ObjectManager, db *gorm.DB) error {
+func GenerateTestData(om *object.Manager, db *gorm.DB) error {
 	// Generate some accounts.
 	salt := srp.GenerateSalt()
 	verifier := srp.GenerateVerifier("JESHUA", "JESHUA", salt)
@@ -38,10 +38,17 @@ func GenerateTestData(om *objects.ObjectManager, db *gorm.DB) error {
 	}
 
 	// Make a character.
-	db.Create(database.NewCharacter(
-		om, "Jeshua", &account, &realmSydney,
-		c.ClassWarrior, c.RaceHuman, c.GenderMale,
-		1, 1, 1, 1, 1))
+	charObj, err := database.NewCharacter(
+		om,
+		&account, &realmSydney,
+		"Jeshua",
+		c.RaceHuman, c.ClassWarrior, c.GenderMale,
+		1, 1, 1, 1, 1)
+	if err != nil {
+		return err
+	}
+
+	db.Create(charObj)
 
 	return nil
 }
@@ -52,37 +59,37 @@ func main() {
 
 	// Load constant data.
 	logrus.Info("Loading items.json.gz...")
-	err := data.LoadItems("D:\\Users\\Jeshua\\go\\src\\github.com\\jeshuamorrissey\\wow_server_go\\common\\data\\items.json.gz")
+	err := dbc.LoadItems("D:\\Users\\Jeshua\\go\\src\\github.com\\jeshuamorrissey\\wow_server_go\\worldserver\\data\\dbc\\items.json.gz")
 	if err != nil {
 		panic(err)
 	}
 
 	logrus.Info("Loading units.json.gz...")
-	err = data.LoadUnits("D:\\Users\\Jeshua\\go\\src\\github.com\\jeshuamorrissey\\wow_server_go\\common\\data\\units.json.gz")
+	err = dbc.LoadUnits("D:\\Users\\Jeshua\\go\\src\\github.com\\jeshuamorrissey\\wow_server_go\\worldserver\\data\\dbc\\units.json.gz")
 	if err != nil {
 		panic(err)
 	}
 
 	logrus.Info("Loading starting_items.json...")
-	err = data.LoadStartingItems("D:\\Users\\Jeshua\\go\\src\\github.com\\jeshuamorrissey\\wow_server_go\\common\\data\\starting_items.json")
+	err = dbc.LoadStartingItems("D:\\Users\\Jeshua\\go\\src\\github.com\\jeshuamorrissey\\wow_server_go\\worldserver\\data\\dbc\\starting_items.json")
 	if err != nil {
 		panic(err)
 	}
 
 	logrus.Info("Loading starting_stats.json...")
-	err = data.LoadStartingStats("D:\\Users\\Jeshua\\go\\src\\github.com\\jeshuamorrissey\\wow_server_go\\common\\data\\starting_stats.json")
+	err = dbc.LoadStartingStats("D:\\Users\\Jeshua\\go\\src\\github.com\\jeshuamorrissey\\wow_server_go\\worldserver\\data\\dbc\\starting_stats.json")
 	if err != nil {
 		panic(err)
 	}
 
 	logrus.Info("Loading starting_locations.json...")
-	err = data.LoadStartingLocations("D:\\Users\\Jeshua\\go\\src\\github.com\\jeshuamorrissey\\wow_server_go\\common\\data\\starting_locations.json")
+	err = dbc.LoadStartingLocations("D:\\Users\\Jeshua\\go\\src\\github.com\\jeshuamorrissey\\wow_server_go\\worldserver\\data\\dbc\\starting_locations.json")
 	if err != nil {
 		panic(err)
 	}
 
 	// Setup object manager.
-	om := objects.NewObjectManager()
+	om := object.NewManager(logrus.WithField("system", "object_manager"))
 
 	// Setup test database.
 	db, err := gorm.Open("sqlite3", ":memory:")
@@ -104,7 +111,7 @@ func main() {
 		logrus.Fatalf("Failed to generate test data: %v\n", err)
 	}
 
-	go om.Run()
+	// go om.Run()
 
 	var wg sync.WaitGroup
 	wg.Add(2)

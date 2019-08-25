@@ -6,30 +6,35 @@ import (
 	"io"
 
 	"github.com/jeshuamorrissey/wow_server_go/common/database"
-	"github.com/jeshuamorrissey/wow_server_go/common/session"
 	c "github.com/jeshuamorrissey/wow_server_go/worldserver/data/dbc/constants"
 	"github.com/jeshuamorrissey/wow_server_go/worldserver/data/object"
+	"github.com/sirupsen/logrus"
 )
 
 // ClientCharEnum is sent from the client when first connecting.
 type ClientCharEnum struct {
 }
 
-func (pkt *ClientCharEnum) Read(buffer io.Reader) error {
+// FromBytes reads packet data from the given buffer.
+func (pkt *ClientCharEnum) FromBytes(state *State, buffer io.Reader) error {
 	return nil
 }
 
 // Handle will ensure that the given account exists.
-func (pkt *ClientCharEnum) Handle(stateBase session.State) ([]session.ServerPacket, error) {
-	state := stateBase.(*State)
+func (pkt *ClientCharEnum) Handle(state *State) ([]ServerPacket, error) {
 	response := new(ServerCharEnum)
 
-	err := stateBase.DB().Where(&database.Character{AccountID: state.Account.ID, RealmID: state.Realm.ID}).Find(&response.Characters).Error
+	err := state.DB.Where(&database.Character{AccountID: state.Account.ID, RealmID: state.Realm.ID}).Find(&response.Characters).Error
 	if err != nil {
 		return nil, err
 	}
 
-	return []session.ServerPacket{response}, nil
+	return []ServerPacket{response}, nil
+}
+
+// OpCode returns the opcode for this packet.
+func (pkt *ClientCharEnum) OpCode() OpCode {
+	return OpCodeClientCharEnum
 }
 
 // ServerCharEnum is sent back in response to ClientPing.
@@ -37,20 +42,20 @@ type ServerCharEnum struct {
 	Characters []*database.Character
 }
 
-// Bytes writes out the packet to an array of bytes.
-func (pkt *ServerCharEnum) Bytes(state *State) []byte {
+// ToBytes writes out the packet to an array of bytes.
+func (pkt *ServerCharEnum) ToBytes(state *State) ([]byte, error) {
 	buffer := bytes.NewBufferString("")
 
 	buffer.WriteByte(uint8(len(pkt.Characters))) // number of characters
 
 	for _, char := range pkt.Characters {
 
-		if !state.OM().Exists(char.GUID) {
-			state.Log().Errorf("GameObject doesn't exist for character %v!", char.Name)
+		if !state.OM.Exists(char.GUID) {
+			state.Log.Errorf("GameObject doesn't exist for character %v!", char.Name)
 			continue
 		}
 
-		charObj := state.OM().Get(char.GUID).(*object.Player)
+		charObj := state.OM.Get(char.GUID).(*object.Player)
 		binary.Write(buffer, binary.LittleEndian, charObj.GUID().Low())
 		binary.Write(buffer, binary.LittleEndian, charObj.GUID().High())
 		buffer.WriteString(char.Name)
@@ -66,9 +71,9 @@ func (pkt *ServerCharEnum) Bytes(state *State) []byte {
 		buffer.WriteByte(uint8(charObj.Level))
 		binary.Write(buffer, binary.LittleEndian, uint32(charObj.ZoneID))
 		binary.Write(buffer, binary.LittleEndian, uint32(charObj.MapID))
-		binary.Write(buffer, binary.LittleEndian, float32(charObj.Location.X))
-		binary.Write(buffer, binary.LittleEndian, float32(charObj.Location.Y))
-		binary.Write(buffer, binary.LittleEndian, float32(charObj.Location.Z))
+		binary.Write(buffer, binary.LittleEndian, float32(charObj.Location().X))
+		binary.Write(buffer, binary.LittleEndian, float32(charObj.Location().Y))
+		binary.Write(buffer, binary.LittleEndian, float32(charObj.Location().Z))
 
 		// TODO(jeshua): implement the following fields with comments.
 		binary.Write(buffer, binary.LittleEndian, uint32(0)) // GuildID
@@ -85,7 +90,17 @@ func (pkt *ServerCharEnum) Bytes(state *State) []byte {
 		binary.Write(buffer, binary.LittleEndian, uint32(0)) // PetFamily
 
 		for slot := c.EquipmentSlotHead; slot <= c.EquipmentSlotTabard; slot++ {
-			if item, ok := charObj.Equipment[slot]; ok {
+			if itemGUID, ok := charObj.Equipment[slot]; ok {
+				if !state.OM.Exists(itemGUID) {
+					state.Log.WithFields(logrus.Fields{
+						"player":    charObj.GUID(),
+						"slot":      slot.String(),
+						"item_guid": itemGUID,
+					}).Errorf("Unknown equipped item")
+					continue
+				}
+
+				item := state.OM.Get(itemGUID).(*object.Item)
 				binary.Write(buffer, binary.LittleEndian, uint32(item.Template().DisplayID))
 				binary.Write(buffer, binary.LittleEndian, uint8(item.Template().InventoryType))
 			} else {
@@ -106,10 +121,10 @@ func (pkt *ServerCharEnum) Bytes(state *State) []byte {
 
 	}
 
-	return buffer.Bytes()
+	return buffer.Bytes(), nil
 }
 
 // OpCode gets the opcode of the packet.
-func (*ServerCharEnum) OpCode() session.OpCode {
-	return session.OpCode(OpCodeServerCharEnum)
+func (*ServerCharEnum) OpCode() OpCode {
+	return OpCodeServerCharEnum
 }

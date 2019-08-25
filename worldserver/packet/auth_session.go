@@ -48,7 +48,8 @@ func (pkt *ClientAuthSession) Handle(state *State) ([]ServerPacket, error) {
 	response := new(ServerAuthResponse)
 	response.Error = AuthOK
 
-	err := state.DB.Where(&database.Account{Name: string(pkt.AccountName)}).First(&state.Account).Error
+	state.Account = new(database.Account)
+	err := state.DB.Where(&database.Account{Name: string(pkt.AccountName)}).First(state.Account).Error
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
 			response.Error = AuthUnknownAccount
@@ -69,4 +70,9 @@ func (pkt *ClientAuthSession) Handle(state *State) ([]ServerPacket, error) {
 	}
 
 	return []ServerPacket{response}, nil
+}
+
+// OpCode returns the opcode for this packet.
+func (pkt *ClientAuthSession) OpCode() OpCode {
+	return OpCodeClientAuthSession
 }

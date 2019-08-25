@@ -43,16 +43,21 @@ func (u *Updater) Login(playerGUID object.GUID, session *Session) error {
 	}
 
 	u.sessions[playerGUID] = session
+
+	return nil
 }
 
 // Logout deregisters the player.
-func (u *Updater) Logout(playerGUID GUID) error {
+func (u *Updater) Logout(playerGUID object.GUID) error {
 	u.sessionsLock.Lock()
 	defer u.sessionsLock.Unlock()
 
 	if _, ok := u.sessions[playerGUID]; !ok {
 		u.log.Warningf("player with GUID %v is not logged in, but we got a logout request", playerGUID)
 	}
+
+	delete(u.sessions, playerGUID)
+	return nil
 }
 
 // Run starts the updater, which will constantly scan for object updates.

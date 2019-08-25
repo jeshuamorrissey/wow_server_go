@@ -3,8 +3,6 @@ package packet
 import (
 	"bytes"
 	"encoding/binary"
-
-	"github.com/jeshuamorrissey/wow_server_go/common/session"
 )
 
 // ServerPong is sent back in response to ClientPing.
@@ -12,16 +10,16 @@ type ServerPong struct {
 	Pong uint32
 }
 
-// Bytes writes out the packet to an array of bytes.
-func (pkt *ServerPong) Bytes(stateBase session.State) []byte {
+// ToBytes writes out the packet to an array of bytes.
+func (pkt *ServerPong) ToBytes(state *State) ([]byte, error) {
 	buffer := bytes.NewBufferString("")
 
 	binary.Write(buffer, binary.LittleEndian, pkt.Pong)
 
-	return buffer.Bytes()
+	return buffer.Bytes(), nil
 }
 
 // OpCode gets the opcode of the packet.
-func (*ServerPong) OpCode() session.OpCode {
-	return session.OpCode(OpCodeServerPong)
+func (*ServerPong) OpCode() OpCode {
+	return OpCodeServerPong
 }

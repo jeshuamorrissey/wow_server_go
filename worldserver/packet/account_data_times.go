@@ -9,14 +9,14 @@ import (
 type ServerAccountDataTimes struct{}
 
 // ToBytes writes out the packet to an array of bytes.
-func (pkt *ServerAccountDataTimes) ToBytes(state *State) []byte {
+func (pkt *ServerAccountDataTimes) ToBytes(state *State) ([]byte, error) {
 	buffer := bytes.NewBufferString("")
 
 	for i := 0; i < 32; i++ {
 		binary.Write(buffer, binary.LittleEndian, uint32(0))
 	}
 
-	return buffer.Bytes()
+	return buffer.Bytes(), nil
 }
 
 // OpCode gets the opcode of the packet.

@@ -51,19 +51,19 @@ type Player struct {
 }
 
 // Manager returns the manager associated with this object.
-func (p *Player) Manager() *Manager { return p.gameObject.Manager() }
+func (p *Player) Manager() *Manager { return p.GameObject.Manager() }
 
 // SetManager updates the manager associated with this object.
-func (p *Player) SetManager(manager *Manager) { p.gameObject.SetManager(manager) }
+func (p *Player) SetManager(manager *Manager) { p.GameObject.SetManager(manager) }
 
 // GUID returns the globally-unique ID of the object.
-func (p *Player) GUID() GUID { return p.gameObject.GUID() }
+func (p *Player) GUID() GUID { return p.GameObject.GUID() }
 
 // SetGUID updates this object's GUID to the given value.
-func (p *Player) SetGUID(guid GUID) { p.gameObject.SetGUID(guid) }
+func (p *Player) SetGUID(guid GUID) { p.GameObject.SetGUID(guid) }
 
 // Location returns the location of the object.
-func (p *Player) Location() *Location { return &p.location }
+func (p *Player) Location() *Location { return p.Unit.Location() }
 
 // MovementUpdate calculates and returns the movement update for the
 // object.
@@ -240,8 +240,7 @@ func (p *Player) UpdateFields() map[c.UpdateField]interface{} {
 	}
 
 	for slot, itemGUID := range p.Equipment {
-		itemBase, err := p.Manager().Get(itemGUID)
-		if err != nil {
+		if !p.Manager().Exists(itemGUID) {
 			p.Manager().log.WithFields(logrus.Fields{
 				"player":    p.GUID(),
 				"slot":      slot.String(),
@@ -250,7 +249,7 @@ func (p *Player) UpdateFields() map[c.UpdateField]interface{} {
 			continue
 		}
 
-		item := itemBase.(*Item)
+		item := p.Manager().Get(itemGUID).(*Item)
 
 		slotField := c.UpdateFieldPlayerInventoryStart + c.UpdateField(slot*2)
 		fields[slotField] = uint32(item.GUID().Low())
@@ -259,8 +258,7 @@ func (p *Player) UpdateFields() map[c.UpdateField]interface{} {
 		visibleItemSlot := c.UpdateField(slot * 12)
 		fields[c.UpdateFieldPlayerVisibleItemEntryStart+visibleItemSlot] = uint32(item.Template().Entry)
 
-		_, err = p.Manager().Get(item.Creator)
-		if err != nil {
+		if p.Manager().Exists(item.Creator) {
 			fields[c.UpdateFieldPlayerVisibleItem1Creator+visibleItemSlot] = uint32(item.Creator.Low())
 			fields[c.UpdateFieldPlayerVisibleItem1Creator+visibleItemSlot+1] = uint32(item.Creator.High())
 		}
@@ -292,7 +290,7 @@ func (p *Player) UpdateFields() map[c.UpdateField]interface{} {
 		fields[slotField+1] = uint32(item.High())
 	}
 
-	baseFields := p.gameObject.UpdateFields()
+	baseFields := p.GameObject.UpdateFields()
 	for k, v := range baseFields {
 		fields[k] = v
 	}
@@ -352,4 +350,16 @@ func (p *Player) flags() uint32 {
 	}
 
 	return flags
+}
+
+// FirstBag returns the first bag the player has equipped, or nil if there are no bags.
+func (p *Player) FirstBag() *Container {
+	for i := 0; i < 4; i++ {
+		bagGUID, ok := p.Bags[i]
+		if ok {
+			return p.Manager().Get(bagGUID).(*Container)
+		}
+	}
+
+	return nil
 }

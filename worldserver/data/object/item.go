@@ -9,7 +9,7 @@ import (
 
 // Item represents an instance of an in-game item.
 type Item struct {
-	gameObject
+	GameObject
 
 	// Basic information.
 	Durability        int
@@ -31,25 +31,24 @@ type Item struct {
 }
 
 // Manager returns the manager associated with this object.
-func (i *Item) Manager() *Manager { return i.gameObject.Manager() }
+func (i *Item) Manager() *Manager { return i.GameObject.Manager() }
 
 // SetManager updates the manager associated with this object.
-func (i *Item) SetManager(manager *Manager) { i.gameObject.SetManager(manager) }
+func (i *Item) SetManager(manager *Manager) { i.GameObject.SetManager(manager) }
 
 // GUID returns the globally-unique ID of the object.
-func (i *Item) GUID() GUID { return i.gameObject.GUID() }
+func (i *Item) GUID() GUID { return i.GameObject.GUID() }
 
 // SetGUID updates this object's GUID to the given value.
-func (i *Item) SetGUID(guid GUID) { i.gameObject.SetGUID(guid) }
+func (i *Item) SetGUID(guid GUID) { i.GameObject.SetGUID(guid) }
 
 // Location returns the location of the object.
 func (i *Item) Location() *Location {
-	obj, err := i.Manager().Get(i.Container)
-	if err != nil {
+	if !i.Manager().Exists(i.Container) {
 		return nil
 	}
 
-	return obj.Location()
+	return i.Manager().Get(i.Container).Location()
 }
 
 // MovementUpdate calculates and returns the movement update for the
@@ -82,7 +81,7 @@ func (i *Item) UpdateFields() map[c.UpdateField]interface{} {
 		c.UpdateFieldItemMaxDurability:       i.Template().MaxDurability,
 	}
 
-	baseFields := i.gameObject.UpdateFields()
+	baseFields := i.GameObject.UpdateFields()
 	for k, v := range baseFields {
 		fields[k] = v
 	}

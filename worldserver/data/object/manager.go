@@ -23,7 +23,8 @@ type Manager struct {
 // NewManager constructs a new object manager and returns it.
 func NewManager(log *logrus.Entry) *Manager {
 	return &Manager{
-		log: log,
+		log:     log,
+		objects: make(map[GUID]Object, 0),
 		nextID: map[c.HighGUID]uint32{
 			c.HighGUIDItem:          0,
 			c.HighGUIDPlayer:        0,
@@ -93,10 +94,12 @@ func (m *Manager) Remove(guid GUID) error {
 
 // Get retreives the given object from the manager. Will return an error
 // if the given GUID is not registered in the manager.
-func (m *Manager) Get(guid GUID) (Object, error) {
-	if obj, ok := m.objects[guid]; ok {
-		return obj, nil
-	}
+func (m *Manager) Get(guid GUID) Object {
+	return m.objects[guid]
+}
 
-	return nil, fmt.Errorf("object %v does not exist", guid)
+// Exists checks for the existance of a given object.
+func (m *Manager) Exists(guid GUID) bool {
+	_, ok := m.objects[guid]
+	return ok
 }

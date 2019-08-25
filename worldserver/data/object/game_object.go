@@ -2,7 +2,8 @@ package object
 
 import c "github.com/jeshuamorrissey/wow_server_go/worldserver/data/dbc/constants"
 
-type gameObject struct {
+// GameObject represents a generic game object.
+type GameObject struct {
 	manager *Manager
 
 	guid   GUID
@@ -11,27 +12,27 @@ type gameObject struct {
 }
 
 // Manager returns the manager associated with this object.
-func (o *gameObject) Manager() *Manager { return o.manager }
+func (o *GameObject) Manager() *Manager { return o.manager }
 
 // SetManager updates the manager associated with this object.
-func (o *gameObject) SetManager(manager *Manager) { o.manager = manager }
+func (o *GameObject) SetManager(manager *Manager) { o.manager = manager }
 
 // GUID returns the globally-unique ID of the object.
-func (o *gameObject) GUID() GUID { return o.guid }
+func (o *GameObject) GUID() GUID { return o.guid }
 
 // SetGUID updates this object's GUID to the given value.
-func (o *gameObject) SetGUID(guid GUID) { o.guid = guid }
+func (o *GameObject) SetGUID(guid GUID) { o.guid = guid }
 
 // Location returns the location of the object.
-func (o *gameObject) Location() *Location { return nil }
+func (o *GameObject) Location() *Location { return nil }
 
 // MovementUpdate calculates and returns the movement update for the
 // object.
-func (o *gameObject) MovementUpdate() []byte { return nil }
+func (o *GameObject) MovementUpdate() []byte { return nil }
 
 // UpdateFields populates and returns the updated fields for the
 // object.
-func (o *gameObject) UpdateFields() map[c.UpdateField]interface{} {
+func (o *GameObject) UpdateFields() map[c.UpdateField]interface{} {
 	return map[c.UpdateField]interface{}{
 		c.UpdateFieldGUIDLow:  uint32(o.GUID().Low()),
 		c.UpdateFieldGUIDHigh: uint32(o.GUID().High()),

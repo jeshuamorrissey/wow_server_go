@@ -3,15 +3,13 @@ package packet
 import (
 	"bytes"
 	"encoding/binary"
-
-	"github.com/jeshuamorrissey/wow_server_go/common/session"
 )
 
 // ServerTutorialFlags is sent back in response to ClientPing.
 type ServerTutorialFlags struct{}
 
-// Bytes writes out the packet to an array of bytes.
-func (pkt *ServerTutorialFlags) Bytes(stateBase session.State) []byte {
+// ToBytes writes out the packet to an array of bytes.
+func (pkt *ServerTutorialFlags) ToBytes(state *State) ([]byte, error) {
 	buffer := bytes.NewBufferString("")
 
 	// TODO(jeshua): implement tutorials.
@@ -19,10 +17,10 @@ func (pkt *ServerTutorialFlags) Bytes(stateBase session.State) []byte {
 		binary.Write(buffer, binary.LittleEndian, uint32(0))
 	}
 
-	return buffer.Bytes()
+	return buffer.Bytes(), nil
 }
 
 // OpCode gets the opcode of the packet.
-func (*ServerTutorialFlags) OpCode() session.OpCode {
-	return session.OpCode(OpCodeServerTutorialFlags)
+func (*ServerTutorialFlags) OpCode() OpCode {
+	return OpCodeServerTutorialFlags
 }

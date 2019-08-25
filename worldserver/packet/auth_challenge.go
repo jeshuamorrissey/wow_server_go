@@ -12,12 +12,12 @@ type ServerAuthChallenge struct {
 }
 
 // ToBytes writes out the packet to an array of bytes.
-func (pkt *ServerAuthChallenge) ToBytes(state *State) []byte {
+func (pkt *ServerAuthChallenge) ToBytes(state *State) ([]byte, error) {
 	buffer := bytes.NewBufferString("")
 
 	binary.Write(buffer, binary.BigEndian, pkt.Seed)
 
-	return buffer.Bytes()
+	return buffer.Bytes(), nil
 }
 
 // OpCode gets the opcode of the packet.

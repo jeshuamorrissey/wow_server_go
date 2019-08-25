@@ -13,25 +13,24 @@ type Container struct {
 }
 
 // Manager returns the manager associated with this object.
-func (cn *Container) Manager() *Manager { return cn.gameObject.Manager() }
+func (cn *Container) Manager() *Manager { return cn.GameObject.Manager() }
 
 // SetManager updates the manager associated with this object.
-func (cn *Container) SetManager(manager *Manager) { cn.gameObject.SetManager(manager) }
+func (cn *Container) SetManager(manager *Manager) { cn.GameObject.SetManager(manager) }
 
 // GUID returns the globally-unique ID of the object.
-func (cn *Container) GUID() GUID { return cn.gameObject.GUID() }
+func (cn *Container) GUID() GUID { return cn.GameObject.GUID() }
 
 // SetGUID updates this object's GUID to the given value.
-func (cn *Container) SetGUID(guid GUID) { cn.gameObject.SetGUID(guid) }
+func (cn *Container) SetGUID(guid GUID) { cn.GameObject.SetGUID(guid) }
 
 // Location returns the location of the object.
 func (cn *Container) Location() *Location {
-	obj, err := cn.Manager().Get(cn.Container)
-	if err != nil {
+	if !cn.Manager().Exists(cn.Container) {
 		return nil
 	}
 
-	return obj.Location()
+	return cn.Manager().Get(cn.Container).Location()
 }
 
 // MovementUpdate calculates and returns the movement update for the

@@ -11,10 +11,10 @@ import (
 
 // Unit represents an instance of an in-game monster.
 type Unit struct {
-	gameObject
+	GameObject
 
 	// Basic information.
-	location         Location
+	Loc              Location
 	Pitch            float32
 	Level            int
 	Race             c.Race
@@ -80,19 +80,19 @@ type Unit struct {
 }
 
 // Manager returns the manager associated with this object.
-func (u *Unit) Manager() *Manager { return u.gameObject.Manager() }
+func (u *Unit) Manager() *Manager { return u.GameObject.Manager() }
 
 // SetManager updates the manager associated with this object.
-func (u *Unit) SetManager(manager *Manager) { u.gameObject.SetManager(manager) }
+func (u *Unit) SetManager(manager *Manager) { u.GameObject.SetManager(manager) }
 
 // GUID returns the globally-unique ID of the object.
-func (u *Unit) GUID() GUID { return u.gameObject.GUID() }
+func (u *Unit) GUID() GUID { return u.GameObject.GUID() }
 
 // SetGUID updates this object's GUID to the given value.
-func (u *Unit) SetGUID(guid GUID) { u.gameObject.SetGUID(guid) }
+func (u *Unit) SetGUID(guid GUID) { u.GameObject.SetGUID(guid) }
 
 // Location returns the location of the object.
-func (u *Unit) Location() *Location { return &u.location }
+func (u *Unit) Location() *Location { return &u.Loc }
 
 // MovementUpdate calculates and returns the movement update for the
 // object.
@@ -102,13 +102,13 @@ func (u *Unit) MovementUpdate() []byte {
 	// MoveFlags
 	binary.Write(buffer, binary.LittleEndian, uint32(0)) // Time
 
-	binary.Write(buffer, binary.LittleEndian, float32(u.location.X))
-	binary.Write(buffer, binary.LittleEndian, float32(u.location.Y))
-	binary.Write(buffer, binary.LittleEndian, float32(u.location.Z))
-	binary.Write(buffer, binary.LittleEndian, float32(u.location.O))
+	binary.Write(buffer, binary.LittleEndian, float32(u.Location().X))
+	binary.Write(buffer, binary.LittleEndian, float32(u.Location().Y))
+	binary.Write(buffer, binary.LittleEndian, float32(u.Location().Z))
+	binary.Write(buffer, binary.LittleEndian, float32(u.Location().O))
 
-	transportObj, err := u.Manager().Get(u.Transport)
-	if err != nil {
+	if u.Manager().Exists(u.Transport) {
+		transportObj := u.Manager().Get(u.Transport)
 		binary.Write(buffer, binary.LittleEndian, uint64(u.Transport))
 		binary.Write(buffer, binary.LittleEndian, float32(transportObj.Location().X))
 		binary.Write(buffer, binary.LittleEndian, float32(transportObj.Location().Y))
@@ -275,7 +275,7 @@ func (u *Unit) UpdateFields() map[c.UpdateField]interface{} {
 		fields[infoField+1] = item.SheathType
 	}
 
-	baseFields := u.gameObject.UpdateFields()
+	baseFields := u.GameObject.UpdateFields()
 	for k, v := range baseFields {
 		fields[k] = v
 	}
