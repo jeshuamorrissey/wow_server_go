@@ -10,6 +10,7 @@ import (
 	"github.com/jeshuamorrissey/wow_server_go/common/session"
 	c "github.com/jeshuamorrissey/wow_server_go/worldserver/data/dbc/constants"
 	"github.com/jeshuamorrissey/wow_server_go/worldserver/data/object"
+	"github.com/jeshuamorrissey/wow_server_go/worldserver/system"
 )
 
 // ServerUpdateObject is the UPDATE_OBJECT packet.
@@ -128,5 +129,5 @@ func (pkt *ServerUpdateObject) Bytes(stateBase session.State) []byte {
 
 // OpCode returns the OpCode of the packet.
 func (pkt *ServerUpdateObject) OpCode() session.OpCode {
-	return OpCodeServerUpdateObject
+	return system.OpCodeServerUpdateObject
 }

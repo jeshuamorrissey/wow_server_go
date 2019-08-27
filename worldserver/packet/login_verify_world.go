@@ -5,6 +5,7 @@ import (
 	"encoding/binary"
 
 	"github.com/jeshuamorrissey/wow_server_go/worldserver/data/object"
+	"github.com/jeshuamorrissey/wow_server_go/worldserver/system"
 )
 
 // ServerLoginVerifyWorld is sent back in response to ClientPing.
@@ -13,7 +14,7 @@ type ServerLoginVerifyWorld struct {
 }
 
 // ToBytes writes out the packet to an array of bytes.
-func (pkt *ServerLoginVerifyWorld) ToBytes(state *State) ([]byte, error) {
+func (pkt *ServerLoginVerifyWorld) ToBytes(state *system.State) ([]byte, error) {
 	buffer := bytes.NewBufferString("")
 
 	binary.Write(buffer, binary.LittleEndian, uint32(pkt.Character.MapID))
@@ -26,6 +27,6 @@ func (pkt *ServerLoginVerifyWorld) ToBytes(state *State) ([]byte, error) {
 }
 
 // OpCode gets the opcode of the packet.
-func (*ServerLoginVerifyWorld) OpCode() OpCode {
-	return OpCodeServerLoginVerifyWorld
+func (*ServerLoginVerifyWorld) OpCode() system.OpCode {
+	return system.OpCodeServerLoginVerifyWorld
 }

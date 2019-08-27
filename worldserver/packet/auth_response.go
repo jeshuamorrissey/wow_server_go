@@ -3,6 +3,8 @@ package packet
 import (
 	"bytes"
 	"encoding/binary"
+
+	"github.com/jeshuamorrissey/wow_server_go/worldserver/system"
 )
 
 // ServerAuthResponse is the initial message sent from the server
@@ -12,7 +14,7 @@ type ServerAuthResponse struct {
 }
 
 // ToBytes writes out the packet to an array of bytes.
-func (pkt *ServerAuthResponse) ToBytes(state *State) ([]byte, error) {
+func (pkt *ServerAuthResponse) ToBytes(state *system.State) ([]byte, error) {
 	buffer := bytes.NewBufferString("")
 
 	binary.Write(buffer, binary.LittleEndian, pkt.Error)
@@ -24,6 +26,6 @@ func (pkt *ServerAuthResponse) ToBytes(state *State) ([]byte, error) {
 }
 
 // OpCode gets the opcode of the packet.
-func (*ServerAuthResponse) OpCode() OpCode {
-	return OpCodeServerAuthResponse
+func (*ServerAuthResponse) OpCode() system.OpCode {
+	return system.OpCodeServerAuthResponse
 }

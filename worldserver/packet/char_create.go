@@ -11,6 +11,7 @@ import (
 	"github.com/jeshuamorrissey/wow_server_go/common"
 	"github.com/jeshuamorrissey/wow_server_go/common/database"
 	c "github.com/jeshuamorrissey/wow_server_go/worldserver/data/dbc/constants"
+	"github.com/jeshuamorrissey/wow_server_go/worldserver/system"
 	"github.com/jinzhu/gorm"
 )
 
@@ -46,7 +47,7 @@ type ClientCharCreate struct {
 }
 
 // FromBytes loads the packet from the given data.
-func (pkt *ClientCharCreate) FromBytes(state *State, bufferBase io.Reader) error {
+func (pkt *ClientCharCreate) FromBytes(state *system.State, bufferBase io.Reader) error {
 	buffer := bufio.NewReader(bufferBase)
 	pkt.Name, _ = buffer.ReadString('\x00')
 	pkt.Name = normalizeCharacterName(pkt.Name)
@@ -63,14 +64,14 @@ func (pkt *ClientCharCreate) FromBytes(state *State, bufferBase io.Reader) error
 }
 
 // Handle will ensure that the given account exists.
-func (pkt *ClientCharCreate) Handle(state *State) ([]ServerPacket, error) {
+func (pkt *ClientCharCreate) Handle(state *system.State) ([]system.ServerPacket, error) {
 	response := new(ServerCharCreate)
 	response.Error = CharErrorCodeCreateSuccess
 
 	// Check for invalid names.
 	response.Error = validateCharacterName(pkt.Name)
 	if response.Error != CharErrorCodeCreateSuccess {
-		return []ServerPacket{response}, nil
+		return []system.ServerPacket{response}, nil
 	}
 
 	// Check if name already exists.
@@ -78,7 +79,7 @@ func (pkt *ClientCharCreate) Handle(state *State) ([]ServerPacket, error) {
 	err := state.DB.Where(&database.Character{Name: pkt.Name}).First(&char).Error
 	if err != gorm.ErrRecordNotFound {
 		response.Error = CharErrorCodeCreateNameInUse
-		return []ServerPacket{response}, nil
+		return []system.ServerPacket{response}, nil
 	}
 
 	// Make the character.
@@ -89,21 +90,21 @@ func (pkt *ClientCharCreate) Handle(state *State) ([]ServerPacket, error) {
 		pkt.SkinColor, pkt.Face, pkt.HairStyle, pkt.HairColor, pkt.Feature)
 	if err != nil {
 		response.Error = CharErrorCodeCreateError
-		return []ServerPacket{response}, nil
+		return []system.ServerPacket{response}, nil
 	}
 
 	err = state.DB.Create(charObj).Error
 	if err != nil {
 		response.Error = CharErrorCodeCreateFailed
-		return []ServerPacket{response}, nil
+		return []system.ServerPacket{response}, nil
 	}
 
-	return []ServerPacket{response}, nil
+	return []system.ServerPacket{response}, nil
 }
 
 // OpCode returns the opcode for this packet.
-func (pkt *ClientCharCreate) OpCode() OpCode {
-	return OpCodeClientCharCreate
+func (pkt *ClientCharCreate) OpCode() system.OpCode {
+	return system.OpCodeClientCharCreate
 }
 
 // ServerCharCreate is sent from the client when making a character.
@@ -112,7 +113,7 @@ type ServerCharCreate struct {
 }
 
 // ToBytes writes out the packet to an array of bytes.
-func (pkt *ServerCharCreate) ToBytes(state *State) ([]byte, error) {
+func (pkt *ServerCharCreate) ToBytes(state *system.State) ([]byte, error) {
 	buffer := bytes.NewBufferString("")
 
 	buffer.WriteByte(uint8(pkt.Error))
@@ -121,6 +122,6 @@ func (pkt *ServerCharCreate) ToBytes(state *State) ([]byte, error) {
 }
 
 // OpCode gets the opcode of the packet.
-func (*ServerCharCreate) OpCode() OpCode {
-	return OpCodeServerCharCreate
+func (*ServerCharCreate) OpCode() system.OpCode {
+	return system.OpCodeServerCharCreate
 }

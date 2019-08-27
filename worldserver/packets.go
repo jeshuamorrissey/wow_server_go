@@ -2,15 +2,16 @@ package worldserver
 
 import (
 	"github.com/jeshuamorrissey/wow_server_go/worldserver/packet"
+	"github.com/jeshuamorrissey/wow_server_go/worldserver/system"
 )
 
 var (
-	opCodeToPacket = map[packet.OpCode]func() packet.ClientPacket{
-		packet.OpCodeClientAuthSession: func() packet.ClientPacket { return new(packet.ClientAuthSession) },
-		packet.OpCodeClientCharCreate:  func() packet.ClientPacket { return new(packet.ClientCharCreate) },
-		packet.OpCodeClientCharDelete:  func() packet.ClientPacket { return new(packet.ClientCharDelete) },
-		packet.OpCodeClientCharEnum:    func() packet.ClientPacket { return new(packet.ClientCharEnum) },
-		packet.OpCodeClientPing:        func() packet.ClientPacket { return new(packet.ClientPing) },
-		packet.OpCodeClientPlayerLogin: func() packet.ClientPacket { return new(packet.ClientPlayerLogin) },
+	opCodeToPacket = map[system.OpCode]func() system.ClientPacket{
+		system.OpCodeClientAuthSession: func() system.ClientPacket { return new(packet.ClientAuthSession) },
+		system.OpCodeClientCharCreate:  func() system.ClientPacket { return new(packet.ClientCharCreate) },
+		system.OpCodeClientCharDelete:  func() system.ClientPacket { return new(packet.ClientCharDelete) },
+		system.OpCodeClientCharEnum:    func() system.ClientPacket { return new(packet.ClientCharEnum) },
+		system.OpCodeClientPing:        func() system.ClientPacket { return new(packet.ClientPing) },
+		system.OpCodeClientPlayerLogin: func() system.ClientPacket { return new(packet.ClientPlayerLogin) },
 	}
 )

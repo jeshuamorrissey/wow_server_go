@@ -1,4 +1,4 @@
-package packet
+package system
 
 import (
 	"github.com/jeshuamorrissey/wow_server_go/common/database"
@@ -12,8 +12,9 @@ import (
 type State struct {
 	Log *logrus.Entry
 
-	DB *gorm.DB
-	OM *object.Manager
+	DB      *gorm.DB
+	OM      *object.Manager
+	Updater *Updater
 
 	Realm *database.Realm
 

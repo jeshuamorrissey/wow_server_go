@@ -1,4 +1,4 @@
-package packet
+package system
 
 // OpCode is the opcode type used by the WorldServer.
 type OpCode int

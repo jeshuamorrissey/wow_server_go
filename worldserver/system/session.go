@@ -10,7 +10,6 @@ import (
 	"github.com/jeshuamorrissey/wow_server_go/common"
 	"github.com/jeshuamorrissey/wow_server_go/common/database"
 	"github.com/jeshuamorrissey/wow_server_go/worldserver/data/object"
-	"github.com/jeshuamorrissey/wow_server_go/worldserver/packet"
 	"github.com/jinzhu/gorm"
 	"github.com/sirupsen/logrus"
 )
@@ -22,10 +21,10 @@ type Session struct {
 	output io.Writer
 
 	// A mapping of opCode --> callback to create the client packet.
-	opCodeToPacket map[packet.OpCode]func() packet.ClientPacket
+	opCodeToPacket map[OpCode]func() ClientPacket
 
 	// State that is to be passed to each handler.
-	state *packet.State
+	state *State
 
 	// Private data required to encrypt/decrypt packet headers.
 	sendI, sendJ, recvI, recvJ uint8
@@ -35,7 +34,7 @@ type Session struct {
 func NewSession(
 	input io.Reader,
 	output io.Writer,
-	opCodeToPacket map[packet.OpCode]func() packet.ClientPacket,
+	opCodeToPacket map[OpCode]func() ClientPacket,
 	db *gorm.DB,
 	objectManager *object.Manager,
 	log *logrus.Entry,
@@ -44,7 +43,7 @@ func NewSession(
 		input:          input,
 		output:         output,
 		opCodeToPacket: opCodeToPacket,
-		state: &packet.State{
+		state: &State{
 			Log: log,
 
 			DB: db,
@@ -58,7 +57,7 @@ func NewSession(
 }
 
 // Send sends a single packet to this session's client.
-func (s *Session) Send(pkt packet.ServerPacket) error {
+func (s *Session) Send(pkt ServerPacket) error {
 	s.state.Log.Tracef("--> %s", pkt.OpCode())
 
 	pktData, err := pkt.ToBytes(s.state)
@@ -88,21 +87,21 @@ func (s *Session) Send(pkt packet.ServerPacket) error {
 // goroutine. The session will end when the user disconnects.
 func (s *Session) Run() {
 	for {
-		packet, err := s.readPacket()
+		pkt, err := s.readPacket()
 		if err != nil {
 			s.state.Log.Warnf("Terminating connection: %v\n", err)
 			return
 		}
 
 		// If the packet is nil, we don't know how to read it yet.
-		if packet == nil {
+		if pkt == nil {
 			continue
 		}
 
 		// Load and then handle the packet.
-		responses, err := packet.Handle(s.state)
+		responses, err := pkt.Handle(s.state)
 		if err != nil {
-			s.state.Log.Warnf("Error while handling packet %s: %v", packet.OpCode(), err)
+			s.state.Log.Warnf("Error while handling packet %s: %v", pkt.OpCode(), err)
 			continue
 		}
 
@@ -112,7 +111,7 @@ func (s *Session) Run() {
 	}
 }
 
-func (s *Session) readPacket() (packet.ClientPacket, error) {
+func (s *Session) readPacket() (ClientPacket, error) {
 	opCode, length, err := s.readHeader()
 	if err != nil {
 		return nil, err
@@ -137,15 +136,15 @@ func (s *Session) readPacket() (packet.ClientPacket, error) {
 	return pkt, nil
 }
 
-func (s *Session) readHeader() (packet.OpCode, int, error) {
+func (s *Session) readHeader() (OpCode, int, error) {
 	headerData := make([]byte, 6)
 	n, err := s.input.Read(headerData)
 	if err != nil {
-		return packet.OpCode(0), 0, fmt.Errorf("erorr while reading header: %v", err)
+		return OpCode(0), 0, fmt.Errorf("erorr while reading header: %v", err)
 	}
 
 	if n != len(headerData) {
-		return packet.OpCode(0), 0, errors.New("short read when reading opcode data")
+		return OpCode(0), 0, errors.New("short read when reading opcode data")
 	}
 
 	// If there is a session key in the state, then we need to decrypt.
@@ -163,12 +162,12 @@ func (s *Session) readHeader() (packet.OpCode, int, error) {
 
 	// In the world server, the length is the first 2 bytes in the pkt.
 	length := int(binary.BigEndian.Uint16(headerData[:2]))
-	opCode := packet.OpCode(binary.LittleEndian.Uint32(headerData[2:]))
+	opCode := OpCode(binary.LittleEndian.Uint32(headerData[2:]))
 
 	return opCode, length - 4, nil
 }
 
-func (s *Session) makeHeader(packetLen int, opCode packet.OpCode) ([]byte, error) {
+func (s *Session) makeHeader(packetLen int, opCode OpCode) ([]byte, error) {
 	lengthData := make([]byte, 2)
 	opCodeData := make([]byte, 2)
 

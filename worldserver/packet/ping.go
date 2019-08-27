@@ -3,6 +3,8 @@ package packet
 import (
 	"encoding/binary"
 	"io"
+
+	"github.com/jeshuamorrissey/wow_server_go/worldserver/system"
 )
 
 // ClientPing is sent from the client periodically.
@@ -12,21 +14,21 @@ type ClientPing struct {
 }
 
 // FromBytes reads packet data from the given buffer.
-func (pkt *ClientPing) FromBytes(state *State, buffer io.Reader) error {
+func (pkt *ClientPing) FromBytes(state *system.State, buffer io.Reader) error {
 	binary.Read(buffer, binary.LittleEndian, pkt.Ping)
 	binary.Read(buffer, binary.LittleEndian, pkt.Latency)
 	return nil
 }
 
 // Handle will ensure that the given account exists.
-func (pkt *ClientPing) Handle(state *State) ([]ServerPacket, error) {
+func (pkt *ClientPing) Handle(state *system.State) ([]system.ServerPacket, error) {
 	response := new(ServerPong)
 	response.Pong = pkt.Ping
 
-	return []ServerPacket{response}, nil
+	return []system.ServerPacket{response}, nil
 }
 
 // OpCode gets the opcode of the packet.
-func (*ClientPing) OpCode() OpCode {
-	return OpCodeClientPing
+func (*ClientPing) OpCode() system.OpCode {
+	return system.OpCodeClientPing
 }

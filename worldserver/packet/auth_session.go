@@ -5,6 +5,7 @@ import (
 	"io"
 
 	"github.com/jeshuamorrissey/wow_server_go/common/database"
+	"github.com/jeshuamorrissey/wow_server_go/worldserver/system"
 	"github.com/jinzhu/gorm"
 )
 
@@ -20,7 +21,7 @@ type ClientAuthSession struct {
 }
 
 // FromBytes reads a ClientAuthSession pcket from the byter buffer.
-func (pkt *ClientAuthSession) FromBytes(state *State, buffer io.Reader) error {
+func (pkt *ClientAuthSession) FromBytes(state *system.State, buffer io.Reader) error {
 	var unk uint32
 
 	binary.Read(buffer, binary.LittleEndian, &pkt.BuildNumber)
@@ -44,7 +45,7 @@ func (pkt *ClientAuthSession) FromBytes(state *State, buffer io.Reader) error {
 }
 
 // Handle will ensure that the given account exists.
-func (pkt *ClientAuthSession) Handle(state *State) ([]ServerPacket, error) {
+func (pkt *ClientAuthSession) Handle(state *system.State) ([]system.ServerPacket, error) {
 	response := new(ServerAuthResponse)
 	response.Error = AuthOK
 
@@ -69,10 +70,10 @@ func (pkt *ClientAuthSession) Handle(state *State) ([]ServerPacket, error) {
 		state.Log.Infof("Account %v authenticated!", state.Account.Name)
 	}
 
-	return []ServerPacket{response}, nil
+	return []system.ServerPacket{response}, nil
 }
 
 // OpCode returns the opcode for this packet.
-func (pkt *ClientAuthSession) OpCode() OpCode {
-	return OpCodeClientAuthSession
+func (pkt *ClientAuthSession) OpCode() system.OpCode {
+	return system.OpCodeClientAuthSession
 }

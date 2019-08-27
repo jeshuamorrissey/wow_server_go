@@ -3,13 +3,15 @@ package packet
 import (
 	"bytes"
 	"encoding/binary"
+
+	"github.com/jeshuamorrissey/wow_server_go/worldserver/system"
 )
 
 // ServerTutorialFlags is sent back in response to ClientPing.
 type ServerTutorialFlags struct{}
 
 // ToBytes writes out the packet to an array of bytes.
-func (pkt *ServerTutorialFlags) ToBytes(state *State) ([]byte, error) {
+func (pkt *ServerTutorialFlags) ToBytes(state *system.State) ([]byte, error) {
 	buffer := bytes.NewBufferString("")
 
 	// TODO(jeshua): implement tutorials.
@@ -21,6 +23,6 @@ func (pkt *ServerTutorialFlags) ToBytes(state *State) ([]byte, error) {
 }
 
 // OpCode gets the opcode of the packet.
-func (*ServerTutorialFlags) OpCode() OpCode {
-	return OpCodeServerTutorialFlags
+func (*ServerTutorialFlags) OpCode() system.OpCode {
+	return system.OpCodeServerTutorialFlags
 }

@@ -3,6 +3,8 @@ package packet
 import (
 	"bytes"
 	"encoding/binary"
+
+	"github.com/jeshuamorrissey/wow_server_go/worldserver/system"
 )
 
 // ServerInitWorldStates is sent back in response to ClientPing.
@@ -19,7 +21,7 @@ type WorldStateBlock struct {
 }
 
 // ToBytes writes out the packet to an array of bytes.
-func (pkt *ServerInitWorldStates) ToBytes(state *State) ([]byte, error) {
+func (pkt *ServerInitWorldStates) ToBytes(state *system.State) ([]byte, error) {
 	buffer := bytes.NewBufferString("")
 
 	binary.Write(buffer, binary.LittleEndian, uint32(pkt.Map))
@@ -34,6 +36,6 @@ func (pkt *ServerInitWorldStates) ToBytes(state *State) ([]byte, error) {
 }
 
 // OpCode gets the opcode of the packet.
-func (*ServerInitWorldStates) OpCode() OpCode {
-	return OpCodeServerInitWorldStates
+func (*ServerInitWorldStates) OpCode() system.OpCode {
+	return system.OpCodeServerInitWorldStates
 }

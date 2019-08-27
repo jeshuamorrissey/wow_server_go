@@ -8,6 +8,7 @@ import (
 	"github.com/jeshuamorrissey/wow_server_go/common/database"
 	c "github.com/jeshuamorrissey/wow_server_go/worldserver/data/dbc/constants"
 	"github.com/jeshuamorrissey/wow_server_go/worldserver/data/object"
+	"github.com/jeshuamorrissey/wow_server_go/worldserver/system"
 	"github.com/sirupsen/logrus"
 )
 
@@ -16,12 +17,12 @@ type ClientCharEnum struct {
 }
 
 // FromBytes reads packet data from the given buffer.
-func (pkt *ClientCharEnum) FromBytes(state *State, buffer io.Reader) error {
+func (pkt *ClientCharEnum) FromBytes(state *system.State, buffer io.Reader) error {
 	return nil
 }
 
 // Handle will ensure that the given account exists.
-func (pkt *ClientCharEnum) Handle(state *State) ([]ServerPacket, error) {
+func (pkt *ClientCharEnum) Handle(state *system.State) ([]system.ServerPacket, error) {
 	response := new(ServerCharEnum)
 
 	err := state.DB.Where(&database.Character{AccountID: state.Account.ID, RealmID: state.Realm.ID}).Find(&response.Characters).Error
@@ -29,12 +30,12 @@ func (pkt *ClientCharEnum) Handle(state *State) ([]ServerPacket, error) {
 		return nil, err
 	}
 
-	return []ServerPacket{response}, nil
+	return []system.ServerPacket{response}, nil
 }
 
 // OpCode returns the opcode for this packet.
-func (pkt *ClientCharEnum) OpCode() OpCode {
-	return OpCodeClientCharEnum
+func (pkt *ClientCharEnum) OpCode() system.OpCode {
+	return system.OpCodeClientCharEnum
 }
 
 // ServerCharEnum is sent back in response to ClientPing.
@@ -43,7 +44,7 @@ type ServerCharEnum struct {
 }
 
 // ToBytes writes out the packet to an array of bytes.
-func (pkt *ServerCharEnum) ToBytes(state *State) ([]byte, error) {
+func (pkt *ServerCharEnum) ToBytes(state *system.State) ([]byte, error) {
 	buffer := bytes.NewBufferString("")
 
 	buffer.WriteByte(uint8(len(pkt.Characters))) // number of characters
@@ -125,6 +126,6 @@ func (pkt *ServerCharEnum) ToBytes(state *State) ([]byte, error) {
 }
 
 // OpCode gets the opcode of the packet.
-func (*ServerCharEnum) OpCode() OpCode {
-	return OpCodeServerCharEnum
+func (*ServerCharEnum) OpCode() system.OpCode {
+	return system.OpCodeServerCharEnum
 }
