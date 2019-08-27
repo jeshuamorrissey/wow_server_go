@@ -66,17 +66,18 @@ func (s *Session) Send(pkt packet.ServerPacket) error {
 		return err
 	}
 
-	err = s.writeHeader(len(pktData), pkt.OpCode())
+	header, err := s.makeHeader(len(pktData), pkt.OpCode())
 	if err != nil {
 		return err
 	}
 
-	n, err := s.output.Write(pktData)
+	toSend := append(header, pktData...)
+	n, err := s.output.Write(toSend)
 	if err != nil {
 		return err
 	}
 
-	if n != len(pktData) {
+	if n != len(toSend) {
 		return fmt.Errorf("expected %v bytes to send, only sent %v", len(pktData), n)
 	}
 
@@ -167,14 +168,14 @@ func (s *Session) readHeader() (packet.OpCode, int, error) {
 	return opCode, length - 4, nil
 }
 
-func (s *Session) writeHeader(packetLen int, opCode packet.OpCode) error {
+func (s *Session) makeHeader(packetLen int, opCode packet.OpCode) ([]byte, error) {
 	lengthData := make([]byte, 2)
 	opCodeData := make([]byte, 2)
 
 	binary.BigEndian.PutUint16(lengthData, uint16(packetLen)+2)
 	binary.LittleEndian.PutUint16(opCodeData, uint16(opCode.Int()))
 
-	header := make([]byte, 4)
+	header := make([]byte, 0, 4)
 	header = append(header, lengthData...)
 	header = append(header, opCodeData...)
 
@@ -192,6 +193,5 @@ func (s *Session) writeHeader(packetLen int, opCode packet.OpCode) error {
 		}
 	}
 
-	s.output.Write(header)
-	return nil
+	return header, nil
 }
