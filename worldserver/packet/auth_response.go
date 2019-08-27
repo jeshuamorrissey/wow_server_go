@@ -4,13 +4,14 @@ import (
 	"bytes"
 	"encoding/binary"
 
+	c "github.com/jeshuamorrissey/wow_server_go/worldserver/data/dbc/constants"
 	"github.com/jeshuamorrissey/wow_server_go/worldserver/system"
 )
 
 // ServerAuthResponse is the initial message sent from the server
 // to the client to start authorization.
 type ServerAuthResponse struct {
-	Error AuthErrorCode
+	Error c.AuthErrorCode
 }
 
 // ToBytes writes out the packet to an array of bytes.

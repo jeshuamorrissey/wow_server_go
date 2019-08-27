@@ -21,16 +21,16 @@ func normalizeCharacterName(name string) string {
 	return strings.Title(name)
 }
 
-func validateCharacterName(name string) CharErrorCode {
+func validateCharacterName(name string) c.CharErrorCode {
 	if len(name) == 0 {
-		return CharErrorCodeNameNoName
+		return c.CharErrorCodeNameNoName
 	} else if len(name) > c.MaxPlayerNameLength {
-		return CharErrorCodeNameTooLong
+		return c.CharErrorCodeNameTooLong
 	} else if len(name) < c.MinPlayerNameLength {
-		return CharErrorCodeNameTooShort
+		return c.CharErrorCodeNameTooShort
 	}
 
-	return CharErrorCodeCreateSuccess
+	return c.CharErrorCodeCreateSuccess
 }
 
 // ClientCharCreate is sent from the client when making a character.
@@ -66,11 +66,11 @@ func (pkt *ClientCharCreate) FromBytes(state *system.State, bufferBase io.Reader
 // Handle will ensure that the given account exists.
 func (pkt *ClientCharCreate) Handle(state *system.State) ([]system.ServerPacket, error) {
 	response := new(ServerCharCreate)
-	response.Error = CharErrorCodeCreateSuccess
+	response.Error = c.CharErrorCodeCreateSuccess
 
 	// Check for invalid names.
 	response.Error = validateCharacterName(pkt.Name)
-	if response.Error != CharErrorCodeCreateSuccess {
+	if response.Error != c.CharErrorCodeCreateSuccess {
 		return []system.ServerPacket{response}, nil
 	}
 
@@ -78,7 +78,7 @@ func (pkt *ClientCharCreate) Handle(state *system.State) ([]system.ServerPacket,
 	var char database.Character
 	err := state.DB.Where(&database.Character{Name: pkt.Name}).First(&char).Error
 	if err != gorm.ErrRecordNotFound {
-		response.Error = CharErrorCodeCreateNameInUse
+		response.Error = c.CharErrorCodeCreateNameInUse
 		return []system.ServerPacket{response}, nil
 	}
 
@@ -89,13 +89,13 @@ func (pkt *ClientCharCreate) Handle(state *system.State) ([]system.ServerPacket,
 		pkt.Race, pkt.Class, pkt.Gender,
 		pkt.SkinColor, pkt.Face, pkt.HairStyle, pkt.HairColor, pkt.Feature)
 	if err != nil {
-		response.Error = CharErrorCodeCreateError
+		response.Error = c.CharErrorCodeCreateError
 		return []system.ServerPacket{response}, nil
 	}
 
 	err = state.DB.Create(charObj).Error
 	if err != nil {
-		response.Error = CharErrorCodeCreateFailed
+		response.Error = c.CharErrorCodeCreateFailed
 		return []system.ServerPacket{response}, nil
 	}
 
@@ -109,7 +109,7 @@ func (pkt *ClientCharCreate) OpCode() system.OpCode {
 
 // ServerCharCreate is sent from the client when making a character.
 type ServerCharCreate struct {
-	Error CharErrorCode
+	Error c.CharErrorCode
 }
 
 // ToBytes writes out the packet to an array of bytes.

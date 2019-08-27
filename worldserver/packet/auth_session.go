@@ -5,6 +5,7 @@ import (
 	"io"
 
 	"github.com/jeshuamorrissey/wow_server_go/common/database"
+	c "github.com/jeshuamorrissey/wow_server_go/worldserver/data/dbc/constants"
 	"github.com/jeshuamorrissey/wow_server_go/worldserver/system"
 	"github.com/jinzhu/gorm"
 )
@@ -47,13 +48,13 @@ func (pkt *ClientAuthSession) FromBytes(state *system.State, buffer io.Reader) e
 // Handle will ensure that the given account exists.
 func (pkt *ClientAuthSession) Handle(state *system.State) ([]system.ServerPacket, error) {
 	response := new(ServerAuthResponse)
-	response.Error = AuthOK
+	response.Error = c.AuthOK
 
 	state.Account = new(database.Account)
 	err := state.DB.Where(&database.Account{Name: string(pkt.AccountName)}).First(state.Account).Error
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
-			response.Error = AuthUnknownAccount
+			response.Error = c.AuthUnknownAccount
 		} else {
 			return nil, err
 		}
@@ -62,10 +63,10 @@ func (pkt *ClientAuthSession) Handle(state *system.State) ([]system.ServerPacket
 	// TODO(jeshua): validate the information sent by the client.
 	// If there is no session key, account is invalid.
 	if state.Account.SessionKey() == nil {
-		response.Error = AuthBadServerProof
+		response.Error = c.AuthBadServerProof
 	}
 
-	if response.Error == AuthOK {
+	if response.Error == c.AuthOK {
 		state.Log = state.Log.WithField("account", state.Account.Name)
 		state.Log.Infof("Account %v authenticated!", state.Account.Name)
 	}

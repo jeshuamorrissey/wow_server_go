@@ -27,13 +27,13 @@ func (pkt *ClientCharDelete) FromBytes(state *system.State, buffer io.Reader) er
 // Handle will ensure that the given account exists.
 func (pkt *ClientCharDelete) Handle(state *system.State) ([]system.ServerPacket, error) {
 	response := new(ServerCharDelete)
-	response.Error = CharErrorCodeDeleteSuccess
+	response.Error = c.CharErrorCodeDeleteSuccess
 
 	// Get the object.
 	var char database.Character
 	err := state.DB.Where("GUID = ?", uint64(pkt.HighGUID)<<32|uint64(pkt.ID)).First(&char).Error
 	if err != nil {
-		response.Error = CharErrorCodeDeleteFailed
+		response.Error = c.CharErrorCodeDeleteFailed
 		return []system.ServerPacket{response}, nil
 	}
 
@@ -49,7 +49,7 @@ func (pkt *ClientCharDelete) OpCode() system.OpCode {
 
 // ServerCharDelete is sent from the client when making a character.
 type ServerCharDelete struct {
-	Error CharErrorCode
+	Error c.CharErrorCode
 }
 
 // ToBytes writes out the packet to an array of bytes.
