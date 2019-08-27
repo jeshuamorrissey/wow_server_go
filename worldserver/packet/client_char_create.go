@@ -2,7 +2,6 @@ package packet
 
 import (
 	"bufio"
-	"bytes"
 	"encoding/binary"
 	"io"
 	"regexp"
@@ -105,23 +104,4 @@ func (pkt *ClientCharCreate) Handle(state *system.State) ([]system.ServerPacket,
 // OpCode returns the opcode for this packet.
 func (pkt *ClientCharCreate) OpCode() system.OpCode {
 	return system.OpCodeClientCharCreate
-}
-
-// ServerCharCreate is sent from the client when making a character.
-type ServerCharCreate struct {
-	Error c.CharErrorCode
-}
-
-// ToBytes writes out the packet to an array of bytes.
-func (pkt *ServerCharCreate) ToBytes(state *system.State) ([]byte, error) {
-	buffer := bytes.NewBufferString("")
-
-	buffer.WriteByte(uint8(pkt.Error))
-
-	return buffer.Bytes(), nil
-}
-
-// OpCode gets the opcode of the packet.
-func (*ServerCharCreate) OpCode() system.OpCode {
-	return system.OpCodeServerCharCreate
 }

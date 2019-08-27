@@ -1,12 +1,10 @@
 package packet
 
 import (
-	"bytes"
 	"encoding/binary"
 	"io"
 
 	"github.com/jeshuamorrissey/wow_server_go/common/database"
-
 	c "github.com/jeshuamorrissey/wow_server_go/worldserver/data/dbc/constants"
 	"github.com/jeshuamorrissey/wow_server_go/worldserver/system"
 )
@@ -45,23 +43,4 @@ func (pkt *ClientCharDelete) Handle(state *system.State) ([]system.ServerPacket,
 // OpCode returns the opcode for this packet.
 func (pkt *ClientCharDelete) OpCode() system.OpCode {
 	return system.OpCodeClientCharDelete
-}
-
-// ServerCharDelete is sent from the client when making a character.
-type ServerCharDelete struct {
-	Error c.CharErrorCode
-}
-
-// ToBytes writes out the packet to an array of bytes.
-func (pkt *ServerCharDelete) ToBytes(state *system.State) ([]byte, error) {
-	buffer := bytes.NewBufferString("")
-
-	buffer.WriteByte(uint8(pkt.Error))
-
-	return buffer.Bytes(), nil
-}
-
-// OpCode gets the opcode of the packet.
-func (*ServerCharDelete) OpCode() system.OpCode {
-	return system.OpCodeServerCharDelete
 }
