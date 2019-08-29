@@ -10,6 +10,8 @@ import (
 // State contains useful state information passed to all packet
 // methods.
 type State struct {
+	Session *Session
+
 	Log *logrus.Entry
 
 	DB      *gorm.DB

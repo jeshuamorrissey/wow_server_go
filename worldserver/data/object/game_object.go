@@ -32,8 +32,8 @@ func (o *GameObject) MovementUpdate() []byte { return nil }
 
 // UpdateFields populates and returns the updated fields for the
 // object.
-func (o *GameObject) UpdateFields() map[c.UpdateField]interface{} {
-	return map[c.UpdateField]interface{}{
+func (o *GameObject) UpdateFields() UpdateFieldsMap {
+	return UpdateFieldsMap{
 		c.UpdateFieldGUIDLow:  uint32(o.GUID().Low()),
 		c.UpdateFieldGUIDHigh: uint32(o.GUID().High()),
 		c.UpdateFieldType:     uint32(TypeMask(o)),

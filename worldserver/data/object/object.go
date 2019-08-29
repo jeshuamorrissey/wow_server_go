@@ -4,6 +4,37 @@ import (
 	c "github.com/jeshuamorrissey/wow_server_go/worldserver/data/dbc/constants"
 )
 
+// UpdateFieldsMap is a mapping from an UpdateField constant to some value.
+type UpdateFieldsMap map[c.UpdateField]interface{}
+
+// ToBytes converts an update fields map to bytes.
+func (m UpdateFieldsMap) ToBytes() []byte {
+	mask := big.NewInt(0)
+	fields := bytes.NewBufferString("")
+
+	for field, valueGeneric := range o.UpdateFields {
+		switch value := valueGeneric.(type) {
+		case float32:
+			binary.Write(fields, binary.LittleEndian, value)
+			mask.SetBit(mask, int(field), 1)
+		case uint32:
+			binary.Write(fields, binary.LittleEndian, value)
+			mask.SetBit(mask, int(field), 1)
+		default:
+			panic(fmt.Sprintf("Unknown field type %T in update fields (%v)", value, field))
+		}
+	}
+
+	nBlocks := uint8((len(m) + 32 - 1) / 32)
+	nBytes := uint8((nBlocks * 32) / 8)
+
+	fieldBytes := make([]byte, 0)
+	fieldBytes = append(fieldBytes, uint8(nBlocks))
+	fieldBytes = append(fieldBytes, common.PadBigIntBytes(common.ReverseBytes(mask.Bytes()), int(nBytes))...)
+	fieldBytes = append(fieldBytes, fields.Bytes()...)
+	return fieldBytes
+}
+
 // Object represents a generic object within the game. All objects
 // should implement this interface.
 type Object interface {
@@ -29,5 +60,5 @@ type Object interface {
 	MovementUpdate() []byte
 
 	// UpdateFields should return the update fields for the object.
-	UpdateFields() map[c.UpdateField]interface{}
+	UpdateFields() UpdateFieldsMap
 }

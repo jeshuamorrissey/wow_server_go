@@ -39,8 +39,8 @@ func (cn *Container) MovementUpdate() []byte { return nil }
 
 // UpdateFields populates and returns the updated fields for the
 // object.
-func (cn *Container) UpdateFields() map[c.UpdateField]interface{} {
-	fields := map[c.UpdateField]interface{}{
+func (cn *Container) UpdateFields() UpdateFieldsMap {
+	fields := UpdateFieldsMap{
 		c.UpdateFieldContainerNumSlots: cn.NumSlots,
 	}
 

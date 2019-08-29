@@ -15,7 +15,7 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-func makeSession(om *object.Manager, realm *database.Realm, reader io.Reader, writer io.Writer, log *logrus.Entry, db *gorm.DB) *system.Session {
+func makeSession(om *object.Manager, realm *database.Realm, reader io.Reader, writer io.Writer, log *logrus.Entry, db *gorm.DB, updater *system.Updater) *system.Session {
 	return system.NewSession(
 		reader,
 		writer,
@@ -24,6 +24,7 @@ func makeSession(om *object.Manager, realm *database.Realm, reader io.Reader, wr
 		om,
 		log,
 		realm,
+		updater,
 	)
 }
 
@@ -43,6 +44,11 @@ func RunWorldServer(realmName string, port int, om *object.Manager, db *gorm.DB)
 
 	log := logrus.WithFields(logrus.Fields{"server": "WORLD", "port": port})
 
+	// Start updater.
+	updater := system.NewUpdater(log, om)
+	go updater.Run()
+
+	// Start session handler.
 	listener, err := net.Listen("tcp", ":"+strconv.Itoa(port))
 	if err != nil {
 		log.Fatalf("Error while opening port: %v\n", err)
@@ -58,7 +64,7 @@ func RunWorldServer(realmName string, port int, om *object.Manager, db *gorm.DB)
 
 		log.Printf("Receiving WORLD connection from %v\n", conn.RemoteAddr())
 		sessLog := logrus.WithFields(logrus.Fields{"server": "WORLD", "account": "???"})
-		sess := makeSession(om, &realm, conn, conn, sessLog, db)
+		sess := makeSession(om, &realm, conn, conn, sessLog, db, updater)
 		setupSession(sess)
 		go sess.Run()
 	}

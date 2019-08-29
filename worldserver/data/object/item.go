@@ -57,8 +57,8 @@ func (i *Item) MovementUpdate() []byte { return nil }
 
 // UpdateFields populates and returns the updated fields for the
 // object.
-func (i *Item) UpdateFields() map[c.UpdateField]interface{} {
-	fields := map[c.UpdateField]interface{}{
+func (i *Item) UpdateFields() UpdateFieldsMap {
+	fields := UpdateFieldsMap{
 		c.UpdateFieldItemOwner:               i.Owner.Low(),
 		c.UpdateFieldItemOwner + 1:           i.Owner.High(),
 		c.UpdateFieldItemContained:           i.Container.Low(),

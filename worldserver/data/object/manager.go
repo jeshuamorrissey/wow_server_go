@@ -16,6 +16,9 @@ type Manager struct {
 	objectsLock sync.Mutex
 	objects     map[GUID]Object
 
+	changeWaitersLock sync.Mutex
+	changeWaiters     []func(GUID)
+
 	nextID  map[c.HighGUID]uint32
 	freeIDs map[c.HighGUID][]uint32
 }
@@ -23,8 +26,9 @@ type Manager struct {
 // NewManager constructs a new object manager and returns it.
 func NewManager(log *logrus.Entry) *Manager {
 	return &Manager{
-		log:     log,
-		objects: make(map[GUID]Object, 0),
+		log:           log,
+		objects:       make(map[GUID]Object, 0),
+		changeWaiters: make([]func(GUID), 0),
 		nextID: map[c.HighGUID]uint32{
 			c.HighGUIDItem:          0,
 			c.HighGUIDPlayer:        0,
@@ -102,4 +106,28 @@ func (m *Manager) Get(guid GUID) Object {
 func (m *Manager) Exists(guid GUID) bool {
 	_, ok := m.objects[guid]
 	return ok
+}
+
+// Update marks the object as updated (which will trigger all OnChange
+// events).
+func (m *Manager) Update(guid GUID) {
+	for _, onChange := range m.changeWaiters {
+		onChange(guid)
+	}
+}
+
+// AwaitChange will wait for any change to any object in the manager and
+// call the appropriate function with the changed object.
+func (m *Manager) AwaitChange(onChange func(GUID)) {
+	m.changeWaitersLock.Lock()
+	defer m.changeWaitersLock.Unlock()
+
+	m.changeWaiters = append(m.changeWaiters, onChange)
+}
+
+// Objects returns a reference to the full object map.
+// TODO(jeshua): Make this more efficient (e.g. only return objects within
+// a certain distance, ...).
+func (m *Manager) Objects() map[GUID]Object {
+	return m.objects
 }

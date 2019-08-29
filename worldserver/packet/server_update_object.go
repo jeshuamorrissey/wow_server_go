@@ -15,40 +15,16 @@ import (
 
 // ServerUpdateObject is the UPDATE_OBJECT packet.
 type ServerUpdateObject struct {
-	Updates []ObjectUpdate
+	OutOfRangeUpdates system.OutOfRangeUpdate
+	ObjectUpdates     []system.ObjectUpdate
 }
 
-// ObjectUpdate is a common parent class for different types of updates.
-type ObjectUpdate interface {
-	UpdateType() c.UpdateType
-}
-
-// OutOfRangeUpdate represents making a series of objects out of range.
-type OutOfRangeUpdate struct {
-	GUIDS []object.GUID
-}
-
-// UpdateType returns the update type in this structure.
-func (u *OutOfRangeUpdate) UpdateType() c.UpdateType { return c.UpdateTypeOutOfRangeObjects }
-
-// Update represents a generic game object update.
-type Update struct {
-	updateType c.UpdateType
-	IsSelf     bool
-	Object     object.Object
-	Victim     object.Object
-	WorldTime  uint32
-}
-
-// UpdateType returns the update type in this structure.
-func (u *Update) UpdateType() c.UpdateType { return u.updateType }
-
-// FieldsUpdate returns the bytes representation of the fields.
-func (u *Update) FieldsUpdate() []byte {
+// ToBytes returns the bytes representation of the fields.
+func (o *ObjectUpdate) ToBytes() []byte {
 	mask := big.NewInt(0)
 	fields := bytes.NewBufferString("")
 
-	for field, valueGeneric := range u.Object.UpdateFields() {
+	for field, valueGeneric := range o.UpdateFields {
 		switch value := valueGeneric.(type) {
 		case float32:
 			binary.Write(fields, binary.LittleEndian, value)

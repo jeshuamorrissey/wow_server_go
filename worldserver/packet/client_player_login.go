@@ -27,7 +27,7 @@ func (pkt *ClientPlayerLogin) Handle(state *system.State) ([]system.ServerPacket
 	}
 
 	player := state.OM.Get(pkt.GUID).(*object.Player)
-	state.Log.Infof("player = %v", player)
+	state.Updater.Login(player.GUID(), state.Session)
 
 	return []system.ServerPacket{
 		&ServerLoginVerifyWorld{

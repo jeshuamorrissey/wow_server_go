@@ -71,10 +71,10 @@ func (p *Player) MovementUpdate() []byte { return p.Unit.MovementUpdate() }
 
 // UpdateFields populates and returns the updated fields for the
 // object.
-func (p *Player) UpdateFields() map[c.UpdateField]interface{} {
+func (p *Player) UpdateFields() UpdateFieldsMap {
 	modelInfo := dbc.GetPlayerModelInfo(p.Race, p.Gender)
 
-	fields := map[c.UpdateField]interface{}{
+	fields := UpdateFieldsMap{
 		c.UpdateFieldUnitCharmLow:                                     uint32(p.Charm.Low()),
 		c.UpdateFieldUnitCharmHigh:                                    uint32(p.Charm.High()),
 		c.UpdateFieldUnitSummonLow:                                    uint32(p.Summon.Low()),

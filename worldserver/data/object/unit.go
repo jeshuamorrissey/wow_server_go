@@ -149,9 +149,9 @@ func (u *Unit) MovementUpdate() []byte {
 
 // UpdateFields populates and returns the updated fields for the
 // object.
-func (u *Unit) UpdateFields() map[c.UpdateField]interface{} {
+func (u *Unit) UpdateFields() UpdateFieldsMap {
 	tmpl := u.Template()
-	fields := map[c.UpdateField]interface{}{
+	fields := UpdateFieldsMap{
 		c.UpdateFieldUnitCharmLow:                                     u.Charm.Low(),
 		c.UpdateFieldUnitCharmHigh:                                    u.Charm.High(),
 		c.UpdateFieldUnitSummonLow:                                    u.Summon.Low(),

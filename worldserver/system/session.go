@@ -38,22 +38,30 @@ func NewSession(
 	db *gorm.DB,
 	objectManager *object.Manager,
 	log *logrus.Entry,
-	realm *database.Realm) *Session {
-	return &Session{
+	realm *database.Realm,
+	updater *Updater,
+) *Session {
+	state := &State{
+		Log: log,
+
+		DB:      db,
+		OM:      objectManager,
+		Updater: updater,
+
+		Realm:     realm,
+		Account:   nil,
+		Character: nil,
+	}
+
+	session := &Session{
 		input:          input,
 		output:         output,
 		opCodeToPacket: opCodeToPacket,
-		state: &State{
-			Log: log,
-
-			DB: db,
-			OM: objectManager,
-
-			Realm:     realm,
-			Account:   nil,
-			Character: nil,
-		},
+		state:          state,
 	}
+
+	state.Session = session
+	return session
 }
 
 // Send sends a single packet to this session's client.
