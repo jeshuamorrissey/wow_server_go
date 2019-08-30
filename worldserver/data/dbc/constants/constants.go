@@ -797,3 +797,34 @@ const (
 	UpdateTypeOutOfRangeObjects UpdateType = 4
 	UpdateTypeNearObjects       UpdateType = 5
 )
+
+// MovementFlag is a enum value which maps to a object's type ID.
+//go:generate stringer -type=MovementFlag -trimprefix=MovementFlag
+type MovementFlag uint32
+
+// Byte2Flags values.
+const (
+	MovementFlagForward         MovementFlag = 0x00000001
+	MovementFlagBackward        MovementFlag = 0x00000002
+	MovementFlagStrafeLeft      MovementFlag = 0x00000004
+	MovementFlagStrafeRight     MovementFlag = 0x00000008
+	MovementFlagTurnLeft        MovementFlag = 0x00000010
+	MovementFlagTurnRight       MovementFlag = 0x00000020
+	MovementFlagPitchUp         MovementFlag = 0x00000040
+	MovementFlagPitchDown       MovementFlag = 0x00000080
+	MovementFlagWalkMode        MovementFlag = 0x00000100
+	MovementFlagLevitating      MovementFlag = 0x00000400
+	MovementFlagFlying          MovementFlag = 0x00000800
+	MovementFlagFalling         MovementFlag = 0x00002000
+	MovementFlagFallingFar      MovementFlag = 0x00004000
+	MovementFlagSwimming        MovementFlag = 0x00200000
+	MovementFlagSplineEnabled   MovementFlag = 0x00400000
+	MovementFlagCanFly          MovementFlag = 0x00800000
+	MovementFlagFlyingOld       MovementFlag = 0x01000000
+	MovementFlagOnTransport     MovementFlag = 0x02000000
+	MovementFlagSplineElevation MovementFlag = 0x04000000
+	MovementFlagRoot            MovementFlag = 0x08000000
+	MovementFlagWaterWalking    MovementFlag = 0x10000000
+	MovementFlagSafeFall        MovementFlag = 0x20000000
+	MovementFlagHover           MovementFlag = 0x40000000
+)

@@ -70,3 +70,19 @@ func UpdateFlags(obj Object) c.UpdateFlags {
 		panic(fmt.Sprintf("UpdateFlags: Unknown object type %T!", o))
 	}
 }
+
+// NumUpdateFields returns the number of bytes in the mask for an object type.
+func NumUpdateFields(obj Object) int {
+	switch o := obj.(type) {
+	case *Item:
+		return 48
+	case *Container:
+		return 106
+	case *Unit:
+		return 188
+	case *Player:
+		return 1282
+	default:
+		panic(fmt.Sprintf("UpdateFlags: Unknown object type %T!", o))
+	}
+}

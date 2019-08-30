@@ -36,7 +36,6 @@ func (o *GameObject) UpdateFields() UpdateFieldsMap {
 	return UpdateFieldsMap{
 		c.UpdateFieldGUIDLow:  uint32(o.GUID().Low()),
 		c.UpdateFieldGUIDHigh: uint32(o.GUID().High()),
-		c.UpdateFieldType:     uint32(TypeMask(o)),
 		c.UpdateFieldEntry:    uint32(o.Entry),
 		c.UpdateFieldScaleX:   float32(o.ScaleX),
 	}

@@ -33,6 +33,13 @@ func setupSession(sess *system.Session) {
 	sess.Send(&pkt)
 }
 
+func makeObjectUpdatePacket(outOfRangeUpdate system.OutOfRangeUpdate, objectUpdates []system.ObjectUpdate) system.ServerPacket {
+	return &packet.ServerUpdateObject{
+		OutOfRangeUpdates: outOfRangeUpdate,
+		ObjectUpdates:     objectUpdates,
+	}
+}
+
 // RunWorldServer takes as input a database and runs an world server referencing
 // it.
 func RunWorldServer(realmName string, port int, om *object.Manager, db *gorm.DB) {
@@ -45,7 +52,7 @@ func RunWorldServer(realmName string, port int, om *object.Manager, db *gorm.DB)
 	log := logrus.WithFields(logrus.Fields{"server": "WORLD", "port": port})
 
 	// Start updater.
-	updater := system.NewUpdater(log, om)
+	updater := system.NewUpdater(log, om, makeObjectUpdatePacket)
 	go updater.Run()
 
 	// Start session handler.

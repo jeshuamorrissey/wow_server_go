@@ -99,7 +99,7 @@ func (u *Unit) Location() *Location { return &u.Loc }
 func (u *Unit) MovementUpdate() []byte {
 	buffer := bytes.NewBufferString("")
 
-	// MoveFlags
+	binary.Write(buffer, binary.LittleEndian, uint32(u.movementFlags()))
 	binary.Write(buffer, binary.LittleEndian, uint32(0)) // Time
 
 	binary.Write(buffer, binary.LittleEndian, float32(u.Location().X))
@@ -107,30 +107,30 @@ func (u *Unit) MovementUpdate() []byte {
 	binary.Write(buffer, binary.LittleEndian, float32(u.Location().Z))
 	binary.Write(buffer, binary.LittleEndian, float32(u.Location().O))
 
-	if u.Manager().Exists(u.Transport) {
-		transportObj := u.Manager().Get(u.Transport)
-		binary.Write(buffer, binary.LittleEndian, uint64(u.Transport))
-		binary.Write(buffer, binary.LittleEndian, float32(transportObj.Location().X))
-		binary.Write(buffer, binary.LittleEndian, float32(transportObj.Location().Y))
-		binary.Write(buffer, binary.LittleEndian, float32(transportObj.Location().Z))
-		binary.Write(buffer, binary.LittleEndian, float32(transportObj.Location().O))
-		binary.Write(buffer, binary.LittleEndian, uint32(0)) // Time
-	}
+	// if u.Manager().Exists(u.Transport) {
+	// 	transportObj := u.Manager().Get(u.Transport)
+	// 	binary.Write(buffer, binary.LittleEndian, uint64(u.Transport))
+	// 	binary.Write(buffer, binary.LittleEndian, float32(transportObj.Location().X))
+	// 	binary.Write(buffer, binary.LittleEndian, float32(transportObj.Location().Y))
+	// 	binary.Write(buffer, binary.LittleEndian, float32(transportObj.Location().Z))
+	// 	binary.Write(buffer, binary.LittleEndian, float32(transportObj.Location().O))
+	// 	binary.Write(buffer, binary.LittleEndian, uint32(0)) // Time
+	// }
 
-	if u.IsSwimming {
-		binary.Write(buffer, binary.LittleEndian, float32(u.Pitch))
-	}
+	// if u.IsSwimming {
+	// 	binary.Write(buffer, binary.LittleEndian, float32(u.Pitch))
+	// }
 
-	if u.Transport == 0 {
-		binary.Write(buffer, binary.LittleEndian, uint32(0)) // LastFallTime
-	}
+	// if !u.Manager().Exists(u.Transport) {
+	binary.Write(buffer, binary.LittleEndian, uint32(0)) // LastFallTime
+	// }
 
-	if u.IsFalling {
-		binary.Write(buffer, binary.LittleEndian, float32(u.Velocity))
-		binary.Write(buffer, binary.LittleEndian, float32(u.SinAngle))
-		binary.Write(buffer, binary.LittleEndian, float32(u.CosAngle))
-		binary.Write(buffer, binary.LittleEndian, float32(u.XYSpeed))
-	}
+	// if u.IsFalling {
+	// 	binary.Write(buffer, binary.LittleEndian, float32(u.Velocity))
+	// 	binary.Write(buffer, binary.LittleEndian, float32(u.SinAngle))
+	// 	binary.Write(buffer, binary.LittleEndian, float32(u.CosAngle))
+	// 	binary.Write(buffer, binary.LittleEndian, float32(u.XYSpeed))
+	// }
 
 	// SplineElevation update goes HERE.
 
@@ -275,15 +275,91 @@ func (u *Unit) UpdateFields() UpdateFieldsMap {
 		fields[infoField+1] = item.SheathType
 	}
 
-	baseFields := u.GameObject.UpdateFields()
-	for k, v := range baseFields {
-		fields[k] = v
+	mergedFields := u.GameObject.UpdateFields()
+	for k, v := range fields {
+		mergedFields[k] = v
 	}
 
-	return fields
+	mergedFields[c.UpdateFieldType] = uint32(TypeMask(u))
+
+	return mergedFields
 }
 
 // Template returns the item template this object is based on.
 func (u *Unit) Template() *dbc.Unit {
 	return dbc.Units[int(u.Entry)]
+}
+
+func (u *Unit) movementFlags() uint32 {
+	var movementFlags uint32
+	// if u.Is {
+	// 	movementFlags |= uint32(c.MovementFlagForward)
+	// }
+	// if u.Is {
+	// 	movementFlags |= uint32(c.MovementFlagBackward)
+	// }
+	// if u.Is {
+	// 	movementFlags |= uint32(c.MovementFlagStrafeLeft)
+	// }
+	// if u.Is {
+	// 	movementFlags |= uint32(c.MovementFlagStrafeRight)
+	// }
+	// if u.Is {
+	// 	movementFlags |= uint32(c.MovementFlagTurnLeft)
+	// }
+	// if u.Is {
+	// 	movementFlags |= uint32(c.MovementFlagTurnRight)
+	// }
+	// if u.Is {
+	// 	movementFlags |= uint32(c.MovementFlagPitchUp)
+	// }
+	// if u.Is {
+	// 	movementFlags |= uint32(c.MovementFlagPitchDown)
+	// }
+	// if u.Is {
+	// 	movementFlags |= uint32(c.MovementFlagWalkMode)
+	// }
+	// if u.Is {
+	// 	movementFlags |= uint32(c.MovementFlagLevitating)
+	// }
+	// if u.Is {
+	// 	movementFlags |= uint32(c.MovementFlagFlying)
+	// }
+	if u.IsFalling {
+		movementFlags |= uint32(c.MovementFlagFalling)
+	}
+	// if u.Is {
+	// 	movementFlags |= uint32(c.MovementFlagFallingFar)
+	// }
+	if u.IsSwimming {
+		movementFlags |= uint32(c.MovementFlagSwimming)
+	}
+	// if u.Is {
+	// 	movementFlags |= uint32(c.MovementFlagSplineEnabled)
+	// }
+	// if u.Is {
+	// 	movementFlags |= uint32(c.MovementFlagCanFly)
+	// }
+	// if u.Is {
+	// 	movementFlags |= uint32(c.MovementFlagFlyingOld)
+	// }
+	// if u.Is {
+	// 	movementFlags |= uint32(c.MovementFlagOnTransport)
+	// }
+	// if u.Is {
+	// 	movementFlags |= uint32(c.MovementFlagSplineElevation)
+	// }
+	// if u.Is {
+	// 	movementFlags |= uint32(c.MovementFlagRoot)
+	// }
+	// if u.Is {
+	// 	movementFlags |= uint32(c.MovementFlagWaterWalking)
+	// }
+	// if u.Is {
+	// 	movementFlags |= uint32(c.MovementFlagSafeFall)
+	// }
+	// if u.Is {
+	// 	movementFlags |= uint32(c.MovementFlagHover)
+	// }
+	return movementFlags
 }

@@ -3,6 +3,7 @@ package system
 import (
 	"fmt"
 	"sync"
+	"time"
 
 	c "github.com/jeshuamorrissey/wow_server_go/worldserver/data/dbc/constants"
 	"github.com/jeshuamorrissey/wow_server_go/worldserver/data/object"
@@ -17,15 +18,21 @@ const (
 	MaxObjectDistance = 1000
 )
 
+// MakeUpdateObjectPacketFn is a function which takes as input some
+// update information and returns a ServerPacket that can be sent.
+type MakeUpdateObjectPacketFn func(OutOfRangeUpdate, []ObjectUpdate) ServerPacket
+
 type updateCache struct {
 	UpdateFields   object.UpdateFieldsMap
 	MovementUpdate []byte
 }
 
+// OutOfRangeUpdate represents a list of GUIDs which are no longer in range.
 type OutOfRangeUpdate struct {
 	GUIDS []object.GUID
 }
 
+// ObjectUpdate represents an update to an individual object.
 type ObjectUpdate struct {
 	GUID        object.GUID
 	UpdateType  c.UpdateType
@@ -33,8 +40,9 @@ type ObjectUpdate struct {
 	IsSelf      bool
 	TypeID      c.TypeID
 
-	MovementUpdate []byte
-	UpdateFields   object.UpdateFieldsMap
+	MovementUpdate  []byte
+	NumUpdateFields int
+	UpdateFields    object.UpdateFieldsMap
 
 	VictimGUID object.GUID
 	WorldTime  uint32
@@ -54,22 +62,22 @@ type Updater struct {
 	sessions     map[object.GUID]*loginData // logged in character --> Session
 
 	toUpdateLock sync.Mutex
-	toUpdateCond *sync.Cond
 	toUpdate     []object.GUID
+
+	makeUpdateObjectPacketFn MakeUpdateObjectPacketFn
 }
 
 // NewUpdater makes a new updater object.
-func NewUpdater(log *logrus.Entry, om *object.Manager) *Updater {
+func NewUpdater(log *logrus.Entry, om *object.Manager, makeUpdateObjectPacketFn MakeUpdateObjectPacketFn) *Updater {
 	u := &Updater{
 		log: log.WithFields(logrus.Fields{
 			"system": "Updater",
 		}),
-		om:       om,
-		sessions: make(map[object.GUID]*loginData),
-		toUpdate: make([]object.GUID, 0),
+		om:                       om,
+		sessions:                 make(map[object.GUID]*loginData),
+		toUpdate:                 make([]object.GUID, 0),
+		makeUpdateObjectPacketFn: makeUpdateObjectPacketFn,
 	}
-
-	u.toUpdateCond = sync.NewCond(&u.toUpdateLock)
 
 	return u
 }
@@ -97,7 +105,6 @@ func (u *Updater) Login(playerGUID object.GUID, session *Session) error {
 	u.toUpdateLock.Lock()
 	defer u.toUpdateLock.Unlock()
 	u.toUpdate = append(u.toUpdate, playerGUID)
-	u.toUpdateCond.Signal()
 
 	return nil
 }
@@ -123,14 +130,15 @@ func (u *Updater) makeUpdates(
 	if obj.Location() != nil {
 		if obj.Location().Distance(playerObj.Location()) < MaxObjectDistance {
 			update := ObjectUpdate{
-				GUID:           obj.GUID(),
-				UpdateFlags:    object.UpdateFlags(obj),
-				IsSelf:         obj.GUID() == playerObj.GUID(),
-				TypeID:         object.TypeID(obj),
-				MovementUpdate: obj.MovementUpdate(),
-				UpdateFields:   obj.UpdateFields(),
-				VictimGUID:     0, // TODO: what is this?
-				WorldTime:      0, // TODO: what is this?
+				GUID:            obj.GUID(),
+				UpdateFlags:     object.UpdateFlags(obj),
+				IsSelf:          obj.GUID() == playerObj.GUID(),
+				TypeID:          object.TypeID(obj),
+				MovementUpdate:  obj.MovementUpdate(),
+				NumUpdateFields: object.NumUpdateFields(obj),
+				UpdateFields:    obj.UpdateFields(),
+				VictimGUID:      0, // TODO: what is this?
+				WorldTime:       0, // TODO: what is this?
 			}
 
 			// If we have seen the object, update it.
@@ -144,7 +152,12 @@ func (u *Updater) makeUpdates(
 					}
 				}
 			} else {
-				update.UpdateType = c.UpdateTypeCreateObject
+				if update.MovementUpdate != nil {
+					update.UpdateType = c.UpdateTypeCreateObject2
+				} else {
+					update.UpdateType = c.UpdateTypeCreateObject
+				}
+
 				loginData.UpdateCache[obj.GUID()] = &updateCache{
 					UpdateFields:   update.UpdateFields,
 					MovementUpdate: update.MovementUpdate,
@@ -176,12 +189,16 @@ func (u *Updater) updatePlayer(guid object.GUID, loginData *loginData) {
 		u.makeUpdates(loginData, playerObj, obj, &outOfRangeUpdate, &objectUpdates)
 	}
 
-	// outOfRangeUpdate
-	// objectUpdates
+	pkt := u.makeUpdateObjectPacketFn(outOfRangeUpdate, objectUpdates)
+	loginData.Session.Send(pkt)
 }
 
 func (u *Updater) updateOtherPlayers(guid object.GUID) {
 	for playerGUID, loginData := range u.sessions {
+		if playerGUID == guid {
+			continue
+		}
+
 		outOfRangeUpdate := OutOfRangeUpdate{
 			GUIDS: make([]object.GUID, 0),
 		}
@@ -191,6 +208,7 @@ func (u *Updater) updateOtherPlayers(guid object.GUID) {
 		player := u.om.Get(playerGUID)
 		obj := u.om.Get(guid)
 		u.makeUpdates(loginData, player, obj, &outOfRangeUpdate, &objectUpdates)
+		loginData.Session.Send(u.makeUpdateObjectPacketFn(outOfRangeUpdate, objectUpdates))
 	}
 }
 
@@ -202,14 +220,11 @@ func (u *Updater) Run() {
 		u.toUpdateLock.Lock()
 		defer u.toUpdateLock.Unlock()
 		u.toUpdate = append(u.toUpdate, guid)
-		u.toUpdateCond.Signal()
 	})
 
 	for {
-		// THIS BREAKS
-		u.toUpdateCond.Wait()
-		u.toUpdateCond.L.Lock()
-		defer u.toUpdateCond.L.Unlock()
+		time.Sleep(time.Second * 1)
+		u.toUpdateLock.Lock()
 
 		// There are some object to update!
 		for _, guid := range u.toUpdate {
@@ -224,5 +239,6 @@ func (u *Updater) Run() {
 		}
 
 		u.toUpdate = make([]object.GUID, 0)
+		u.toUpdateLock.Unlock()
 	}
 }

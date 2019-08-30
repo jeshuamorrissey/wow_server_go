@@ -33,7 +33,7 @@ func (guid GUID) Pack() []byte {
 	binary.LittleEndian.PutUint64(guidBytes, uint64(guid))
 
 	mask := uint8(0)
-	packedGUID := make([]byte, 9)
+	packedGUID := make([]byte, 0)
 	for i, b := range guidBytes {
 		if b != 0 {
 			mask |= (1 << uint(i))

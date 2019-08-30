@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"sync"
 
 	"github.com/jeshuamorrissey/wow_server_go/common"
 	"github.com/jeshuamorrissey/wow_server_go/common/database"
@@ -17,8 +18,10 @@ import (
 // Session represents a single client connection to the World Server.
 type Session struct {
 	// The input/output ports for this session.
-	input  io.Reader
-	output io.Writer
+	inputLock  sync.Mutex
+	input      io.Reader
+	outputLock sync.Mutex
+	output     io.Writer
 
 	// A mapping of opCode --> callback to create the client packet.
 	opCodeToPacket map[OpCode]func() ClientPacket
@@ -66,18 +69,38 @@ func NewSession(
 
 // Send sends a single packet to this session's client.
 func (s *Session) Send(pkt ServerPacket) error {
-	s.state.Log.Tracef("--> %s", pkt.OpCode())
+	s.outputLock.Lock()
+	defer s.outputLock.Unlock()
 
+	opCode := pkt.OpCode()
 	pktData, err := pkt.ToBytes(s.state)
 	if err != nil {
 		return err
 	}
 
-	header, err := s.makeHeader(len(pktData), pkt.OpCode())
+	// TODO(jeshua): Get this working!
+	// if opCode == OpCodeServerUpdateObject && len(pktData) > 100 {
+	// 	opCode = OpCodeServerCompressedUpdateObject
+
+	// 	var compressedPktData bytes.Buffer
+	// 	writer, err := zlib.NewWriterLevel(&compressedPktData, 1)
+	// 	if err != nil {
+	// 		return err
+	// 	}
+
+	// 	writer.Write(pktData)
+
+	// 	pktData := make([]byte, 4, compressedPktData.Len()+4)
+	// 	binary.LittleEndian.PutUint32(pktData, uint32(compressedPktData.Len()))
+	// 	pktData = append(pktData, compressedPktData.Bytes()...)
+	// }
+
+	header, err := s.makeHeader(len(pktData), opCode)
 	if err != nil {
 		return err
 	}
 
+	s.state.Log.Tracef("--> %s", opCode)
 	toSend := append(header, pktData...)
 	n, err := s.output.Write(toSend)
 	if err != nil {
@@ -120,6 +143,9 @@ func (s *Session) Run() {
 }
 
 func (s *Session) readPacket() (ClientPacket, error) {
+	s.inputLock.Lock()
+	defer s.inputLock.Unlock()
+
 	opCode, length, err := s.readHeader()
 	if err != nil {
 		return nil, err

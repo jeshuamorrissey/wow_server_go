@@ -41,19 +41,21 @@ func (cn *Container) MovementUpdate() []byte { return nil }
 // object.
 func (cn *Container) UpdateFields() UpdateFieldsMap {
 	fields := UpdateFieldsMap{
-		c.UpdateFieldContainerNumSlots: cn.NumSlots,
+		c.UpdateFieldContainerNumSlots: uint32(cn.NumSlots),
 	}
 
 	for slot, itemGUID := range cn.Items {
 		fieldStart := c.UpdateField(int(c.UpdateFieldContainerSlot1) + (slot * 2))
-		fields[fieldStart] = itemGUID.Low()
-		fields[fieldStart+1] = itemGUID.High()
+		fields[fieldStart] = uint32(itemGUID.Low())
+		fields[fieldStart+1] = uint32(itemGUID.High())
 	}
 
-	baseFields := cn.Item.UpdateFields()
-	for k, v := range baseFields {
-		fields[k] = v
+	mergedFields := cn.Item.UpdateFields()
+	for k, v := range fields {
+		mergedFields[k] = v
 	}
 
-	return fields
+	mergedFields[c.UpdateFieldType] = uint32(TypeMask(cn))
+
+	return mergedFields
 }

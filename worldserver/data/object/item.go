@@ -59,34 +59,41 @@ func (i *Item) MovementUpdate() []byte { return nil }
 // object.
 func (i *Item) UpdateFields() UpdateFieldsMap {
 	fields := UpdateFieldsMap{
-		c.UpdateFieldItemOwner:               i.Owner.Low(),
-		c.UpdateFieldItemOwner + 1:           i.Owner.High(),
-		c.UpdateFieldItemContained:           i.Container.Low(),
-		c.UpdateFieldItemContained + 1:       i.Container.High(),
-		c.UpdateFieldItemCreator:             i.Creator.Low(),
-		c.UpdateFieldItemCreator + 1:         i.Creator.High(),
-		c.UpdateFieldItemGiftCreator:         i.GiftCreator.Low(),
-		c.UpdateFieldItemGiftCreator + 1:     i.GiftCreator.High(),
-		c.UpdateFieldItemStackCount:          i.StackCount,
-		c.UpdateFieldItemDuration:            i.DurationRemaining.Second(),
-		c.UpdateFieldItemSpellCharges:        i.ChargesRemaining,
-		c.UpdateFieldItemFlags:               i.flags(),
-		c.UpdateFieldItemEnchantmentID:       0, // TODO
-		c.UpdateFieldItemEnchantmentDuration: 0, // TODO
-		c.UpdateFieldItemEnchantmentCharges:  0, // TODO
-		c.UpdateFieldItemPropertySeed:        0, // TODO
-		c.UpdateFieldItemRandomPropertiesID:  0, // TODO
-		c.UpdateFieldItemItemTextID:          0, // TODO
-		c.UpdateFieldItemDurability:          i.Durability,
-		c.UpdateFieldItemMaxDurability:       i.Template().MaxDurability,
+		c.UpdateFieldItemOwner:               uint32(i.Owner.Low()),
+		c.UpdateFieldItemOwner + 1:           uint32(i.Owner.High()),
+		c.UpdateFieldItemContained:           uint32(i.Container.Low()),
+		c.UpdateFieldItemContained + 1:       uint32(i.Container.High()),
+		c.UpdateFieldItemCreator:             uint32(i.Creator.Low()),
+		c.UpdateFieldItemCreator + 1:         uint32(i.Creator.High()),
+		c.UpdateFieldItemGiftCreator:         uint32(i.GiftCreator.Low()),
+		c.UpdateFieldItemGiftCreator + 1:     uint32(i.GiftCreator.High()),
+		c.UpdateFieldItemStackCount:          uint32(i.StackCount),
+		c.UpdateFieldItemSpellCharges:        uint32(i.ChargesRemaining),
+		c.UpdateFieldItemFlags:               uint32(i.flags()),
+		c.UpdateFieldItemEnchantmentID:       uint32(0), // TODO
+		c.UpdateFieldItemEnchantmentDuration: uint32(0), // TODO
+		c.UpdateFieldItemEnchantmentCharges:  uint32(0), // TODO
+		c.UpdateFieldItemPropertySeed:        uint32(0), // TODO
+		c.UpdateFieldItemRandomPropertiesID:  uint32(0), // TODO
+		c.UpdateFieldItemItemTextID:          uint32(0), // TODO
+		c.UpdateFieldItemDurability:          uint32(i.Durability),
+		c.UpdateFieldItemMaxDurability:       uint32(i.Template().MaxDurability),
 	}
 
-	baseFields := i.GameObject.UpdateFields()
-	for k, v := range baseFields {
-		fields[k] = v
+	if i.DurationRemaining == nil {
+		fields[c.UpdateFieldItemDuration] = uint32(0)
+	} else {
+		fields[c.UpdateFieldItemDuration] = uint32(i.DurationRemaining.Second())
 	}
 
-	return fields
+	mergedFields := i.GameObject.UpdateFields()
+	for k, v := range fields {
+		mergedFields[k] = v
+	}
+
+	mergedFields[c.UpdateFieldType] = uint32(TypeMask(i))
+
+	return mergedFields
 }
 
 // Template returns the item template this object is based on.

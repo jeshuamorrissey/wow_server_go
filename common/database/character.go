@@ -44,7 +44,8 @@ func NewCharacter(
 	for slot, item := range startingEquipment {
 		itemObj := &object.Item{
 			GameObject: object.GameObject{
-				Entry: uint32(item.Entry),
+				Entry:  uint32(item.Entry),
+				ScaleX: 1.0,
 			},
 		}
 
@@ -60,7 +61,8 @@ func NewCharacter(
 	for i, item := range startingItems {
 		itemObj := &object.Item{
 			GameObject: object.GameObject{
-				Entry: uint32(item.Entry),
+				Entry:  uint32(item.Entry),
+				ScaleX: 1.0,
 			},
 		}
 
@@ -88,6 +90,13 @@ func NewCharacter(
 				O: startingLocation.O,
 			},
 
+			SpeedWalk:         2.5,
+			SpeedRun:          7.0,
+			SpeedRunBackward:  4.5,
+			SpeedSwim:         4.72,
+			SpeedSwimBackward: 2.5,
+			SpeedTurn:         3.14159,
+
 			Level:  1,
 			Race:   race,
 			Class:  class,
@@ -110,6 +119,20 @@ func NewCharacter(
 	err := om.Add(charObj)
 	if err != nil {
 		return nil, err
+	}
+
+	for _, guid := range equipment {
+		if om.Exists(guid) {
+			om.Get(guid).(*object.Item).Owner = charObj.GUID()
+			om.Get(guid).(*object.Item).Container = charObj.GUID()
+		}
+	}
+
+	for _, guid := range inventory {
+		if om.Exists(guid) {
+			om.Get(guid).(*object.Item).Owner = charObj.GUID()
+			om.Get(guid).(*object.Item).Container = charObj.GUID()
+		}
 	}
 
 	return &Character{

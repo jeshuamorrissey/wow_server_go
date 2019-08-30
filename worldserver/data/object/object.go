@@ -1,6 +1,12 @@
 package object
 
 import (
+	"bytes"
+	"encoding/binary"
+	"fmt"
+	"math/big"
+
+	"github.com/jeshuamorrissey/wow_server_go/common"
 	c "github.com/jeshuamorrissey/wow_server_go/worldserver/data/dbc/constants"
 )
 
@@ -8,29 +14,35 @@ import (
 type UpdateFieldsMap map[c.UpdateField]interface{}
 
 // ToBytes converts an update fields map to bytes.
-func (m UpdateFieldsMap) ToBytes() []byte {
+func (m UpdateFieldsMap) ToBytes(nFields int) []byte {
 	mask := big.NewInt(0)
 	fields := bytes.NewBufferString("")
 
-	for field, valueGeneric := range o.UpdateFields {
+	for i := 0; i < nFields; i++ {
+		field := c.UpdateField(i)
+		valueGeneric, ok := m[field]
+		if !ok {
+			continue
+		}
+
 		switch value := valueGeneric.(type) {
 		case float32:
 			binary.Write(fields, binary.LittleEndian, value)
-			mask.SetBit(mask, int(field), 1)
+			mask.SetBit(mask, i, 1)
 		case uint32:
 			binary.Write(fields, binary.LittleEndian, value)
-			mask.SetBit(mask, int(field), 1)
+			mask.SetBit(mask, i, 1)
 		default:
 			panic(fmt.Sprintf("Unknown field type %T in update fields (%v)", value, field))
 		}
 	}
 
-	nBlocks := uint8((len(m) + 32 - 1) / 32)
-	nBytes := uint8((nBlocks * 32) / 8)
+	nBlocks := (nFields + 32 - 1) / 32
+	nBytes := (nBlocks * 32) / 8
 
 	fieldBytes := make([]byte, 0)
 	fieldBytes = append(fieldBytes, uint8(nBlocks))
-	fieldBytes = append(fieldBytes, common.PadBigIntBytes(common.ReverseBytes(mask.Bytes()), int(nBytes))...)
+	fieldBytes = append(fieldBytes, common.PadBigIntBytes(common.ReverseBytes(mask.Bytes()), nBytes)...)
 	fieldBytes = append(fieldBytes, fields.Bytes()...)
 	return fieldBytes
 }

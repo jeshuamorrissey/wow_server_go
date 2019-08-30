@@ -3,13 +3,8 @@ package packet
 import (
 	"bytes"
 	"encoding/binary"
-	"fmt"
-	"math/big"
 
-	"github.com/jeshuamorrissey/wow_server_go/common"
-	"github.com/jeshuamorrissey/wow_server_go/common/session"
 	c "github.com/jeshuamorrissey/wow_server_go/worldserver/data/dbc/constants"
-	"github.com/jeshuamorrissey/wow_server_go/worldserver/data/object"
 	"github.com/jeshuamorrissey/wow_server_go/worldserver/system"
 )
 
@@ -19,91 +14,68 @@ type ServerUpdateObject struct {
 	ObjectUpdates     []system.ObjectUpdate
 }
 
-// ToBytes returns the bytes representation of the fields.
-func (o *ObjectUpdate) ToBytes() []byte {
-	mask := big.NewInt(0)
-	fields := bytes.NewBufferString("")
-
-	for field, valueGeneric := range o.UpdateFields {
-		switch value := valueGeneric.(type) {
-		case float32:
-			binary.Write(fields, binary.LittleEndian, value)
-			mask.SetBit(mask, int(field), 1)
-		case uint32:
-			binary.Write(fields, binary.LittleEndian, value)
-			mask.SetBit(mask, int(field), 1)
-		default:
-			panic(fmt.Sprintf("Unknown field type %T in update fields (%v)", value, field))
-		}
-	}
-
-	nBlocks := uint8((len(u.Object.UpdateFields()) + 32 - 1) / 32)
-	nBytes := uint8((nBlocks * 32) / 8)
-
-	fieldBytes := make([]byte, 0)
-	fieldBytes = append(fieldBytes, uint8(nBlocks))
-	fieldBytes = append(fieldBytes, common.PadBigIntBytes(common.ReverseBytes(mask.Bytes()), int(nBytes))...)
-	fieldBytes = append(fieldBytes, fields.Bytes()...)
-	return fieldBytes
-}
-
-// Bytes converts the packet into an array of bytes.
-func (pkt *ServerUpdateObject) Bytes(stateBase session.State) []byte {
+// ToBytes converts the packet into an array of bytes.
+func (pkt *ServerUpdateObject) ToBytes(state *system.State) ([]byte, error) {
 	buffer := bytes.NewBufferString("")
 
-	binary.Write(buffer, binary.LittleEndian, len(pkt.Updates))
-	buffer.WriteByte('\x00') // hasTransportUpdate
+	nUpdates := len(pkt.ObjectUpdates)
+	if len(pkt.OutOfRangeUpdates.GUIDS) > 0 {
+		nUpdates++
+	}
 
-	for _, update := range pkt.Updates {
-		buffer.WriteByte(uint8(update.UpdateType()))
+	binary.Write(buffer, binary.LittleEndian, uint32(nUpdates))
+	binary.Write(buffer, binary.LittleEndian, uint8(0)) // hasTransportUpdate
 
-		if update.UpdateType() == c.UpdateTypeOutOfRangeObjects {
-			outOfRangeUpdate := update.(*OutOfRangeUpdate)
-			binary.Write(buffer, binary.LittleEndian, uint32(len(outOfRangeUpdate.GUIDS)))
-			for _, guid := range outOfRangeUpdate.GUIDS {
-				buffer.Write(guid.Pack())
-			}
-		} else {
-			objUpdate := update.(*Update)
-			buffer.Write(objUpdate.Object.GUID().Pack())
-
-			if update.UpdateType() != c.UpdateTypeValues {
-				updateFlags := object.UpdateFlags(objUpdate.Object)
-
-				if objUpdate.IsSelf {
-					updateFlags |= c.UpdateFlagsSelf
-				}
-
-				buffer.WriteByte(uint8(object.TypeID(objUpdate.Object)))
-				buffer.WriteByte(uint8(updateFlags))
-
-				buffer.Write(objUpdate.Object.MovementUpdate())
-
-				if updateFlags&c.UpdateFlagsHighGUID != 0 {
-					binary.Write(buffer, binary.LittleEndian, uint32(objUpdate.Object.GUID().High()))
-				}
-
-				if updateFlags&c.UpdateFlagsAll != 0 {
-					binary.Write(buffer, binary.LittleEndian, uint32(1))
-				}
-
-				if updateFlags&c.UpdateFlagsFullGUID != 0 && objUpdate.Victim != nil {
-					buffer.Write(objUpdate.Victim.GUID().Pack())
-				}
-
-				if updateFlags&c.UpdateFlagsTransport != 0 {
-					binary.Write(buffer, binary.LittleEndian, uint32(objUpdate.WorldTime))
-				}
-			}
-
-			buffer.Write(objUpdate.FieldsUpdate())
+	if len(pkt.OutOfRangeUpdates.GUIDS) > 0 {
+		buffer.WriteByte(uint8(c.UpdateTypeOutOfRangeObjects))
+		binary.Write(buffer, binary.LittleEndian, uint32(len(pkt.OutOfRangeUpdates.GUIDS)))
+		for _, guid := range pkt.OutOfRangeUpdates.GUIDS {
+			buffer.Write(guid.Pack())
 		}
 	}
 
-	return buffer.Bytes()
+	for _, update := range pkt.ObjectUpdates {
+		buffer.WriteByte(uint8(update.UpdateType))
+		buffer.Write(update.GUID.Pack())
+
+		if update.UpdateType != c.UpdateTypeValues {
+			updateFlags := update.UpdateFlags
+
+			if update.IsSelf {
+				updateFlags |= c.UpdateFlagsSelf
+			}
+
+			buffer.WriteByte(uint8(update.TypeID))
+			buffer.WriteByte(uint8(updateFlags))
+
+			if update.MovementUpdate != nil {
+				buffer.Write(update.MovementUpdate)
+			}
+
+			if updateFlags&c.UpdateFlagsHighGUID != 0 {
+				binary.Write(buffer, binary.LittleEndian, uint32(update.GUID.High()))
+			}
+
+			if updateFlags&c.UpdateFlagsAll != 0 {
+				binary.Write(buffer, binary.LittleEndian, uint32(1))
+			}
+
+			if updateFlags&c.UpdateFlagsFullGUID != 0 && update.VictimGUID != 0 {
+				buffer.Write(update.VictimGUID.Pack())
+			}
+
+			if updateFlags&c.UpdateFlagsTransport != 0 {
+				binary.Write(buffer, binary.LittleEndian, uint32(update.WorldTime))
+			}
+		}
+
+		buffer.Write(update.UpdateFields.ToBytes(update.NumUpdateFields))
+	}
+
+	return buffer.Bytes(), nil
 }
 
 // OpCode returns the OpCode of the packet.
-func (pkt *ServerUpdateObject) OpCode() session.OpCode {
+func (pkt *ServerUpdateObject) OpCode() system.OpCode {
 	return system.OpCodeServerUpdateObject
 }
