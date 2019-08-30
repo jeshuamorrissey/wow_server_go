@@ -59,25 +59,25 @@ func (i *Item) MovementUpdate() []byte { return nil }
 // object.
 func (i *Item) UpdateFields() UpdateFieldsMap {
 	fields := UpdateFieldsMap{
-		c.UpdateFieldItemOwner:               uint32(i.Owner.Low()),
-		c.UpdateFieldItemOwner + 1:           uint32(i.Owner.High()),
-		c.UpdateFieldItemContained:           uint32(i.Container.Low()),
-		c.UpdateFieldItemContained + 1:       uint32(i.Container.High()),
-		c.UpdateFieldItemCreator:             uint32(i.Creator.Low()),
-		c.UpdateFieldItemCreator + 1:         uint32(i.Creator.High()),
-		c.UpdateFieldItemGiftCreator:         uint32(i.GiftCreator.Low()),
-		c.UpdateFieldItemGiftCreator + 1:     uint32(i.GiftCreator.High()),
-		c.UpdateFieldItemStackCount:          uint32(i.StackCount),
-		c.UpdateFieldItemSpellCharges:        uint32(i.ChargesRemaining),
-		c.UpdateFieldItemFlags:               uint32(i.flags()),
-		c.UpdateFieldItemEnchantmentID:       uint32(0), // TODO
-		c.UpdateFieldItemEnchantmentDuration: uint32(0), // TODO
-		c.UpdateFieldItemEnchantmentCharges:  uint32(0), // TODO
-		c.UpdateFieldItemPropertySeed:        uint32(0), // TODO
-		c.UpdateFieldItemRandomPropertiesID:  uint32(0), // TODO
-		c.UpdateFieldItemItemTextID:          uint32(0), // TODO
-		c.UpdateFieldItemDurability:          uint32(i.Durability),
-		c.UpdateFieldItemMaxDurability:       uint32(i.Template().MaxDurability),
+		c.UpdateFieldItemOwner:           uint32(i.Owner.Low()),
+		c.UpdateFieldItemOwner + 1:       uint32(i.Owner.High()),
+		c.UpdateFieldItemContained:       uint32(i.Container.Low()),
+		c.UpdateFieldItemContained + 1:   uint32(i.Container.High()),
+		c.UpdateFieldItemCreator:         uint32(i.Creator.Low()),
+		c.UpdateFieldItemCreator + 1:     uint32(i.Creator.High()),
+		c.UpdateFieldItemGiftCreator:     uint32(i.GiftCreator.Low()),
+		c.UpdateFieldItemGiftCreator + 1: uint32(i.GiftCreator.High()),
+		c.UpdateFieldItemStackCount:      uint32(i.StackCount),
+		c.UpdateFieldItemSpellCharges:    uint32(i.ChargesRemaining),
+		c.UpdateFieldItemFlags:           uint32(i.flags()),
+		// c.UpdateFieldItemEnchantmentID:       uint32(0), // TODO
+		// c.UpdateFieldItemEnchantmentDuration: uint32(0), // TODO
+		// c.UpdateFieldItemEnchantmentCharges:  uint32(0), // TODO
+		// c.UpdateFieldItemPropertySeed:        uint32(0), // TODO
+		// c.UpdateFieldItemRandomPropertiesID:  uint32(0), // TODO
+		// c.UpdateFieldItemItemTextID:          uint32(0), // TODO
+		c.UpdateFieldItemDurability:    uint32(i.Durability),
+		c.UpdateFieldItemMaxDurability: uint32(i.Template().MaxDurability),
 	}
 
 	if i.DurationRemaining == nil {

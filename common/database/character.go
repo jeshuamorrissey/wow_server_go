@@ -64,6 +64,8 @@ func NewCharacter(
 				Entry:  uint32(item.Entry),
 				ScaleX: 1.0,
 			},
+
+			Durability: item.MaxDurability,
 		}
 
 		err := om.Add(itemObj)
@@ -75,6 +77,7 @@ func NewCharacter(
 	}
 
 	startingLocation := dbc.GetStartingLocation(class, race)
+	startingStats := dbc.GetStartingStats(class, race)
 
 	charObj := &object.Player{
 		Unit: object.Unit{
@@ -96,6 +99,15 @@ func NewCharacter(
 			SpeedSwim:         4.72,
 			SpeedSwimBackward: 2.5,
 			SpeedTurn:         3.14159,
+
+			HealthPercent: 1.0,
+			PowerPercent:  1.0,
+
+			Strength:  startingStats[c.StatStrength],
+			Agility:   startingStats[c.StatAgility],
+			Stamina:   startingStats[c.StatStamina],
+			Intellect: startingStats[c.StatIntellect],
+			Spirit:    startingStats[c.StatSpirit],
 
 			Level:  1,
 			Race:   race,

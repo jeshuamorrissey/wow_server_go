@@ -75,168 +75,168 @@ func (p *Player) UpdateFields() UpdateFieldsMap {
 	modelInfo := dbc.GetPlayerModelInfo(p.Race, p.Gender)
 
 	fields := UpdateFieldsMap{
-		c.UpdateFieldUnitCharmLow:                                     uint32(p.Charm.Low()),
-		c.UpdateFieldUnitCharmHigh:                                    uint32(p.Charm.High()),
-		c.UpdateFieldUnitSummonLow:                                    uint32(p.Summon.Low()),
-		c.UpdateFieldUnitSummonHigh:                                   uint32(p.Summon.High()),
-		c.UpdateFieldUnitCharmedbyLow:                                 uint32(p.CharmedBy.Low()),
-		c.UpdateFieldUnitCharmedbyHigh:                                uint32(p.CharmedBy.High()),
-		c.UpdateFieldUnitSummonedbyLow:                                uint32(p.SummonedBy.Low()),
-		c.UpdateFieldUnitSummonedbyHigh:                               uint32(p.SummonedBy.High()),
-		c.UpdateFieldUnitCreatedbyLow:                                 uint32(p.CreatedBy.Low()),
-		c.UpdateFieldUnitCreatedbyHigh:                                uint32(p.CreatedBy.High()),
-		c.UpdateFieldUnitTargetLow:                                    uint32(p.Target.Low()),
-		c.UpdateFieldUnitTargetHigh:                                   uint32(p.Target.High()),
-		c.UpdateFieldUnitPersuadedLow:                                 uint32(p.Persuaded.Low()),
-		c.UpdateFieldUnitPersuadedHigh:                                uint32(p.Persuaded.High()),
-		c.UpdateFieldUnitChannelObjectLow:                             uint32(0), // TODO
-		c.UpdateFieldUnitChannelObjectHigh:                            uint32(0), // TODO
-		c.UpdateFieldUnitHealth:                                       uint32(p.Health),
-		c.UpdateFieldUnitPowerStart + c.UpdateField(p.powerType()):    uint32(p.Power),
+		// c.UpdateFieldUnitCharmLow:                                     uint32(p.Charm.Low()),
+		// c.UpdateFieldUnitCharmHigh:                                    uint32(p.Charm.High()),
+		// c.UpdateFieldUnitSummonLow:                                    uint32(p.Summon.Low()),
+		// c.UpdateFieldUnitSummonHigh:                                   uint32(p.Summon.High()),
+		// c.UpdateFieldUnitCharmedbyLow:                                 uint32(p.CharmedBy.Low()),
+		// c.UpdateFieldUnitCharmedbyHigh:                                uint32(p.CharmedBy.High()),
+		// c.UpdateFieldUnitSummonedbyLow:                                uint32(p.SummonedBy.Low()),
+		// c.UpdateFieldUnitSummonedbyHigh:                               uint32(p.SummonedBy.High()),
+		// c.UpdateFieldUnitCreatedbyLow:                                 uint32(p.CreatedBy.Low()),
+		// c.UpdateFieldUnitCreatedbyHigh:                                uint32(p.CreatedBy.High()),
+		// c.UpdateFieldUnitTargetLow:                                    uint32(p.Target.Low()),
+		// c.UpdateFieldUnitTargetHigh:                                   uint32(p.Target.High()),
+		// c.UpdateFieldUnitPersuadedLow:                                 uint32(p.Persuaded.Low()),
+		// c.UpdateFieldUnitPersuadedHigh:                                uint32(p.Persuaded.High()),
+		// c.UpdateFieldUnitChannelObjectLow:                             uint32(0), // TODO
+		// c.UpdateFieldUnitChannelObjectHigh:                            uint32(0), // TODO
+		c.UpdateFieldUnitHealth: uint32(float32(p.maxHealth()) * p.HealthPercent),
+		c.UpdateFieldUnitPowerStart + c.UpdateField(p.powerType()):    uint32(float32(p.maxPower()) * p.PowerPercent),
 		c.UpdateFieldUnitMaxHealth:                                    uint32(p.maxHealth()),
 		c.UpdateFieldUnitMaxPowerStart + c.UpdateField(p.powerType()): uint32(p.maxPower()),
-		// c.UpdateFieldUnitLevel:                                        uint32(2),  // THIS BREAKS THINGS???
-		c.UpdateFieldUnitBytes0:                      uint32(p.Race) | uint32(p.Class)<<8 | uint32(p.Gender)<<16,
-		c.UpdateFieldUnitAura:                        uint32(0), // TODO
-		c.UpdateFieldUnitAuraLast:                    uint32(0), // TODO
-		c.UpdateFieldUnitAuraflags:                   uint32(0), // TODO
-		c.UpdateFieldUnitAuraflags01:                 uint32(0), // TODO
-		c.UpdateFieldUnitAuraflags02:                 uint32(0), // TODO
-		c.UpdateFieldUnitAuraflags03:                 uint32(0), // TODO
-		c.UpdateFieldUnitAuraflags04:                 uint32(0), // TODO
-		c.UpdateFieldUnitAuraflags05:                 uint32(0), // TODO
-		c.UpdateFieldUnitAuralevels:                  uint32(0), // TODO
-		c.UpdateFieldUnitAuralevelsLast:              uint32(0), // TODO
-		c.UpdateFieldUnitAuraapplications:            uint32(0), // TODO
-		c.UpdateFieldUnitAuraapplicationsLast:        uint32(0), // TODO
-		c.UpdateFieldUnitAurastate:                   uint32(0), // TODO
-		c.UpdateFieldUnitBaseattacktime:              uint32(1000),
-		c.UpdateFieldUnitBoundingradius:              uint32(modelInfo.BoundingRadius),
-		c.UpdateFieldUnitCombatreach:                 uint32(modelInfo.CombatReach),
-		c.UpdateFieldUnitDisplayid:                   uint32(modelInfo.ID),
-		c.UpdateFieldUnitNativedisplayid:             uint32(modelInfo.ID),
-		c.UpdateFieldUnitMountdisplayid:              uint32(0), // TODO
-		c.UpdateFieldUnitBytes1:                      uint32(p.Byte1Flags)<<24 | uint32(p.FreeTalentPoints)<<16 | uint32(p.StandState),
-		c.UpdateFieldUnitPetnumber:                   uint32(0), // TODO
-		c.UpdateFieldUnitPetNameTimestamp:            uint32(0), // TODO
-		c.UpdateFieldUnitPetexperience:               uint32(0), // TODO
-		c.UpdateFieldUnitPetnextlevelexp:             uint32(0), // TODO
-		c.UpdateFieldUnitDynamicFlags:                uint32(0), // TODO
-		c.UpdateFieldUnitChannelSpell:                uint32(0), // TODO
-		c.UpdateFieldUnitModCastSpeed:                float32(1.0),
-		c.UpdateFieldUnitCreatedBySpell:              uint32(0), // TODO
-		c.UpdateFieldUnitNpcFlags:                    uint32(0), // TODO
-		c.UpdateFieldUnitNpcEmotestate:               uint32(p.EmoteState),
-		c.UpdateFieldUnitTrainingPoints:              uint32(p.TrainingPoints),
-		c.UpdateFieldUnitStrength:                    uint32(p.Strength),
-		c.UpdateFieldUnitAgility:                     uint32(p.Agility),
-		c.UpdateFieldUnitStamina:                     uint32(p.Stamina),
-		c.UpdateFieldUnitIntellect:                   uint32(p.Intellect),
-		c.UpdateFieldUnitSpirit:                      uint32(p.Spirit),
-		c.UpdateFieldUnitArmor:                       uint32(p.Resistances[c.SpellSchoolPhysical]),
-		c.UpdateFieldUnitHolyResist:                  uint32(p.Resistances[c.SpellSchoolHoly]),
-		c.UpdateFieldUnitFireResist:                  uint32(p.Resistances[c.SpellSchoolFire]),
-		c.UpdateFieldUnitNatureResist:                uint32(p.Resistances[c.SpellSchoolNature]),
-		c.UpdateFieldUnitFrostResist:                 uint32(p.Resistances[c.SpellSchoolFrost]),
-		c.UpdateFieldUnitShadowResist:                uint32(p.Resistances[c.SpellSchoolShadow]),
-		c.UpdateFieldUnitArcaneResist:                uint32(p.Resistances[c.SpellSchoolArcane]),
-		c.UpdateFieldUnitBaseMana:                    uint32(p.BasePower),
-		c.UpdateFieldUnitBaseHealth:                  uint32(p.BaseHealth),
-		c.UpdateFieldUnitBytes2:                      uint32(0), // TODO
-		c.UpdateFieldUnitAttackPower:                 uint32(0), // TODO
-		c.UpdateFieldUnitAttackPowerMods:             uint32(0), // TODO
-		c.UpdateFieldUnitAttackPowerMultiplier:       uint32(0), // TODO
-		c.UpdateFieldUnitRangedAttackPower:           uint32(0), // TODO
-		c.UpdateFieldUnitRangedAttackPowerMods:       uint32(0), // TODO
-		c.UpdateFieldUnitRangedAttackPowerMultiplier: uint32(0), // TODO
-		c.UpdateFieldUnitMinrangeddamage:             uint32(0), // TODO
-		c.UpdateFieldUnitMaxrangeddamage:             uint32(0), // TODO
-		c.UpdateFieldUnitPowerCostModifier:           uint32(0), // TODO
-		c.UpdateFieldUnitPowerCostModifier01:         uint32(0), // TODO
-		c.UpdateFieldUnitPowerCostModifier02:         uint32(0), // TODO
-		c.UpdateFieldUnitPowerCostModifier03:         uint32(0), // TODO
-		c.UpdateFieldUnitPowerCostModifier04:         uint32(0), // TODO
-		c.UpdateFieldUnitPowerCostModifier05:         uint32(0), // TODO
-		c.UpdateFieldUnitPowerCostModifier06:         uint32(0), // TODO
-		c.UpdateFieldUnitPowerCostMultiplier:         uint32(0), // TODO
-		c.UpdateFieldUnitPowerCostMultiplier01:       uint32(0), // TODO
-		c.UpdateFieldUnitPowerCostMultiplier02:       uint32(0), // TODO
-		c.UpdateFieldUnitPowerCostMultiplier03:       uint32(0), // TODO
-		c.UpdateFieldUnitPowerCostMultiplier04:       uint32(0), // TODO
-		c.UpdateFieldUnitPowerCostMultiplier05:       uint32(0), // TODO
-		c.UpdateFieldUnitPowerCostMultiplier06:       uint32(0), // TODO
+		// c.UpdateFieldUnitLevel:                                        uint32(p.Level), // THIS BREAKS THINGS???
+		c.UpdateFieldUnitBytes0: uint32(p.Race) | uint32(p.Class)<<8 | uint32(p.Gender)<<16,
+		// c.UpdateFieldUnitAura:                 uint32(0), // TODO
+		// c.UpdateFieldUnitAuraLast:             uint32(0), // TODO
+		// c.UpdateFieldUnitAuraflags:            uint32(0), // TODO
+		// c.UpdateFieldUnitAuraflags01:          uint32(0), // TODO
+		// c.UpdateFieldUnitAuraflags02:          uint32(0), // TODO
+		// c.UpdateFieldUnitAuraflags03:          uint32(0), // TODO
+		// c.UpdateFieldUnitAuraflags04:          uint32(0), // TODO
+		// c.UpdateFieldUnitAuraflags05:          uint32(0), // TODO
+		// c.UpdateFieldUnitAuralevels:           uint32(0), // TODO
+		// c.UpdateFieldUnitAuralevelsLast:       uint32(0), // TODO
+		// c.UpdateFieldUnitAuraapplications:     uint32(0), // TODO
+		// c.UpdateFieldUnitAuraapplicationsLast: uint32(0), // TODO
+		// c.UpdateFieldUnitAurastate:            uint32(0), // TODO
+		// c.UpdateFieldUnitBaseattacktime:  uint32(1000),
+		c.UpdateFieldUnitBoundingradius:  float32(modelInfo.BoundingRadius),
+		c.UpdateFieldUnitCombatreach:     float32(modelInfo.CombatReach),
+		c.UpdateFieldUnitDisplayid:       uint32(modelInfo.ID),
+		c.UpdateFieldUnitNativedisplayid: uint32(modelInfo.ID),
+		// c.UpdateFieldUnitMountdisplayid:       uint32(0), // TODO
+		// c.UpdateFieldUnitBytes1: uint32(p.Byte1Flags)<<24 | uint32(p.FreeTalentPoints)<<16 | uint32(p.StandState),
+		// c.UpdateFieldUnitPetnumber:            uint32(0), // TODO
+		// c.UpdateFieldUnitPetNameTimestamp:     uint32(0), // TODO
+		// c.UpdateFieldUnitPetexperience:        uint32(0), // TODO
+		// c.UpdateFieldUnitPetnextlevelexp:      uint32(0), // TODO
+		// c.UpdateFieldUnitDynamicFlags:         uint32(0), // TODO
+		// c.UpdateFieldUnitChannelSpell:         uint32(0), // TODO
+		c.UpdateFieldUnitModCastSpeed: float32(1.0),
+		// c.UpdateFieldUnitCreatedBySpell:       uint32(0), // TODO
+		// c.UpdateFieldUnitNpcFlags:             uint32(0), // TODO
+		c.UpdateFieldUnitNpcEmotestate:  uint32(p.EmoteState),
+		c.UpdateFieldUnitTrainingPoints: uint32(p.TrainingPoints),
+		c.UpdateFieldUnitStrength:       uint32(p.Strength),
+		c.UpdateFieldUnitAgility:        uint32(p.Agility),
+		c.UpdateFieldUnitStamina:        uint32(p.Stamina),
+		c.UpdateFieldUnitIntellect:      uint32(p.Intellect),
+		c.UpdateFieldUnitSpirit:         uint32(p.Spirit),
+		c.UpdateFieldUnitArmor:          uint32(p.Resistances[c.SpellSchoolPhysical]),
+		c.UpdateFieldUnitHolyResist:     uint32(p.Resistances[c.SpellSchoolHoly]),
+		c.UpdateFieldUnitFireResist:     uint32(p.Resistances[c.SpellSchoolFire]),
+		c.UpdateFieldUnitNatureResist:   uint32(p.Resistances[c.SpellSchoolNature]),
+		c.UpdateFieldUnitFrostResist:    uint32(p.Resistances[c.SpellSchoolFrost]),
+		c.UpdateFieldUnitShadowResist:   uint32(p.Resistances[c.SpellSchoolShadow]),
+		c.UpdateFieldUnitArcaneResist:   uint32(p.Resistances[c.SpellSchoolArcane]),
+		c.UpdateFieldUnitBaseMana:       uint32(p.BasePower),
+		c.UpdateFieldUnitBaseHealth:     uint32(p.BaseHealth),
+		// c.UpdateFieldUnitBytes2:                      uint32(0), // TODO
+		// c.UpdateFieldUnitAttackPower:                 uint32(0), // TODO
+		// c.UpdateFieldUnitAttackPowerMods:             uint32(0), // TODO
+		// c.UpdateFieldUnitAttackPowerMultiplier:       uint32(0), // TODO
+		// c.UpdateFieldUnitRangedAttackPower:           uint32(0), // TODO
+		// c.UpdateFieldUnitRangedAttackPowerMods:       uint32(0), // TODO
+		// c.UpdateFieldUnitRangedAttackPowerMultiplier: uint32(0), // TODO
+		// c.UpdateFieldUnitMinrangeddamage:             uint32(0), // TODO
+		// c.UpdateFieldUnitMaxrangeddamage:             uint32(0), // TODO
+		// c.UpdateFieldUnitPowerCostModifier:           uint32(0), // TODO
+		// c.UpdateFieldUnitPowerCostModifier01:         uint32(0), // TODO
+		// c.UpdateFieldUnitPowerCostModifier02:         uint32(0), // TODO
+		// c.UpdateFieldUnitPowerCostModifier03:         uint32(0), // TODO
+		// c.UpdateFieldUnitPowerCostModifier04:         uint32(0), // TODO
+		// c.UpdateFieldUnitPowerCostModifier05:         uint32(0), // TODO
+		// c.UpdateFieldUnitPowerCostModifier06:         uint32(0), // TODO
+		// c.UpdateFieldUnitPowerCostMultiplier:         uint32(0), // TODO
+		// c.UpdateFieldUnitPowerCostMultiplier01:       uint32(0), // TODO
+		// c.UpdateFieldUnitPowerCostMultiplier02:       uint32(0), // TODO
+		// c.UpdateFieldUnitPowerCostMultiplier03:       uint32(0), // TODO
+		// c.UpdateFieldUnitPowerCostMultiplier04:       uint32(0), // TODO
+		// c.UpdateFieldUnitPowerCostMultiplier05:       uint32(0), // TODO
+		// c.UpdateFieldUnitPowerCostMultiplier06:       uint32(0), // TODO
 
-		c.UpdateFieldPlayerDuelArbiter:                uint32(0), // TODO
-		c.UpdateFieldPlayerFlags:                      uint32(p.flags()),
-		c.UpdateFieldPlayerGuildid:                    uint32(0), // TODO
-		c.UpdateFieldPlayerGuildrank:                  uint32(0), // TODO
-		c.UpdateFieldPlayerBytes:                      uint32(p.SkinColor) | uint32(p.Face)<<8 | uint32(p.HairStyle)<<16 | uint32(p.HairColor)<<24,
-		c.UpdateFieldPlayerBytes2:                     uint32(p.Feature),
-		c.UpdateFieldPlayerBytes3:                     uint32(p.Gender) | uint32(p.DrunkValue)&0xFFFE,
-		c.UpdateFieldPlayerDuelTeam:                   uint32(0), // TODO
-		c.UpdateFieldPlayerGuildTimestamp:             uint32(0), // TODO
-		c.UpdateFieldPlayerQuestStart:                 uint32(0), // TODO
-		c.UpdateFieldPlayerBankSlot1:                  uint32(0), // TODO
-		c.UpdateFieldPlayerBankSlotLast:               uint32(0), // TODO
-		c.UpdateFieldPlayerBankbagSlot1:               uint32(0), // TODO
-		c.UpdateFieldPlayerBankbagSlotLast:            uint32(0), // TODO
-		c.UpdateFieldPlayerVendorbuybackSlot1:         uint32(0), // TODO
-		c.UpdateFieldPlayerVendorbuybackSlotLast:      uint32(0), // TODO
-		c.UpdateFieldPlayerKeyringSlot1:               uint32(0), // TODO
-		c.UpdateFieldPlayerKeyringSlotLast:            uint32(0), // TODO
-		c.UpdateFieldPlayerFarsight:                   uint32(0), // TODO
-		c.UpdateFieldPlayerComboTarget:                uint32(0), // TODO
-		c.UpdateFieldPlayerXp:                         uint32(p.XP),
-		c.UpdateFieldPlayerNextLevelXp:                uint32(1), // TODO
-		c.UpdateFieldPlayerSkillInfo11:                uint32(0), // TODO
-		c.UpdateFieldPlayerCharacterPoints1:           uint32(0), // TODO
-		c.UpdateFieldPlayerCharacterPoints2:           uint32(0), // TODO
-		c.UpdateFieldPlayerTrackCreatures:             uint32(0), // TODO
-		c.UpdateFieldPlayerTrackResources:             uint32(0), // TODO
-		c.UpdateFieldPlayerBlockPercentage:            uint32(0), // TODO
-		c.UpdateFieldPlayerDodgePercentage:            uint32(0), // TODO
-		c.UpdateFieldPlayerParryPercentage:            uint32(0), // TODO
-		c.UpdateFieldPlayerCritPercentage:             uint32(0), // TODO
-		c.UpdateFieldPlayerRangedCritPercentage:       uint32(0), // TODO
-		c.UpdateFieldPlayerExploredZones1:             uint32(0), // TODO
-		c.UpdateFieldPlayerRestStateExperience:        uint32(0), // TODO
-		c.UpdateFieldPlayerCoinage:                    uint32(p.Money),
-		c.UpdateFieldPlayerPosstat0:                   uint32(0), // TODO
-		c.UpdateFieldPlayerPosstat1:                   uint32(0), // TODO
-		c.UpdateFieldPlayerPosstat2:                   uint32(0), // TODO
-		c.UpdateFieldPlayerPosstat3:                   uint32(0), // TODO
-		c.UpdateFieldPlayerPosstat4:                   uint32(0), // TODO
-		c.UpdateFieldPlayerNegstat0:                   uint32(0), // TODO
-		c.UpdateFieldPlayerNegstat1:                   uint32(0), // TODO
-		c.UpdateFieldPlayerNegstat2:                   uint32(0), // TODO
-		c.UpdateFieldPlayerNegstat3:                   uint32(0), // TODO
-		c.UpdateFieldPlayerNegstat4:                   uint32(0), // TODO
-		c.UpdateFieldPlayerResistancebuffmodspositive: uint32(0), // TODO
-		c.UpdateFieldPlayerResistancebuffmodsnegative: uint32(0), // TODO
-		c.UpdateFieldPlayerModDamageDonePos:           uint32(0), // TODO
-		c.UpdateFieldPlayerModDamageDoneNeg:           uint32(0), // TODO
-		c.UpdateFieldPlayerModDamageDonePct:           uint32(0), // TODO
-		c.UpdateFieldPlayerFieldBytes:                 uint32(0), // TODO
-		c.UpdateFieldPlayerAmmoID:                     uint32(0), // TODO
-		c.UpdateFieldPlayerSelfResSpell:               uint32(0), // TODO
-		c.UpdateFieldPlayerPvpMedals:                  uint32(0), // TODO
-		c.UpdateFieldPlayerBuybackPrice1:              uint32(0), // TODO
-		c.UpdateFieldPlayerBuybackPriceLast:           uint32(0), // TODO
-		c.UpdateFieldPlayerBuybackTimestamp1:          uint32(0), // TODO
-		c.UpdateFieldPlayerBuybackTimestampLast:       uint32(0), // TODO
-		c.UpdateFieldPlayerSessionKills:               uint32(0), // TODO
-		c.UpdateFieldPlayerYesterdayKills:             uint32(0), // TODO
-		c.UpdateFieldPlayerLastWeekKills:              uint32(0), // TODO
-		c.UpdateFieldPlayerThisWeekKills:              uint32(0), // TODO
-		c.UpdateFieldPlayerThisWeekContribution:       uint32(0), // TODO
-		c.UpdateFieldPlayerLifetimeHonorableKills:     uint32(0), // TODO
-		c.UpdateFieldPlayerLifetimeDishonorableKills:  uint32(0), // TODO
-		c.UpdateFieldPlayerYesterdayContribution:      uint32(0), // TODO
-		c.UpdateFieldPlayerLastWeekContribution:       uint32(0), // TODO
-		c.UpdateFieldPlayerLastWeekRank:               uint32(0), // TODO
-		c.UpdateFieldPlayerBytes2b:                    uint32(0), // TODO
-		c.UpdateFieldPlayerWatchedFactionIndex:        uint32(0), // TODO
-		c.UpdateFieldPlayerCombatRating1:              uint32(0), // TODO
+		// c.UpdateFieldPlayerDuelArbiter:                uint32(0), // TODO
+		c.UpdateFieldPlayerFlags: uint32(p.flags()),
+		// c.UpdateFieldPlayerGuildid:                    uint32(0), // TODO
+		// c.UpdateFieldPlayerGuildrank:                  uint32(0), // TODO
+		c.UpdateFieldPlayerBytes:  uint32(p.SkinColor) | uint32(p.Face)<<8 | uint32(p.HairStyle)<<16 | uint32(p.HairColor)<<24,
+		c.UpdateFieldPlayerBytes2: uint32(p.Feature),
+		c.UpdateFieldPlayerBytes3: uint32(p.Gender) | uint32(p.DrunkValue)&0xFFFE,
+		// c.UpdateFieldPlayerDuelTeam:                   uint32(0), // TODO
+		// c.UpdateFieldPlayerGuildTimestamp:             uint32(0), // TODO
+		// c.UpdateFieldPlayerQuestStart:                 uint32(0), // TODO
+		// c.UpdateFieldPlayerBankSlot1:                  uint32(0), // TODO
+		// c.UpdateFieldPlayerBankSlotLast:               uint32(0), // TODO
+		// c.UpdateFieldPlayerBankbagSlot1:               uint32(0), // TODO
+		// c.UpdateFieldPlayerBankbagSlotLast:            uint32(0), // TODO
+		// c.UpdateFieldPlayerVendorbuybackSlot1:         uint32(0), // TODO
+		// c.UpdateFieldPlayerVendorbuybackSlotLast:      uint32(0), // TODO
+		// c.UpdateFieldPlayerKeyringSlot1:               uint32(0), // TODO
+		// c.UpdateFieldPlayerKeyringSlotLast:            uint32(0), // TODO
+		// c.UpdateFieldPlayerFarsight:                   uint32(0), // TODO
+		// c.UpdateFieldPlayerComboTarget:                uint32(0), // TODO
+		c.UpdateFieldPlayerXp: uint32(p.XP),
+		// c.UpdateFieldPlayerNextLevelXp:                uint32(1), // TODO
+		// c.UpdateFieldPlayerSkillInfo11:                uint32(0), // TODO
+		// c.UpdateFieldPlayerCharacterPoints1:           uint32(0), // TODO
+		// c.UpdateFieldPlayerCharacterPoints2:           uint32(0), // TODO
+		// c.UpdateFieldPlayerTrackCreatures:             uint32(0), // TODO
+		// c.UpdateFieldPlayerTrackResources:             uint32(0), // TODO
+		// c.UpdateFieldPlayerBlockPercentage:            uint32(0), // TODO
+		// c.UpdateFieldPlayerDodgePercentage:            uint32(0), // TODO
+		// c.UpdateFieldPlayerParryPercentage:            uint32(0), // TODO
+		// c.UpdateFieldPlayerCritPercentage:             uint32(0), // TODO
+		// c.UpdateFieldPlayerRangedCritPercentage:       uint32(0), // TODO
+		// c.UpdateFieldPlayerExploredZones1:             uint32(0), // TODO
+		// c.UpdateFieldPlayerRestStateExperience:        uint32(0), // TODO
+		c.UpdateFieldPlayerCoinage: uint32(p.Money),
+		// c.UpdateFieldPlayerPosstat0:                   uint32(0), // TODO
+		// c.UpdateFieldPlayerPosstat1:                   uint32(0), // TODO
+		// c.UpdateFieldPlayerPosstat2:                   uint32(0), // TODO
+		// c.UpdateFieldPlayerPosstat3:                   uint32(0), // TODO
+		// c.UpdateFieldPlayerPosstat4:                   uint32(0), // TODO
+		// c.UpdateFieldPlayerNegstat0:                   uint32(0), // TODO
+		// c.UpdateFieldPlayerNegstat1:                   uint32(0), // TODO
+		// c.UpdateFieldPlayerNegstat2:                   uint32(0), // TODO
+		// c.UpdateFieldPlayerNegstat3:                   uint32(0), // TODO
+		// c.UpdateFieldPlayerNegstat4:                   uint32(0), // TODO
+		// c.UpdateFieldPlayerResistancebuffmodspositive: uint32(0), // TODO
+		// c.UpdateFieldPlayerResistancebuffmodsnegative: uint32(0), // TODO
+		// c.UpdateFieldPlayerModDamageDonePos:           uint32(0), // TODO
+		// c.UpdateFieldPlayerModDamageDoneNeg:           uint32(0), // TODO
+		// c.UpdateFieldPlayerModDamageDonePct:           uint32(0), // TODO
+		// c.UpdateFieldPlayerFieldBytes:                 uint32(0), // TODO
+		// c.UpdateFieldPlayerAmmoID:                     uint32(0), // TODO
+		// c.UpdateFieldPlayerSelfResSpell:               uint32(0), // TODO
+		// c.UpdateFieldPlayerPvpMedals:                  uint32(0), // TODO
+		// c.UpdateFieldPlayerBuybackPrice1:              uint32(0), // TODO
+		// c.UpdateFieldPlayerBuybackPriceLast:           uint32(0), // TODO
+		// c.UpdateFieldPlayerBuybackTimestamp1:          uint32(0), // TODO
+		// c.UpdateFieldPlayerBuybackTimestampLast:       uint32(0), // TODO
+		// c.UpdateFieldPlayerSessionKills:               uint32(0), // TODO
+		// c.UpdateFieldPlayerYesterdayKills:             uint32(0), // TODO
+		// c.UpdateFieldPlayerLastWeekKills:              uint32(0), // TODO
+		// c.UpdateFieldPlayerThisWeekKills:              uint32(0), // TODO
+		// c.UpdateFieldPlayerThisWeekContribution:       uint32(0), // TODO
+		// c.UpdateFieldPlayerLifetimeHonorableKills:     uint32(0), // TODO
+		// c.UpdateFieldPlayerLifetimeDishonorableKills:  uint32(0), // TODO
+		// c.UpdateFieldPlayerYesterdayContribution:      uint32(0), // TODO
+		// c.UpdateFieldPlayerLastWeekContribution:       uint32(0), // TODO
+		// c.UpdateFieldPlayerLastWeekRank:               uint32(0), // TODO
+		// c.UpdateFieldPlayerBytes2b:                    uint32(0), // TODO
+		// c.UpdateFieldPlayerWatchedFactionIndex:        uint32(0), // TODO
+		// c.UpdateFieldPlayerCombatRating1:              uint32(0), // TODO
 	}
 
 	for slot, itemGUID := range p.Equipment {

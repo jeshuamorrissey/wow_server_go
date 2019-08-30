@@ -40,10 +40,10 @@ type Unit struct {
 	XYSpeed  float32
 
 	// Stats.
-	BaseHealth int
-	Health     int
-	BasePower  int
-	Power      int
+	BaseHealth    int
+	HealthPercent float32
+	BasePower     int
+	PowerPercent  float32
 
 	Strength  int
 	Agility   int
@@ -168,8 +168,8 @@ func (u *Unit) UpdateFields() UpdateFieldsMap {
 		c.UpdateFieldUnitPersuadedHigh:                                u.Persuaded.High(),
 		c.UpdateFieldUnitChannelObjectLow:                             0, // TODO
 		c.UpdateFieldUnitChannelObjectHigh:                            0, // TODO
-		c.UpdateFieldUnitHealth:                                       u.Health,
-		c.UpdateFieldUnitPowerStart + c.UpdateField(u.powerType()):    u.Power,
+		c.UpdateFieldUnitHealth:                                       uint32(float32(u.maxHealth()) * u.HealthPercent),
+		c.UpdateFieldUnitPowerStart + c.UpdateField(u.powerType()):    uint32(float32(u.maxPower()) * u.PowerPercent),
 		c.UpdateFieldUnitMaxHealth:                                    u.maxHealth(),
 		c.UpdateFieldUnitMaxPowerStart + c.UpdateField(u.powerType()): u.maxPower(),
 		c.UpdateFieldUnitLevel:                                        u.Level,
