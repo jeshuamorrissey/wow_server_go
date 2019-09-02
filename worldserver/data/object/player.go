@@ -27,6 +27,8 @@ type Player struct {
 	XP         int
 	Money      int
 
+	Tutorials [256]bool
+
 	// Flags.
 	IsGroupLeader     bool
 	IsAFK             bool

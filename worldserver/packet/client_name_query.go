@@ -33,9 +33,9 @@ func (pkt *ClientNameQuery) Handle(state *system.State) ([]system.ServerPacket, 
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
 			return nil, nil
-		} else {
-			return nil, err
 		}
+
+		return nil, err
 	}
 
 	return []system.ServerPacket{response}, nil

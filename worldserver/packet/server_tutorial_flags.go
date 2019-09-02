@@ -2,7 +2,9 @@ package packet
 
 import (
 	"bytes"
-	"encoding/binary"
+	"math/big"
+
+	"github.com/jeshuamorrissey/wow_server_go/common"
 
 	"github.com/jeshuamorrissey/wow_server_go/worldserver/system"
 )
@@ -14,10 +16,15 @@ type ServerTutorialFlags struct{}
 func (pkt *ServerTutorialFlags) ToBytes(state *system.State) ([]byte, error) {
 	buffer := bytes.NewBufferString("")
 
-	// TODO(jeshua): implement tutorials.
-	for i := 0; i < 8; i++ {
-		binary.Write(buffer, binary.LittleEndian, uint32(0))
+	// Convert the binary array to a bitmask.
+	mask := big.NewInt(0)
+	for i, isDone := range state.Character.Tutorials {
+		if isDone {
+			mask.SetBit(mask, i, 1)
+		}
 	}
+
+	buffer.Write(common.PadBigIntBytes(common.ReverseBytes(mask.Bytes()), 8))
 
 	return buffer.Bytes(), nil
 }

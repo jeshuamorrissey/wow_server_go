@@ -121,6 +121,7 @@ func (s *Session) Run() {
 		pkt, err := s.readPacket()
 		if err != nil {
 			s.state.Log.Warnf("Terminating connection: %v\n", err)
+			s.state.Updater.Logout(s.state.Character.GUID())
 			return
 		}
 
