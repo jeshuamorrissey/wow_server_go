@@ -7,6 +7,31 @@ const (
 	NumBagSlots         = 4
 )
 
+// Coins represents the coinage type within the game.
+type Coins int
+
+// MakeCoins makes a coins object for a given distribute of money.
+func MakeCoins(copper, silver, gold int) Coins {
+	return Coins(copper + 100*silver + 100000*gold)
+}
+
+// Copper returns the number of copper coins in the given collection.
+func (c Coins) Copper() int {
+	// Number of copper left after removing the gold + silver.
+	return int(c % 100)
+}
+
+// Silver returns the number of silver coins in the given collection.
+func (c Coins) Silver() int {
+	// Number of silver left after removing the gold.
+	return int(c/100.0) % 100
+}
+
+// Gold returns the number of gold coins in the given collection.
+func (c Coins) Gold() int {
+	return int(c / 100000.0)
+}
+
 // SpellSchool information.
 //go:generate stringer -type=SpellSchool -trimprefix=SpellSchool
 type SpellSchool uint8
@@ -717,6 +742,28 @@ const (
 	ItemFlagReadable ItemFlag = 0x00000200
 )
 
+// ItemPrototypeFlag is a enum value which maps to a object's type ID.
+//go:generate stringer -type=ItemPrototypeFlag -trimprefix=ItemPrototypeFlag
+type ItemPrototypeFlag uint32
+
+// ItemPrototypeFlag values.
+const (
+	ItemPrototypeFlagConjured        ItemPrototypeFlag = 0x00000002
+	ItemPrototypeFlagLootable        ItemPrototypeFlag = 0x00000004
+	ItemPrototypeFlagWrapped         ItemPrototypeFlag = 0x00000008
+	ItemPrototypeFlagDeprecated      ItemPrototypeFlag = 0x00000010
+	ItemPrototypeFlagIndestructible  ItemPrototypeFlag = 0x00000020
+	ItemPrototypeFlagUsable          ItemPrototypeFlag = 0x00000040
+	ItemPrototypeFlagNoEquipCooldown ItemPrototypeFlag = 0x00000080
+	ItemPrototypeFlagWrapper         ItemPrototypeFlag = 0x00000200
+	ItemPrototypeFlagStackable       ItemPrototypeFlag = 0x00000400
+	ItemPrototypeFlagPartyLoot       ItemPrototypeFlag = 0x00000800
+	ItemPrototypeFlagCharter         ItemPrototypeFlag = 0x00002000
+	ItemPrototypeFlagLetter          ItemPrototypeFlag = 0x00004000
+	ItemPrototypeFlagPVPReward       ItemPrototypeFlag = 0x00008000
+	ItemPrototypeFlagUniqueEquipped  ItemPrototypeFlag = 0x00080000
+)
+
 // Power is a enum value which maps to a object's type ID.
 //go:generate stringer -type=Power -trimprefix=Power
 type Power uint32
@@ -827,4 +874,17 @@ const (
 	MovementFlagWaterWalking    MovementFlag = 0x10000000
 	MovementFlagSafeFall        MovementFlag = 0x20000000
 	MovementFlagHover           MovementFlag = 0x40000000
+)
+
+// DisplayID is a enum value which maps to a object's type ID.
+//go:generate stringer -type=DisplayID -trimprefix=DisplayID
+type DisplayID uint32
+
+// DisplayID values.
+const (
+	DisplayIDInvBoots06  = 10141
+	DisplayIDInvPants02  = 9892
+	DisplayIDInvShield09 = 18730
+	DisplayIDInvShirt05  = 9891
+	DisplayIDInvSword04  = 1542
 )

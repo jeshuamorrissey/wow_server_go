@@ -58,20 +58,8 @@ func main() {
 	logrus.SetLevel(logrus.TraceLevel)
 
 	// Load constant data.
-	logrus.Info("Loading items.json.gz...")
-	err := dbc.LoadItems("D:\\Users\\Jeshua\\go\\src\\github.com\\jeshuamorrissey\\wow_server_go\\worldserver\\data\\dbc\\items.json.gz")
-	if err != nil {
-		panic(err)
-	}
-
 	logrus.Info("Loading units.json.gz...")
-	err = dbc.LoadUnits("D:\\Users\\Jeshua\\go\\src\\github.com\\jeshuamorrissey\\wow_server_go\\worldserver\\data\\dbc\\units.json.gz")
-	if err != nil {
-		panic(err)
-	}
-
-	logrus.Info("Loading starting_items.json...")
-	err = dbc.LoadStartingItems("D:\\Users\\Jeshua\\go\\src\\github.com\\jeshuamorrissey\\wow_server_go\\worldserver\\data\\dbc\\starting_items.json")
+	err := dbc.LoadUnits("D:\\Users\\Jeshua\\go\\src\\github.com\\jeshuamorrissey\\wow_server_go\\worldserver\\data\\dbc\\units.json.gz")
 	if err != nil {
 		panic(err)
 	}

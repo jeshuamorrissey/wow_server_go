@@ -1,38 +1,34 @@
 package dbc
 
 import (
-	"encoding/json"
-	"fmt"
-	"os"
-
 	c "github.com/jeshuamorrissey/wow_server_go/worldserver/data/dbc/constants"
 )
 
 var (
 	// Map of "<Class>:<Race>" --> list of item entries.
-	startingItems map[string][]int
-)
-
-// LoadStartingItems reads the starting item JSON file and
-// populates the startingItems map.
-func LoadStartingItems(jsonFile string) error {
-	file, err := os.Open(jsonFile)
-	if err != nil {
-		return err
+	startingItems = map[c.Class]map[c.Race][]string{
+		c.ClassWarrior: map[c.Race][]string{
+			c.RaceHuman: []string{
+				"Recruit's Boots",
+				"Recruit's Pants",
+				"Recruit's Shirt",
+				"Worn Shortsword",
+				"Worn Wooden Shield",
+			},
+		},
 	}
-
-	return json.NewDecoder(file).Decode(&startingItems)
-}
+)
 
 // GetStartingItems is a utility which will return a mapping of equipment slot
 // to the item that should be in that slot.
 func GetStartingItems(class c.Class, race c.Race) (map[c.EquipmentSlot]*Item, []*Item) {
-	items := startingItems[fmt.Sprintf("%d:%d", class, race)]
+	// items := startingItems[fmt.Sprintf("%d:%d", class, race)]
+	items := startingItems[class][race]
 	equipment := make(map[c.EquipmentSlot]*Item)
 	nonEquipment := make([]*Item, 0)
 
 	for _, itemID := range items {
-		item := Items[itemID]
+		item := ItemsByName[itemID]
 
 		if item.InventoryType == c.InventoryTypeHead {
 			equipment[c.EquipmentSlotHead] = item

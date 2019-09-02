@@ -265,16 +265,16 @@ func (p *Player) UpdateFields() UpdateFieldsMap {
 
 		if slot == c.EquipmentSlotMainHand {
 			fields[c.UpdateFieldUnitBaseattacktime] = uint32(item.Template().AttackRate)
-			fields[c.UpdateFieldUnitMindamage] = uint32(item.Template().Damage[c.SpellSchoolPhysical].Min)
-			fields[c.UpdateFieldUnitMaxdamage] = uint32(item.Template().Damage[c.SpellSchoolPhysical].Max)
+			fields[c.UpdateFieldUnitMindamage] = uint32(item.Template().Damages[c.SpellSchoolPhysical].Min)
+			fields[c.UpdateFieldUnitMaxdamage] = uint32(item.Template().Damages[c.SpellSchoolPhysical].Max)
 		} else if slot == c.EquipmentSlotOffHand {
 			fields[c.UpdateFieldUnitOffhandattacktime] = uint32(item.Template().AttackRate)
-			fields[c.UpdateFieldUnitMinoffhanddamage] = uint32(item.Template().Damage[c.SpellSchoolPhysical].Min)
-			fields[c.UpdateFieldUnitMaxoffhanddamage] = uint32(item.Template().Damage[c.SpellSchoolPhysical].Max)
+			fields[c.UpdateFieldUnitMinoffhanddamage] = uint32(item.Template().Damages[c.SpellSchoolPhysical].Min)
+			fields[c.UpdateFieldUnitMaxoffhanddamage] = uint32(item.Template().Damages[c.SpellSchoolPhysical].Max)
 		} else if slot == c.EquipmentSlotRanged {
 			fields[c.UpdateFieldUnitRangedattacktime] = uint32(item.Template().AttackRate)
-			fields[c.UpdateFieldUnitMinrangeddamage] = uint32(item.Template().Damage[c.SpellSchoolPhysical].Min)
-			fields[c.UpdateFieldUnitMaxrangeddamage] = uint32(item.Template().Damage[c.SpellSchoolPhysical].Max)
+			fields[c.UpdateFieldUnitMinrangeddamage] = uint32(item.Template().Damages[c.SpellSchoolPhysical].Min)
+			fields[c.UpdateFieldUnitMaxrangeddamage] = uint32(item.Template().Damages[c.SpellSchoolPhysical].Max)
 		}
 	}
 

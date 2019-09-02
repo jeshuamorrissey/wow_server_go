@@ -47,6 +47,8 @@ func NewCharacter(
 				Entry:  uint32(item.Entry),
 				ScaleX: 1.0,
 			},
+
+			Durability: item.MaxDurability,
 		}
 
 		err := om.Add(itemObj)

@@ -270,9 +270,9 @@ func (u *Unit) UpdateFields() UpdateFieldsMap {
 		displayField := c.UpdateFieldUnitVirtualItemDisplay + c.UpdateField(i)
 		fields[displayField] = item.DisplayID
 
-		infoField := c.UpdateFieldUnitVirtualItemInfo + c.UpdateField(i*2)
-		fields[infoField] = (int(item.Class)<<24 | int(item.SubClass)<<16 | int(item.Material)<<8 | int(item.InventoryType))
-		fields[infoField+1] = item.SheathType
+		// infoField := c.UpdateFieldUnitVirtualItemInfo + c.UpdateField(i*2)
+		// fields[infoField] = (int(item.Class)<<24 | int(item.SubClass)<<16 | int(item.Material)<<8 | int(item.InventoryType))
+		// fields[infoField+1] = item.SheathType
 	}
 
 	mergedFields := u.GameObject.UpdateFields()
