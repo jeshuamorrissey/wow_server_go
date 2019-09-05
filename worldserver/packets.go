@@ -15,6 +15,7 @@ var (
 		system.OpCodeClientNameQuery:       func() system.ClientPacket { return new(packet.ClientNameQuery) },
 		system.OpCodeClientPing:            func() system.ClientPacket { return new(packet.ClientPing) },
 		system.OpCodeClientPlayerLogin:     func() system.ClientPacket { return new(packet.ClientPlayerLogin) },
+		system.OpCodeClientQueryTime:       func() system.ClientPacket { return new(packet.ClientQueryTime) },
 		system.OpCodeClientTutorialFlag:    func() system.ClientPacket { return new(packet.ClientTutorialFlag) },
 	}
 )
