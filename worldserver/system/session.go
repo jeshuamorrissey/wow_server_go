@@ -2,6 +2,7 @@ package system
 
 import (
 	"bytes"
+	"compress/zlib"
 	"encoding/binary"
 	"errors"
 	"fmt"
@@ -78,22 +79,24 @@ func (s *Session) Send(pkt ServerPacket) error {
 		return err
 	}
 
-	// TODO(jeshua): Get this working!
-	// if opCode == OpCodeServerUpdateObject && len(pktData) > 100 {
-	// 	opCode = OpCodeServerCompressedUpdateObject
+	if opCode == OpCodeServerUpdateObject && len(pktData) > 100 {
+		opCode = OpCodeServerCompressedUpdateObject
 
-	// 	var compressedPktData bytes.Buffer
-	// 	writer, err := zlib.NewWriterLevel(&compressedPktData, 1)
-	// 	if err != nil {
-	// 		return err
-	// 	}
+		var compressedPktData bytes.Buffer
+		writer, err := zlib.NewWriterLevel(&compressedPktData, zlib.BestCompression)
+		if err != nil {
+			return err
+		}
 
-	// 	writer.Write(pktData)
+		writer.Write(pktData)
+		writer.Close()
 
-	// 	pktData := make([]byte, 4, compressedPktData.Len()+4)
-	// 	binary.LittleEndian.PutUint32(pktData, uint32(compressedPktData.Len()))
-	// 	pktData = append(pktData, compressedPktData.Bytes()...)
-	// }
+		newPktData := bytes.NewBufferString("")
+		binary.Write(newPktData, binary.LittleEndian, uint32(len(pktData)))
+		newPktData.Write(compressedPktData.Bytes())
+
+		pktData = newPktData.Bytes()
+	}
 
 	header, err := s.makeHeader(len(pktData), opCode)
 	if err != nil {
@@ -121,7 +124,9 @@ func (s *Session) Run() {
 		pkt, err := s.readPacket()
 		if err != nil {
 			s.state.Log.Warnf("Terminating connection: %v\n", err)
-			s.state.Updater.Logout(s.state.Character.GUID())
+			if s.state.Character != nil {
+				s.state.Updater.Logout(s.state.Character.GUID())
+			}
 			return
 		}
 

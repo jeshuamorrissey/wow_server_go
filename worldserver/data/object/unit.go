@@ -291,7 +291,7 @@ func (u *Unit) Template() *dbc.Unit {
 }
 
 func (u *Unit) movementFlags() uint32 {
-	var movementFlags uint32
+	movementFlags := uint32(0)
 	// if u.Is {
 	// 	movementFlags |= uint32(c.MovementFlagForward)
 	// }

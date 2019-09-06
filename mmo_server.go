@@ -30,6 +30,14 @@ func GenerateTestData(om *object.Manager, db *gorm.DB) error {
 		return err
 	}
 
+	salt = srp.GenerateSalt()
+	verifier = srp.GenerateVerifier("SASHA", "SASHA", salt)
+	accountSasha := database.Account{Name: "SASHA", VerifierStr: verifier.Text(16), SaltStr: salt.Text(16)}
+	err = db.Create(&accountSasha).Error
+	if err != nil {
+		return err
+	}
+
 	// Make some realms they can connect to.
 	realmSydney := database.Realm{Name: "Sydney", Host: "localhost:5001"}
 	err = db.Create(&realmSydney).Error
@@ -49,6 +57,18 @@ func GenerateTestData(om *object.Manager, db *gorm.DB) error {
 	}
 
 	db.Create(charObj)
+
+	charObjSash, err := database.NewCharacter(
+		om,
+		&accountSasha, &realmSydney,
+		"Sasha",
+		c.RaceHuman, c.ClassWarrior, c.GenderFemale,
+		1, 1, 1, 1, 1)
+	if err != nil {
+		return err
+	}
+
+	db.Create(charObjSash)
 
 	return nil
 }

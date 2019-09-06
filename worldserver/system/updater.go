@@ -102,6 +102,9 @@ func (u *Updater) Login(playerGUID object.GUID, session *Session) error {
 
 	u.log.Tracef("Registered GUID=%v", playerGUID)
 
+	// Mark the player as logged in.
+	u.om.Get(playerGUID).(*object.Player).IsLoggedIn = true
+
 	u.toUpdateLock.Lock()
 	defer u.toUpdateLock.Unlock()
 	u.toUpdate = append(u.toUpdate, playerGUID)
@@ -117,6 +120,9 @@ func (u *Updater) Logout(playerGUID object.GUID) error {
 	if _, ok := u.sessions[playerGUID]; !ok {
 		u.log.Warningf("player with GUID %v is not logged in, but we got a logout request", playerGUID)
 	}
+
+	// Mark the player as logged in.
+	u.om.Get(playerGUID).(*object.Player).IsLoggedIn = false
 
 	delete(u.sessions, playerGUID)
 	return nil
@@ -185,8 +191,45 @@ func (u *Updater) updatePlayer(guid object.GUID, loginData *loginData) {
 	// Find all objects that are close to this player and make sure they
 	// have been updated.
 	playerObj := u.om.Get(guid)
-	for _, obj := range u.om.Objects() {
-		u.makeUpdates(loginData, playerObj, obj, &outOfRangeUpdate, &objectUpdates)
+	for _, objGeneric := range u.om.Objects() {
+		// If the object is a player, and it is not logged in, just ignore it.
+		// Also do this for items on players.
+		switch obj := objGeneric.(type) {
+		case *object.Player:
+			if !obj.IsLoggedIn {
+				continue
+			}
+
+			for _, itemGUID := range obj.Inventory {
+				if u.om.Exists(itemGUID) {
+					u.makeUpdates(loginData, playerObj, u.om.Get(itemGUID), &outOfRangeUpdate, &objectUpdates)
+				}
+			}
+
+			for _, itemGUID := range obj.Equipment {
+				if u.om.Exists(itemGUID) {
+					u.makeUpdates(loginData, playerObj, u.om.Get(itemGUID), &outOfRangeUpdate, &objectUpdates)
+				}
+			}
+
+			for _, bagGUID := range obj.Bags {
+				if u.om.Exists(bagGUID) {
+					bag := u.om.Get(bagGUID).(*object.Container)
+					u.makeUpdates(loginData, playerObj, bag, &outOfRangeUpdate, &objectUpdates)
+					for _, itemGUID := range bag.Items {
+						if u.om.Exists(itemGUID) {
+							u.makeUpdates(loginData, playerObj, u.om.Get(itemGUID), &outOfRangeUpdate, &objectUpdates)
+						}
+					}
+				}
+			}
+		case *object.Item:
+			continue
+		case *object.Container:
+			continue
+		}
+
+		u.makeUpdates(loginData, playerObj, objGeneric, &outOfRangeUpdate, &objectUpdates)
 	}
 
 	pkt := u.makeUpdateObjectPacketFn(outOfRangeUpdate, objectUpdates)
