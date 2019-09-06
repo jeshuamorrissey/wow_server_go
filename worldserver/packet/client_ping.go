@@ -15,8 +15,8 @@ type ClientPing struct {
 
 // FromBytes reads packet data from the given buffer.
 func (pkt *ClientPing) FromBytes(state *system.State, buffer io.Reader) error {
-	binary.Read(buffer, binary.LittleEndian, pkt.Ping)
-	binary.Read(buffer, binary.LittleEndian, pkt.Latency)
+	binary.Read(buffer, binary.LittleEndian, &pkt.Ping)
+	binary.Read(buffer, binary.LittleEndian, &pkt.Latency)
 	return nil
 }
 

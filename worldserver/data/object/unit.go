@@ -14,8 +14,6 @@ type Unit struct {
 	GameObject
 
 	// Basic information.
-	Loc              Location
-	Pitch            float32
 	Level            int
 	Race             c.Race
 	Class            c.Class
@@ -27,17 +25,14 @@ type Unit struct {
 	EmoteState       int
 	TrainingPoints   int
 
+	// Movement related information.
+	MovementInfo      MovementInfo
 	SpeedWalk         float32
 	SpeedRun          float32
 	SpeedRunBackward  float32
 	SpeedSwim         float32
 	SpeedSwimBackward float32
 	SpeedTurn         float32
-
-	Velocity float32
-	SinAngle float32
-	CosAngle float32
-	XYSpeed  float32
 
 	// Stats.
 	BaseHealth    int
@@ -92,7 +87,7 @@ func (u *Unit) GUID() GUID { return u.GameObject.GUID() }
 func (u *Unit) SetGUID(guid GUID) { u.GameObject.SetGUID(guid) }
 
 // Location returns the location of the object.
-func (u *Unit) Location() *Location { return &u.Loc }
+func (u *Unit) Location() *Location { return &u.MovementInfo.Location }
 
 // MovementUpdate calculates and returns the movement update for the
 // object.

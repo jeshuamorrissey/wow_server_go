@@ -88,11 +88,13 @@ func NewCharacter(
 				ScaleX: dbc.GetPlayerScale(race, gender),
 			},
 
-			Loc: object.Location{
-				X: startingLocation.X,
-				Y: startingLocation.Y,
-				Z: startingLocation.Z,
-				O: startingLocation.O,
+			MovementInfo: object.MovementInfo{
+				Location: object.Location{
+					X: startingLocation.X,
+					Y: startingLocation.Y,
+					Z: startingLocation.Z,
+					O: startingLocation.O,
+				},
 			},
 
 			SpeedWalk:         2.5,

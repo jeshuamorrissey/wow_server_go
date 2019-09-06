@@ -19,5 +19,11 @@ var (
 		system.OpCodeClientSetActiveMover:    func() system.ClientPacket { return new(packet.ClientSetActiveMover) },
 		system.OpCodeClientTutorialFlag:      func() system.ClientPacket { return new(packet.ClientTutorialFlag) },
 		system.OpCodeClientUpdateAccountData: func() system.ClientPacket { return new(packet.ClientUpdateAccountData) },
+		system.OpCodeClientLogoutRequest:     func() system.ClientPacket { return new(packet.ClientLogoutRequest) },
+
+		// Movement packets have the same receiver.
+		system.OpCodeClientMoveHeartbeat:    func() system.ClientPacket { return packet.NewClientMovePacket(system.OpCodeClientMoveHeartbeat) },
+		system.OpCodeClientMoveStartForward: func() system.ClientPacket { return packet.NewClientMovePacket(system.OpCodeClientMoveStartForward) },
+		system.OpCodeClientMoveStop:         func() system.ClientPacket { return packet.NewClientMovePacket(system.OpCodeClientMoveStop) },
 	}
 )
