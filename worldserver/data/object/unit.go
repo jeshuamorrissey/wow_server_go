@@ -6,7 +6,6 @@ import (
 
 	"github.com/jeshuamorrissey/wow_server_go/worldserver/data/dbc"
 	c "github.com/jeshuamorrissey/wow_server_go/worldserver/data/dbc/constants"
-	"github.com/sirupsen/logrus"
 )
 
 // Unit represents an instance of an in-game monster.
@@ -45,8 +44,6 @@ type Unit struct {
 	Stamina   int
 	Intellect int
 	Spirit    int
-
-	Resistances map[c.SpellSchool]int
 
 	// Display items (virtual). List of entries.
 	VirtualItems []int
@@ -102,30 +99,30 @@ func (u *Unit) MovementUpdate() []byte {
 	binary.Write(buffer, binary.LittleEndian, float32(u.Location().Z))
 	binary.Write(buffer, binary.LittleEndian, float32(u.Location().O))
 
-	// if u.Manager().Exists(u.Transport) {
-	// 	transportObj := u.Manager().Get(u.Transport)
-	// 	binary.Write(buffer, binary.LittleEndian, uint64(u.Transport))
-	// 	binary.Write(buffer, binary.LittleEndian, float32(transportObj.Location().X))
-	// 	binary.Write(buffer, binary.LittleEndian, float32(transportObj.Location().Y))
-	// 	binary.Write(buffer, binary.LittleEndian, float32(transportObj.Location().Z))
-	// 	binary.Write(buffer, binary.LittleEndian, float32(transportObj.Location().O))
-	// 	binary.Write(buffer, binary.LittleEndian, uint32(0)) // Time
-	// }
+	if u.Manager().Exists(u.Transport) {
+		transportObj := u.Manager().Get(u.Transport)
+		binary.Write(buffer, binary.LittleEndian, uint64(u.Transport))
+		binary.Write(buffer, binary.LittleEndian, float32(transportObj.Location().X))
+		binary.Write(buffer, binary.LittleEndian, float32(transportObj.Location().Y))
+		binary.Write(buffer, binary.LittleEndian, float32(transportObj.Location().Z))
+		binary.Write(buffer, binary.LittleEndian, float32(transportObj.Location().O))
+		binary.Write(buffer, binary.LittleEndian, uint32(0)) // Time
+	}
 
-	// if u.IsSwimming {
-	// 	binary.Write(buffer, binary.LittleEndian, float32(u.Pitch))
-	// }
+	if u.IsSwimming {
+		binary.Write(buffer, binary.LittleEndian, float32(u.MovementInfo.Pitch))
+	}
 
-	// if !u.Manager().Exists(u.Transport) {
-	binary.Write(buffer, binary.LittleEndian, uint32(0)) // LastFallTime
-	// }
+	if !u.Manager().Exists(u.Transport) {
+		binary.Write(buffer, binary.LittleEndian, uint32(0)) // LastFallTime
+	}
 
-	// if u.IsFalling {
-	// 	binary.Write(buffer, binary.LittleEndian, float32(u.Velocity))
-	// 	binary.Write(buffer, binary.LittleEndian, float32(u.SinAngle))
-	// 	binary.Write(buffer, binary.LittleEndian, float32(u.CosAngle))
-	// 	binary.Write(buffer, binary.LittleEndian, float32(u.XYSpeed))
-	// }
+	if u.IsFalling {
+		binary.Write(buffer, binary.LittleEndian, float32(u.MovementInfo.Jump.Velocity))
+		binary.Write(buffer, binary.LittleEndian, float32(u.MovementInfo.Jump.SinAngle))
+		binary.Write(buffer, binary.LittleEndian, float32(u.MovementInfo.Jump.CosAngle))
+		binary.Write(buffer, binary.LittleEndian, float32(u.MovementInfo.Jump.XYSpeed))
+	}
 
 	// SplineElevation update goes HERE.
 
@@ -147,127 +144,104 @@ func (u *Unit) MovementUpdate() []byte {
 func (u *Unit) UpdateFields() UpdateFieldsMap {
 	tmpl := u.Template()
 	fields := UpdateFieldsMap{
-		c.UpdateFieldUnitCharmLow:                                     u.Charm.Low(),
-		c.UpdateFieldUnitCharmHigh:                                    u.Charm.High(),
-		c.UpdateFieldUnitSummonLow:                                    u.Summon.Low(),
-		c.UpdateFieldUnitSummonHigh:                                   u.Summon.High(),
-		c.UpdateFieldUnitCharmedbyLow:                                 u.CharmedBy.Low(),
-		c.UpdateFieldUnitCharmedbyHigh:                                u.CharmedBy.High(),
-		c.UpdateFieldUnitSummonedbyLow:                                u.SummonedBy.Low(),
-		c.UpdateFieldUnitSummonedbyHigh:                               u.SummonedBy.High(),
-		c.UpdateFieldUnitCreatedbyLow:                                 u.CreatedBy.Low(),
-		c.UpdateFieldUnitCreatedbyHigh:                                u.CreatedBy.High(),
-		c.UpdateFieldUnitTargetLow:                                    u.Target.Low(),
-		c.UpdateFieldUnitTargetHigh:                                   u.Target.High(),
-		c.UpdateFieldUnitPersuadedLow:                                 u.Persuaded.Low(),
-		c.UpdateFieldUnitPersuadedHigh:                                u.Persuaded.High(),
-		c.UpdateFieldUnitChannelObjectLow:                             0, // TODO
-		c.UpdateFieldUnitChannelObjectHigh:                            0, // TODO
-		c.UpdateFieldUnitHealth:                                       uint32(float32(u.maxHealth()) * u.HealthPercent),
-		c.UpdateFieldUnitPowerStart + c.UpdateField(u.powerType()):    uint32(float32(u.maxPower()) * u.PowerPercent),
-		c.UpdateFieldUnitMaxHealth:                                    u.maxHealth(),
-		c.UpdateFieldUnitMaxPowerStart + c.UpdateField(u.powerType()): u.maxPower(),
-		c.UpdateFieldUnitLevel:                                        u.Level,
-		c.UpdateFieldUnitBytes0:                                       int(u.Race) | int(u.Class)<<8 | int(u.Gender)<<16,
-		c.UpdateFieldUnitFlags:                                        tmpl.Flags(),
-		c.UpdateFieldUnitAura:                                         0, // TODO
-		c.UpdateFieldUnitAuraLast:                                     0, // TODO
-		c.UpdateFieldUnitAuraflags:                                    0, // TODO
-		c.UpdateFieldUnitAuraflags01:                                  0, // TODO
-		c.UpdateFieldUnitAuraflags02:                                  0, // TODO
-		c.UpdateFieldUnitAuraflags03:                                  0, // TODO
-		c.UpdateFieldUnitAuraflags04:                                  0, // TODO
-		c.UpdateFieldUnitAuraflags05:                                  0, // TODO
-		c.UpdateFieldUnitAuralevels:                                   0, // TODO
-		c.UpdateFieldUnitAuralevelsLast:                               0, // TODO
-		c.UpdateFieldUnitAuraapplications:                             0, // TODO
-		c.UpdateFieldUnitAuraapplicationsLast:                         0, // TODO
-		c.UpdateFieldUnitAurastate:                                    0, // TODO
-		c.UpdateFieldUnitBaseattacktime:                               tmpl.MeleeBaseAttackTime,
-		c.UpdateFieldUnitOffhandattacktime:                            tmpl.MeleeBaseAttackTime,
-		c.UpdateFieldUnitRangedattacktime:                             tmpl.RangedBaseAttackTime,
-		c.UpdateFieldUnitBoundingradius:                               tmpl.Models[0].BoundingRadius,
-		c.UpdateFieldUnitCombatreach:                                  tmpl.Models[0].CombatReach,
-		c.UpdateFieldUnitDisplayid:                                    tmpl.Models[0].ID,
-		c.UpdateFieldUnitNativedisplayid:                              0, // TODO
-		c.UpdateFieldUnitMountdisplayid:                               0, // TODO
-		c.UpdateFieldUnitMindamage:                                    tmpl.MinMeleeDmg,
-		c.UpdateFieldUnitMaxdamage:                                    tmpl.MaxMeleeDmg,
-		c.UpdateFieldUnitMinoffhanddamage:                             tmpl.MinMeleeDmg,
-		c.UpdateFieldUnitMaxoffhanddamage:                             tmpl.MaxMeleeDmg,
-		c.UpdateFieldUnitBytes1:                                       int(u.Byte1Flags)<<24 | u.FreeTalentPoints<<16 | int(u.StandState),
-		c.UpdateFieldUnitPetnumber:                                    0, // TODO
-		c.UpdateFieldUnitPetNameTimestamp:                             0, // TODO
-		c.UpdateFieldUnitPetexperience:                                0, // TODO
-		c.UpdateFieldUnitPetnextlevelexp:                              0, // TODO
-		c.UpdateFieldUnitDynamicFlags:                                 tmpl.DynamicFlags,
-		c.UpdateFieldUnitChannelSpell:                                 0, // TODO
-		c.UpdateFieldUnitModCastSpeed:                                 1.0,
-		c.UpdateFieldUnitCreatedBySpell:                               0, // TODO
-		c.UpdateFieldUnitNpcFlags:                                     tmpl.Flags(),
-		c.UpdateFieldUnitNpcEmotestate:                                u.EmoteState,
-		c.UpdateFieldUnitTrainingPoints:                               u.TrainingPoints,
-		c.UpdateFieldUnitStrength:                                     u.Strength,
-		c.UpdateFieldUnitAgility:                                      u.Agility,
-		c.UpdateFieldUnitStamina:                                      u.Stamina,
-		c.UpdateFieldUnitIntellect:                                    u.Intellect,
-		c.UpdateFieldUnitSpirit:                                       u.Spirit,
-		c.UpdateFieldUnitArmor:                                        u.Resistances[c.SpellSchoolPhysical],
-		c.UpdateFieldUnitHolyResist:                                   u.Resistances[c.SpellSchoolHoly],
-		c.UpdateFieldUnitFireResist:                                   u.Resistances[c.SpellSchoolFire],
-		c.UpdateFieldUnitNatureResist:                                 u.Resistances[c.SpellSchoolNature],
-		c.UpdateFieldUnitFrostResist:                                  u.Resistances[c.SpellSchoolFrost],
-		c.UpdateFieldUnitShadowResist:                                 u.Resistances[c.SpellSchoolShadow],
-		c.UpdateFieldUnitArcaneResist:                                 u.Resistances[c.SpellSchoolArcane],
-		c.UpdateFieldUnitBaseMana:                                     u.BasePower,
-		c.UpdateFieldUnitBaseHealth:                                   u.BaseHealth,
-		c.UpdateFieldUnitBytes2:                                       0, // TODO
-		c.UpdateFieldUnitAttackPower:                                  tmpl.MeleeAttackPower,
-		c.UpdateFieldUnitAttackPowerMods:                              0, // TODO
-		c.UpdateFieldUnitAttackPowerMultiplier:                        tmpl.PowerMultiplier,
-		c.UpdateFieldUnitRangedAttackPower:                            tmpl.RangedAttackPower,
-		c.UpdateFieldUnitRangedAttackPowerMods:                        0, // TODO
-		c.UpdateFieldUnitRangedAttackPowerMultiplier:                  tmpl.PowerMultiplier,
-		c.UpdateFieldUnitMinrangeddamage:                              tmpl.MinRangedDmg,
-		c.UpdateFieldUnitMaxrangeddamage:                              tmpl.MaxRangedDmg,
-		c.UpdateFieldUnitPowerCostModifier:                            0, // TODO
-		c.UpdateFieldUnitPowerCostModifier01:                          0, // TODO
-		c.UpdateFieldUnitPowerCostModifier02:                          0, // TODO
-		c.UpdateFieldUnitPowerCostModifier03:                          0, // TODO
-		c.UpdateFieldUnitPowerCostModifier04:                          0, // TODO
-		c.UpdateFieldUnitPowerCostModifier05:                          0, // TODO
-		c.UpdateFieldUnitPowerCostModifier06:                          0, // TODO
-		c.UpdateFieldUnitPowerCostMultiplier:                          0, // TODO
-		c.UpdateFieldUnitPowerCostMultiplier01:                        0, // TODO
-		c.UpdateFieldUnitPowerCostMultiplier02:                        0, // TODO
-		c.UpdateFieldUnitPowerCostMultiplier03:                        0, // TODO
-		c.UpdateFieldUnitPowerCostMultiplier04:                        0, // TODO
-		c.UpdateFieldUnitPowerCostMultiplier05:                        0, // TODO
-		c.UpdateFieldUnitPowerCostMultiplier06:                        0, // TODO
-	}
-
-	if u.Team == c.TeamAlliance {
-		fields[c.UpdateFieldUnitFactiontemplate] = tmpl.FactionAlliance
-	} else {
-		fields[c.UpdateFieldUnitFactiontemplate] = tmpl.FactionHorde
-	}
-
-	for i, itemEntry := range u.VirtualItems {
-		item, ok := dbc.Items[itemEntry]
-		if !ok {
-			u.Manager().log.WithFields(logrus.Fields{
-				"unit":       u.GUID(),
-				"item_entry": itemEntry,
-				"item_slot":  i,
-			}).Errorf("Unknown VirtualItem")
-		}
-
-		displayField := c.UpdateFieldUnitVirtualItemDisplay + c.UpdateField(i)
-		fields[displayField] = item.DisplayID
-
-		// infoField := c.UpdateFieldUnitVirtualItemInfo + c.UpdateField(i*2)
-		// fields[infoField] = (int(item.Class)<<24 | int(item.SubClass)<<16 | int(item.Material)<<8 | int(item.InventoryType))
-		// fields[infoField+1] = item.SheathType
+		c.UpdateFieldUnitCharmLow:                                     uint32(u.Charm.Low()),
+		c.UpdateFieldUnitCharmHigh:                                    uint32(u.Charm.High()),
+		c.UpdateFieldUnitSummonLow:                                    uint32(u.Summon.Low()),
+		c.UpdateFieldUnitSummonHigh:                                   uint32(u.Summon.High()),
+		c.UpdateFieldUnitCharmedbyLow:                                 uint32(u.CharmedBy.Low()),
+		c.UpdateFieldUnitCharmedbyHigh:                                uint32(u.CharmedBy.High()),
+		c.UpdateFieldUnitSummonedbyLow:                                uint32(u.SummonedBy.Low()),
+		c.UpdateFieldUnitSummonedbyHigh:                               uint32(u.SummonedBy.High()),
+		c.UpdateFieldUnitCreatedbyLow:                                 uint32(u.CreatedBy.Low()),
+		c.UpdateFieldUnitCreatedbyHigh:                                uint32(u.CreatedBy.High()),
+		c.UpdateFieldUnitTargetLow:                                    uint32(u.Target.Low()),
+		c.UpdateFieldUnitTargetHigh:                                   uint32(u.Target.High()),
+		c.UpdateFieldUnitPersuadedLow:                                 uint32(u.Persuaded.Low()),
+		c.UpdateFieldUnitPersuadedHigh:                                uint32(u.Persuaded.High()),
+		c.UpdateFieldUnitChannelObjectLow:                             uint32(0), // TODO
+		c.UpdateFieldUnitChannelObjectHigh:                            uint32(0), // TODO
+		c.UpdateFieldUnitHealth:                                       uint32(float32(tmpl.MaxHealth) * u.HealthPercent),
+		c.UpdateFieldUnitPowerStart + c.UpdateField(u.powerType()):    uint32(float32(tmpl.MaxPower) * u.PowerPercent),
+		c.UpdateFieldUnitMaxHealth:                                    uint32(tmpl.MaxHealth),
+		c.UpdateFieldUnitMaxPowerStart + c.UpdateField(u.powerType()): uint32(tmpl.MaxPower),
+		c.UpdateFieldUnitLevel:                                        uint32(u.Level),
+		c.UpdateFieldUnitBytes0:                                       uint32(u.Race) | uint32(u.Class)<<8 | uint32(u.Gender)<<16,
+		c.UpdateFieldUnitFlags:                                        uint32(tmpl.Flags()),
+		c.UpdateFieldUnitAura:                                         uint32(0), // TODO
+		c.UpdateFieldUnitAuraLast:                                     uint32(0), // TODO
+		c.UpdateFieldUnitAuraflags:                                    uint32(0), // TODO
+		c.UpdateFieldUnitAuraflags01:                                  uint32(0), // TODO
+		c.UpdateFieldUnitAuraflags02:                                  uint32(0), // TODO
+		c.UpdateFieldUnitAuraflags03:                                  uint32(0), // TODO
+		c.UpdateFieldUnitAuraflags04:                                  uint32(0), // TODO
+		c.UpdateFieldUnitAuraflags05:                                  uint32(0), // TODO
+		c.UpdateFieldUnitAuralevels:                                   uint32(0), // TODO
+		c.UpdateFieldUnitAuralevelsLast:                               uint32(0), // TODO
+		c.UpdateFieldUnitAuraapplications:                             uint32(0), // TODO
+		c.UpdateFieldUnitAuraapplicationsLast:                         uint32(0), // TODO
+		c.UpdateFieldUnitAurastate:                                    uint32(0), // TODO
+		c.UpdateFieldUnitBaseattacktime:                               uint32(0), // TODO
+		c.UpdateFieldUnitOffhandattacktime:                            uint32(0), // TODO
+		c.UpdateFieldUnitRangedattacktime:                             uint32(0), // TODO
+		c.UpdateFieldUnitBoundingradius:                               uint32(tmpl.BoundingRadius),
+		c.UpdateFieldUnitCombatreach:                                  uint32(tmpl.CombatReach),
+		c.UpdateFieldUnitDisplayid:                                    uint32(tmpl.DisplayID),
+		c.UpdateFieldUnitNativedisplayid:                              uint32(0), // TODO
+		c.UpdateFieldUnitMountdisplayid:                               uint32(0), // TODO
+		c.UpdateFieldUnitMindamage:                                    uint32(0), // TODO
+		c.UpdateFieldUnitMaxdamage:                                    uint32(0), // TODO
+		c.UpdateFieldUnitMinoffhanddamage:                             uint32(0), // TODO
+		c.UpdateFieldUnitMaxoffhanddamage:                             uint32(0), // TODO
+		c.UpdateFieldUnitBytes1:                                       uint32(0), // TODO
+		c.UpdateFieldUnitPetnumber:                                    uint32(0), // TODO
+		c.UpdateFieldUnitPetNameTimestamp:                             uint32(0), // TODO
+		c.UpdateFieldUnitPetexperience:                                uint32(0), // TODO
+		c.UpdateFieldUnitPetnextlevelexp:                              uint32(0), // TODO
+		c.UpdateFieldUnitDynamicFlags:                                 uint32(0), // TODO
+		c.UpdateFieldUnitChannelSpell:                                 uint32(0), // TODO
+		c.UpdateFieldUnitModCastSpeed:                                 uint32(0), // TODO
+		c.UpdateFieldUnitCreatedBySpell:                               uint32(0), // TODO
+		c.UpdateFieldUnitNpcFlags:                                     uint32(tmpl.Flags()),
+		c.UpdateFieldUnitNpcEmotestate:                                uint32(0), // TODO
+		c.UpdateFieldUnitTrainingPoints:                               uint32(0), // TODO
+		c.UpdateFieldUnitStrength:                                     uint32(0), // TODO
+		c.UpdateFieldUnitAgility:                                      uint32(0), // TODO
+		c.UpdateFieldUnitStamina:                                      uint32(0), // TODO
+		c.UpdateFieldUnitIntellect:                                    uint32(0), // TODO
+		c.UpdateFieldUnitSpirit:                                       uint32(0), // TODO
+		c.UpdateFieldUnitArmor:                                        uint32(0), // TODO
+		c.UpdateFieldUnitHolyResist:                                   uint32(0), // TODO
+		c.UpdateFieldUnitFireResist:                                   uint32(0), // TODO
+		c.UpdateFieldUnitNatureResist:                                 uint32(0), // TODO
+		c.UpdateFieldUnitFrostResist:                                  uint32(0), // TODO
+		c.UpdateFieldUnitShadowResist:                                 uint32(0), // TODO
+		c.UpdateFieldUnitArcaneResist:                                 uint32(0), // TODO
+		c.UpdateFieldUnitBaseMana:                                     uint32(0), // TODO
+		c.UpdateFieldUnitBaseHealth:                                   uint32(0), // TODO
+		c.UpdateFieldUnitBytes2:                                       uint32(0), // TODO
+		c.UpdateFieldUnitAttackPower:                                  uint32(0), // TODO
+		c.UpdateFieldUnitAttackPowerMods:                              uint32(0), // TODO
+		c.UpdateFieldUnitAttackPowerMultiplier:                        uint32(0), // TODO
+		c.UpdateFieldUnitRangedAttackPower:                            uint32(0), // TODO
+		c.UpdateFieldUnitRangedAttackPowerMods:                        uint32(0), // TODO
+		c.UpdateFieldUnitRangedAttackPowerMultiplier:                  uint32(0), // TODO
+		c.UpdateFieldUnitMinrangeddamage:                              uint32(0), // TODO
+		c.UpdateFieldUnitMaxrangeddamage:                              uint32(0), // TODO
+		c.UpdateFieldUnitPowerCostModifier:                            uint32(0), // TODO
+		c.UpdateFieldUnitPowerCostModifier01:                          uint32(0), // TODO
+		c.UpdateFieldUnitPowerCostModifier02:                          uint32(0), // TODO
+		c.UpdateFieldUnitPowerCostModifier03:                          uint32(0), // TODO
+		c.UpdateFieldUnitPowerCostModifier04:                          uint32(0), // TODO
+		c.UpdateFieldUnitPowerCostModifier05:                          uint32(0), // TODO
+		c.UpdateFieldUnitPowerCostModifier06:                          uint32(0), // TODO
+		c.UpdateFieldUnitPowerCostMultiplier:                          uint32(0), // TODO
+		c.UpdateFieldUnitPowerCostMultiplier01:                        uint32(0), // TODO
+		c.UpdateFieldUnitPowerCostMultiplier02:                        uint32(0), // TODO
+		c.UpdateFieldUnitPowerCostMultiplier03:                        uint32(0), // TODO
+		c.UpdateFieldUnitPowerCostMultiplier04:                        uint32(0), // TODO
+		c.UpdateFieldUnitPowerCostMultiplier05:                        uint32(0), // TODO
+		c.UpdateFieldUnitPowerCostMultiplier06:                        uint32(0), // TODO
+		c.UpdateFieldUnitFactiontemplate:                              uint32(4), // TODO
 	}
 
 	mergedFields := u.GameObject.UpdateFields()

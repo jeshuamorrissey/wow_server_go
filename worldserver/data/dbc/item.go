@@ -172,7 +172,7 @@ func (i *Item) Flags() c.ItemPrototypeFlag {
 }
 
 var (
-	nextEntry = 1
+	nextItemEntry = 1
 
 	// Items is a map of item entry --> object.
 	Items map[int]*Item
@@ -182,8 +182,8 @@ var (
 )
 
 func addItem(item *Item) {
-	entry := nextEntry
-	nextEntry++
+	entry := nextItemEntry
+	nextItemEntry++
 
 	item.Entry = entry
 	Items[entry] = item

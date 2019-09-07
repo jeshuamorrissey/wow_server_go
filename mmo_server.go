@@ -70,6 +70,34 @@ func GenerateTestData(om *object.Manager, db *gorm.DB) error {
 
 	db.Create(charObjSash)
 
+	err = om.Add(&object.Unit{
+		GameObject: object.GameObject{
+			Entry:  uint32(dbc.UnitsByName["Defias Thug"].Entry),
+			ScaleX: 1.0,
+		},
+
+		Level:  1,
+		Race:   c.RaceHuman,
+		Class:  c.ClassRouge,
+		Gender: c.GenderMale,
+
+		HealthPercent: 1.0,
+		PowerPercent:  1.0,
+
+		MovementInfo: object.MovementInfo{
+			Location: object.Location{
+				X: -8949.95,
+				Y: -132.493,
+				Z: 83.5312,
+				O: 0.0,
+			},
+		},
+	})
+
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 
