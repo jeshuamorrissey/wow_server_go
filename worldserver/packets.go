@@ -20,10 +20,18 @@ var (
 		system.OpCodeClientTutorialFlag:      func() system.ClientPacket { return new(packet.ClientTutorialFlag) },
 		system.OpCodeClientUpdateAccountData: func() system.ClientPacket { return new(packet.ClientUpdateAccountData) },
 		system.OpCodeClientLogoutRequest:     func() system.ClientPacket { return new(packet.ClientLogoutRequest) },
+		system.OpCodeClientStandstatechange:  func() system.ClientPacket { return new(packet.ClientStandStateChange) },
 
 		// Movement packets have the same receiver.
-		system.OpCodeClientMoveHeartbeat:    func() system.ClientPacket { return packet.NewClientMovePacket(system.OpCodeClientMoveHeartbeat) },
-		system.OpCodeClientMoveStartForward: func() system.ClientPacket { return packet.NewClientMovePacket(system.OpCodeClientMoveStartForward) },
-		system.OpCodeClientMoveStop:         func() system.ClientPacket { return packet.NewClientMovePacket(system.OpCodeClientMoveStop) },
+		system.OpCodeClientMoveHeartbeat:        func() system.ClientPacket { return packet.NewClientMovePacket(system.OpCodeClientMoveHeartbeat) },
+		system.OpCodeClientMoveStartBackward:    func() system.ClientPacket { return packet.NewClientMovePacket(system.OpCodeClientMoveStartBackward) },
+		system.OpCodeClientMoveStartForward:     func() system.ClientPacket { return packet.NewClientMovePacket(system.OpCodeClientMoveStartForward) },
+		system.OpCodeClientMoveStartStrafeLeft:  func() system.ClientPacket { return packet.NewClientMovePacket(system.OpCodeClientMoveStartStrafeLeft) },
+		system.OpCodeClientMoveStartStrafeRight: func() system.ClientPacket { return packet.NewClientMovePacket(system.OpCodeClientMoveStartStrafeRight) },
+		system.OpCodeClientMoveStartTurnLeft:    func() system.ClientPacket { return packet.NewClientMovePacket(system.OpCodeClientMoveStartTurnLeft) },
+		system.OpCodeClientMoveStartTurnRight:   func() system.ClientPacket { return packet.NewClientMovePacket(system.OpCodeClientMoveStartTurnRight) },
+		system.OpCodeClientMoveStop:             func() system.ClientPacket { return packet.NewClientMovePacket(system.OpCodeClientMoveStop) },
+		system.OpCodeClientMoveStopStrafe:       func() system.ClientPacket { return packet.NewClientMovePacket(system.OpCodeClientMoveStopStrafe) },
+		system.OpCodeClientMoveStopTurn:         func() system.ClientPacket { return packet.NewClientMovePacket(system.OpCodeClientMoveStopTurn) },
 	}
 )

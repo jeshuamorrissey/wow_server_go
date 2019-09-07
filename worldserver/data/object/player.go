@@ -76,6 +76,7 @@ func (p *Player) MovementUpdate() []byte { return p.Unit.MovementUpdate() }
 // object.
 func (p *Player) UpdateFields() UpdateFieldsMap {
 	modelInfo := dbc.GetPlayerModelInfo(p.Race, p.Gender)
+	resistances := p.Resistances()
 
 	fields := UpdateFieldsMap{
 		c.UpdateFieldUnitCharmLow:                                     uint32(p.Charm.Low()),
@@ -138,13 +139,13 @@ func (p *Player) UpdateFields() UpdateFieldsMap {
 		c.UpdateFieldUnitStamina:                                      uint32(p.Stamina),
 		c.UpdateFieldUnitIntellect:                                    uint32(p.Intellect),
 		c.UpdateFieldUnitSpirit:                                       uint32(p.Spirit),
-		c.UpdateFieldUnitArmor:                                        uint32(p.Resistances[c.SpellSchoolPhysical]),
-		c.UpdateFieldUnitHolyResist:                                   uint32(p.Resistances[c.SpellSchoolHoly]),
-		c.UpdateFieldUnitFireResist:                                   uint32(p.Resistances[c.SpellSchoolFire]),
-		c.UpdateFieldUnitNatureResist:                                 uint32(p.Resistances[c.SpellSchoolNature]),
-		c.UpdateFieldUnitFrostResist:                                  uint32(p.Resistances[c.SpellSchoolFrost]),
-		c.UpdateFieldUnitShadowResist:                                 uint32(p.Resistances[c.SpellSchoolShadow]),
-		c.UpdateFieldUnitArcaneResist:                                 uint32(p.Resistances[c.SpellSchoolArcane]),
+		c.UpdateFieldUnitArmor:                                        uint32(resistances[c.SpellSchoolPhysical]),
+		c.UpdateFieldUnitHolyResist:                                   uint32(resistances[c.SpellSchoolHoly]),
+		c.UpdateFieldUnitFireResist:                                   uint32(resistances[c.SpellSchoolFire]),
+		c.UpdateFieldUnitNatureResist:                                 uint32(resistances[c.SpellSchoolNature]),
+		c.UpdateFieldUnitFrostResist:                                  uint32(resistances[c.SpellSchoolFrost]),
+		c.UpdateFieldUnitShadowResist:                                 uint32(resistances[c.SpellSchoolShadow]),
+		c.UpdateFieldUnitArcaneResist:                                 uint32(resistances[c.SpellSchoolArcane]),
 		c.UpdateFieldUnitBaseMana:                                     uint32(p.BasePower),
 		c.UpdateFieldUnitBaseHealth:                                   uint32(p.BaseHealth),
 		c.UpdateFieldUnitBytes2:                                       uint32(0), // TODO
