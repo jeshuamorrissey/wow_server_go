@@ -1,0 +1,62 @@
+[
+    {
+        "ID": 1,
+        "Name": "Warrior",
+        "PrimaryStat": 0,
+        "PowerType": 1
+    },
+    {
+        "ID": 2,
+        "Name": "Paladin",
+        "PrimaryStat": 0,
+        "PowerType": 0
+    },
+    {
+        "ID": 3,
+        "Name": "Hunter",
+        "PrimaryStat": 1,
+        "PowerType": 0
+    },
+    {
+        "ID": 4,
+        "Name": "Rogue",
+        "PrimaryStat": 1,
+        "PowerType": 3
+    },
+    {
+        "ID": 5,
+        "Name": "Priest",
+        "PrimaryStat": 0,
+        "PowerType": 0
+    },
+    {
+        "ID": 7,
+        "Name": "Shaman",
+        "PrimaryStat": 0,
+        "PowerType": 0
+    },
+    {
+        "ID": 8,
+        "Name": "Mage",
+        "PrimaryStat": 0,
+        "PowerType": 0
+    },
+    {
+        "ID": 9,
+        "Name": "Warlock",
+        "PrimaryStat": 0,
+        "PowerType": 0
+    },
+    {
+        "ID": 11,
+        "Name": "Druid",
+        "PrimaryStat": 0,
+        "PowerType": 0
+    },
+    {
+        "ID": 100,
+        "Name": "Test",
+        "PrimaryStat": 1,
+        "PowerType": 0
+    }
+]

@@ -50,7 +50,7 @@ func GenerateTestData(om *object.Manager, db *gorm.DB) error {
 		om,
 		&account, &realmSydney,
 		"Jeshua",
-		c.RaceHuman, c.ClassWarrior, c.GenderMale,
+		c.RaceHuman, 100, c.GenderMale,
 		1, 1, 1, 1, 1)
 	if err != nil {
 		return err
@@ -106,12 +106,6 @@ func main() {
 	logrus.SetLevel(logrus.DebugLevel)
 
 	// Load constant data.
-	// logrus.Info("Loading units.json.gz...")
-	// err := dbc.LoadUnits("D:\\Users\\Jeshua\\go\\src\\github.com\\jeshuamorrissey\\wow_server_go\\worldserver\\data\\dbc\\units.json.gz")
-	// if err != nil {
-	// 	panic(err)
-	// }
-
 	logrus.Info("Loading starting_stats.json...")
 	err := dbc.LoadStartingStats("D:\\Users\\Jeshua\\go\\src\\github.com\\jeshuamorrissey\\wow_server_go\\worldserver\\data\\dbc\\starting_stats.json")
 	if err != nil {

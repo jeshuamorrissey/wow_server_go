@@ -6,6 +6,13 @@
         "intellect": 20,
         "spirit": 21
     },
+    "100:1": {
+        "strength": 23,
+        "agility": 20,
+        "stamina": 22,
+        "intellect": 20,
+        "spirit": 21
+    },
     "1:2": {
         "strength": 26,
         "agility": 17,
