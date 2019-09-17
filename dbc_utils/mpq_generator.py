@@ -9,13 +9,8 @@ import os
 import tempfile
 import subprocess
 
-import dbc
-import record_types
+from dbc import dbc
 import dbc_generator
-
-FILENAME_TO_RECORD_TYPE = dict(
-    ChrClasses=record_types.ChrClasses,
-)
 
 
 def main(args: argparse.Namespace):

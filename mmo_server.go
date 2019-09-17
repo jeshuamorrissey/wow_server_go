@@ -50,7 +50,7 @@ func GenerateTestData(om *object.Manager, db *gorm.DB) error {
 		om,
 		&account, &realmSydney,
 		"Jeshua",
-		c.RaceHuman, 100, c.GenderMale,
+		dbc.RaceHuman, dbc.ClassWarrior, c.GenderMale,
 		1, 1, 1, 1, 1)
 	if err != nil {
 		return err
@@ -62,7 +62,7 @@ func GenerateTestData(om *object.Manager, db *gorm.DB) error {
 		om,
 		&accountSasha, &realmSydney,
 		"Sasha",
-		c.RaceHuman, c.ClassWarrior, c.GenderFemale,
+		dbc.RaceHuman, dbc.ClassWarrior, c.GenderFemale,
 		1, 1, 1, 1, 1)
 	if err != nil {
 		return err
@@ -77,8 +77,8 @@ func GenerateTestData(om *object.Manager, db *gorm.DB) error {
 		},
 
 		Level:  1,
-		Race:   c.RaceHuman,
-		Class:  c.ClassRouge,
+		Race:   dbc.RaceHuman,
+		Class:  dbc.ClassRogue,
 		Gender: c.GenderMale,
 
 		HealthPercent: 1.0,
@@ -104,19 +104,6 @@ func GenerateTestData(om *object.Manager, db *gorm.DB) error {
 func main() {
 	logrus.SetFormatter(&logrus.TextFormatter{ForceColors: true})
 	logrus.SetLevel(logrus.DebugLevel)
-
-	// Load constant data.
-	logrus.Info("Loading starting_stats.json...")
-	err := dbc.LoadStartingStats("D:\\Users\\Jeshua\\go\\src\\github.com\\jeshuamorrissey\\wow_server_go\\worldserver\\data\\dbc\\starting_stats.json")
-	if err != nil {
-		panic(err)
-	}
-
-	logrus.Info("Loading starting_locations.json...")
-	err = dbc.LoadStartingLocations("D:\\Users\\Jeshua\\go\\src\\github.com\\jeshuamorrissey\\wow_server_go\\worldserver\\data\\dbc\\starting_locations.json")
-	if err != nil {
-		panic(err)
-	}
 
 	// Setup object manager.
 	om := object.NewManager(logrus.WithField("system", "object_manager"))

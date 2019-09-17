@@ -1,3 +1,0 @@
-This folder contains a standalone Go utility which manages
-DBC files. It allows a custom database structure to be converted
-to Blizzard-like DBC files.

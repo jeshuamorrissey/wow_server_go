@@ -14,8 +14,8 @@ type Unit struct {
 
 	// Basic information.
 	Level            int
-	Race             c.Race
-	Class            c.Class
+	Race             *dbc.Race
+	Class            *dbc.Class
 	Gender           c.Gender
 	Team             c.Team
 	StandState       c.StandState
@@ -165,7 +165,7 @@ func (u *Unit) UpdateFields() UpdateFieldsMap {
 		c.UpdateFieldUnitMaxHealth:                                    uint32(tmpl.MaxHealth),
 		c.UpdateFieldUnitMaxPowerStart + c.UpdateField(u.powerType()): uint32(tmpl.MaxPower),
 		c.UpdateFieldUnitLevel:                                        uint32(u.Level),
-		c.UpdateFieldUnitBytes0:                                       uint32(u.Race) | uint32(u.Class)<<8 | uint32(u.Gender)<<16,
+		c.UpdateFieldUnitBytes0:                                       uint32(u.Race.ID) | uint32(u.Class.ID)<<8 | uint32(u.Gender)<<16,
 		c.UpdateFieldUnitFlags:                                        uint32(tmpl.Flags()),
 		c.UpdateFieldUnitAura:                                         uint32(0), // TODO
 		c.UpdateFieldUnitAuraLast:                                     uint32(0), // TODO

@@ -12,11 +12,13 @@ It can read files in the following formats:
 import argparse
 import os
 
-import dbc
-import record_types
+from dbc import record_types, dbc
 
 FILENAME_TO_RECORD_TYPE = dict(
     ChrClasses=record_types.ChrClasses,
+    ChrRaces=record_types.ChrRaces,
+    ChrStartingLocations=record_types.ChrStartingLocations,
+    ChrStartingStats=record_types.ChrStartingStats,
 )
 
 

@@ -28,9 +28,9 @@ func (pkt *ServerNameQueryResponse) ToBytes(state *system.State) ([]byte, error)
 	buffer.WriteString(state.Realm.Name)
 	buffer.WriteByte('\x00')
 
-	binary.Write(buffer, binary.LittleEndian, uint32(player.Race))
+	binary.Write(buffer, binary.LittleEndian, uint32(player.Race.ID))
 	binary.Write(buffer, binary.LittleEndian, uint32(player.Gender))
-	binary.Write(buffer, binary.LittleEndian, uint32(player.Class))
+	binary.Write(buffer, binary.LittleEndian, uint32(player.Class.ID))
 
 	return buffer.Bytes(), nil
 }

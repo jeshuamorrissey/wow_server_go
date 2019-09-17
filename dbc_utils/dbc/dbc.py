@@ -1,5 +1,8 @@
+import os
 import struct
 import json
+
+import jinja2
 
 from typing import Any, Text, Type, Iterable
 
@@ -70,9 +73,8 @@ class Record():
     or a single Golang struct.
     """
 
-    @classmethod
-    def Fields(cls):
-        raise NotImplementedError()
+    def __init__(self, id: int):
+        self._id = id
 
     def __str__(self):
         return str(self.__dict__)
@@ -93,10 +95,41 @@ class Record():
 
         return struct.pack(fmt, *data)
 
+    def IndexedFields(self):
+        return [f for f in self.Fields() if f.indexed]
+
+    def GoValue(self, field_name: Text) -> Text:
+        """Get the Golang representation of the value of some field in this record.
+
+        Args:
+            field_name: The name of the field to get the value of.
+
+        Returns:
+            A stringified version of the value. For integers/floats, it is just
+            the value. For strings, double quotes will be put around it.
+        """
+        val = getattr(self, field_name)
+        if isinstance(val, str):
+            val = '"{}"'.format(val)
+        return val
+
     @classmethod
-    def FromBinary(cls, string_block: StringBlock, args: Iterable[Any]) -> 'Record':
+    def Fields(cls):
+        raise NotImplementedError()
+
+    @classmethod
+    def GoTypeName(cls) -> Text:
+        """Get the Golang name for this record type.
+
+        Returns:
+            A text version of the name that should be used to refer to this class in Go.
+        """
+        return cls.__name__
+
+    @classmethod
+    def FromBinary(cls, id: int, string_block: StringBlock, args: Iterable[Any]) -> 'Record':
         """Load a new record object from a set of binary arguments."""
-        record = cls()
+        record = cls(id)
         for field in cls.Fields():
             val = field.Load(string_block, args)
             if field.name:
@@ -119,8 +152,9 @@ class Table():
     HEADER_SIZE = 20
     MAGIC = 1128416343
 
-    def __init__(self, records: Iterable[Record]):
+    def __init__(self, records: Iterable[Record], record_type: Type):
         self.records = records
+        self.record_type = record_type
 
     def __str__(self):
         return str(self.records)
@@ -130,7 +164,11 @@ class Table():
 
     def ToJSON(self) -> bytes:
         """Convert the table to JSON bytes."""
-        return json.dumps([r.__dict__ for r in self.records])
+        result = []
+        for record in self.records:
+            result.append(
+                {k: v for k, v in record.__dict__.items() if k != '_id'})
+        return json.dumps(result)
 
     def ToBinary(self) -> bytes:
         """Convert the table to DBC bytes."""
@@ -152,20 +190,43 @@ class Table():
 
     def ToGolang(self) -> bytes:
         """Convert the table to a Golang file."""
-        return b''
+        args = {
+            'package': 'dbc',
+            'dbc_name': self.record_type.__name__,
+            'type_name': self.record_type.GoTypeName(),
+            'fields': [f for f in self.record_type.Fields() if f.name],
+            'index_fields': [f for f in self.record_type.Fields() if f.indexed],
+            'num_indexed_fields': sum(1 for f in self.record_type.Fields() if f.indexed),
+            'records': self.records,
+        }
+
+        # Make a go type for the index.
+        index_map_type_list = []
+        for f in args['index_fields']:
+            index_map_type_list.append('map[{}]'.format(f.GoType()))
+        index_map_type_list.append(
+            '*{}'.format(self.record_type.GoTypeName()))
+        args['index_map_type'] = ''.join(index_map_type_list)
+        args['index_map_type_list'] = index_map_type_list
+
+        template_env = jinja2.Environment(
+            loader=jinja2.FileSystemLoader(searchpath=os.path.dirname(os.path.realpath(__file__))))
+        template_env.trim_blocks = True
+        template_env.lstrip_blocks = True
+        return template_env.get_template('dbc_golang.go.jinja').render(**args)
 
     @classmethod
     def FromJSON(cls, data: bytes, record_type: Type) -> 'Table':
         """Load the table from some JSON data."""
         records = []
-        for record_data in json.loads(data):
-            record = record_type()
+        for i, record_data in enumerate(json.loads(data)):
+            record = record_type(id=i)
             for k, v in record_data.items():
                 setattr(record, k, v)
 
             records.append(record)
 
-        return Table(records)
+        return Table(records, record_type)
 
     @classmethod
     def FromBinary(cls, data: bytes, record_type: Type) -> 'Table':
@@ -194,14 +255,14 @@ class Table():
         string_block = StringBlock(string_block_data.split(b'\x00')[:-1])
 
         records = []
-        for record_args in struct.iter_unpack(record_type.Format(), record_data):
+        for i, record_args in enumerate(struct.iter_unpack(record_type.Format(), record_data)):
             record_args_iter = iter(record_args)
             records.append(record_type.FromBinary(
-                string_block, record_args_iter))
+                i, string_block, record_args_iter))
 
             record_args_remaining = list(record_args_iter)
             if len(record_args_remaining) != 0:
                 raise DBCError(
                     "Not all fields consumed: {} remaining".format(len(record_args_remaining)))
 
-        return Table(records)
+        return Table(records, record_type)

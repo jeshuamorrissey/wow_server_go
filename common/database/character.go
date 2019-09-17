@@ -36,7 +36,7 @@ func NewCharacter(
 	om *object.Manager,
 	account *Account, realm *Realm,
 	name string,
-	race c.Race, class c.Class, gender c.Gender,
+	race *dbc.Race, class *dbc.Class, gender c.Gender,
 	skinColor, face, hairStyle, hairColor, feature uint8) (*Character, error) {
 	startingEquipment, startingItems := dbc.GetStartingItems(class, race)
 
@@ -78,14 +78,15 @@ func NewCharacter(
 		inventory[i] = itemObj.GUID()
 	}
 
-	startingLocation := dbc.GetStartingLocation(class, race)
-	startingStats := dbc.GetStartingStats(class, race)
+	startingLocation := dbc.StartingLocationsByIndex[race]
+	startingStats := dbc.StartingStatsByIndex[class][race]
 
 	charObj := &object.Player{
 		Unit: object.Unit{
 			GameObject: object.GameObject{
-				Entry:  0,
-				ScaleX: dbc.GetPlayerScale(race, gender),
+				Entry: 0,
+				// ScaleX: dbc.GetPlayerScale(race, gender),
+				ScaleX: 1.0,
 			},
 
 			MovementInfo: object.MovementInfo{
@@ -107,11 +108,11 @@ func NewCharacter(
 			HealthPercent: 1.0,
 			PowerPercent:  1.0,
 
-			Strength:  startingStats[c.StatStrength],
-			Agility:   startingStats[c.StatAgility],
-			Stamina:   startingStats[c.StatStamina],
-			Intellect: startingStats[c.StatIntellect],
-			Spirit:    startingStats[c.StatSpirit],
+			Strength: startingStats.Strength,
+			// Agility:   startingStats.Agility,
+			// Stamina:   startingStats.Stamina,
+			// Intellect: startingStats.Intellect,
+			// Spirit:    startingStats.Spirit,
 
 			Level:  1,
 			Race:   race,

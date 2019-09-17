@@ -101,7 +101,7 @@ func (p *Player) UpdateFields() UpdateFieldsMap {
 		c.UpdateFieldUnitMaxPowerStart + c.UpdateField(p.powerType()): uint32(p.maxPower()),
 		c.UpdateFieldUnitLevel:                                        uint32(p.Level),
 		c.UpdateFieldUnitFactiontemplate:                              uint32(4),
-		c.UpdateFieldUnitBytes0:                                       uint32(uint32(p.Race) | uint32(p.Class)<<8 | uint32(p.Gender)<<16),
+		c.UpdateFieldUnitBytes0:                                       uint32(uint32(p.Race.ID) | uint32(p.Class.ID)<<8 | uint32(p.Gender)<<16),
 		c.UpdateFieldUnitFlags:                                        uint32(0),
 		c.UpdateFieldUnitAura:                                         uint32(0), // TODO
 		c.UpdateFieldUnitAuraLast:                                     uint32(0), // TODO

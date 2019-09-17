@@ -5,10 +5,9 @@ import (
 )
 
 var (
-	// Map of "<Class>:<Race>" --> list of item entries.
-	startingItems = map[c.Class]map[c.Race][]string{
-		c.ClassWarrior: map[c.Race][]string{
-			c.RaceHuman: []string{
+	startingItems = map[*Class]map[*Race][]string{
+		ClassWarrior: map[*Race][]string{
+			RaceHuman: []string{
 				"Recruit's Boots",
 				"Recruit's Pants",
 				"Recruit's Shirt",
@@ -21,7 +20,7 @@ var (
 
 // GetStartingItems is a utility which will return a mapping of equipment slot
 // to the item that should be in that slot.
-func GetStartingItems(class c.Class, race c.Race) (map[c.EquipmentSlot]*Item, []*Item) {
+func GetStartingItems(class *Class, race *Race) (map[c.EquipmentSlot]*Item, []*Item) {
 	// items := startingItems[fmt.Sprintf("%d:%d", class, race)]
 	items := startingItems[class][race]
 	equipment := make(map[c.EquipmentSlot]*Item)

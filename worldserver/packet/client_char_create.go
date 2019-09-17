@@ -9,6 +9,7 @@ import (
 
 	"github.com/jeshuamorrissey/wow_server_go/common"
 	"github.com/jeshuamorrissey/wow_server_go/common/database"
+	"github.com/jeshuamorrissey/wow_server_go/worldserver/data/dbc"
 	c "github.com/jeshuamorrissey/wow_server_go/worldserver/data/dbc/constants"
 	"github.com/jeshuamorrissey/wow_server_go/worldserver/system"
 	"github.com/jinzhu/gorm"
@@ -35,8 +36,8 @@ func validateCharacterName(name string) c.CharErrorCode {
 // ClientCharCreate is sent from the client when making a character.
 type ClientCharCreate struct {
 	Name      string
-	Race      c.Race
-	Class     c.Class
+	Race      *dbc.Race
+	Class     *dbc.Class
 	Gender    c.Gender
 	SkinColor uint8
 	Face      uint8
