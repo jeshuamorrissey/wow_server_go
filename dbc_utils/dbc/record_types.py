@@ -1,5 +1,5 @@
 from dbc import dbc
-from dbc.record_fields import Int, ID, String, LocalizedString, Float
+from dbc.record_fields import Int, ID, String, LocalizedString, Float, Byte
 
 
 class ChrClasses(dbc.Record):
@@ -86,4 +86,17 @@ class ChrStartingLocations(dbc.Record):
             Float(name='y'),
             Float(name='z'),
             Float(name='o'),
+        ]
+
+
+class CharBaseInfo(dbc.Record):
+    @classmethod
+    def GoTypeName(cls):
+        return 'CharBaseInfo'
+
+    @classmethod
+    def Fields(cls):
+        return [
+            Byte(name='race'),
+            Byte(name='class'),
         ]

@@ -19,6 +19,7 @@ FILENAME_TO_RECORD_TYPE = dict(
     ChrRaces=record_types.ChrRaces,
     ChrStartingLocations=record_types.ChrStartingLocations,
     ChrStartingStats=record_types.ChrStartingStats,
+    CharBaseInfo=record_types.CharBaseInfo,
 )
 
 

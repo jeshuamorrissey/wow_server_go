@@ -53,6 +53,26 @@ class Field:
         raise NotImplementedError()
 
 
+class Byte(Field):
+    def Value(self, string_block, record):
+        return [super(Byte, self)._GetValue(record)]
+
+    def GoType(self) -> Text:
+        go_type = super(Byte, self).GoType()
+        if go_type:
+            return go_type
+
+        return 'uint8'
+
+    @classmethod
+    def Format(cls) -> Text:
+        return 'B'
+
+    @classmethod
+    def Load(cls, string_block, args: Iterable[Any]):
+        return next(args)
+
+
 class Int(Field):
     def Value(self, string_block, record):
         return [super(Int, self)._GetValue(record)]

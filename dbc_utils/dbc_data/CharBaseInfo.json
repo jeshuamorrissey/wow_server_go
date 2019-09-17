@@ -1,0 +1,166 @@
+[
+    {
+        "race": 1,
+        "class": 1
+    },
+    {
+        "race": 1,
+        "class": 2
+    },
+    {
+        "race": 1,
+        "class": 4
+    },
+    {
+        "race": 1,
+        "class": 5
+    },
+    {
+        "race": 1,
+        "class": 8
+    },
+    {
+        "race": 1,
+        "class": 9
+    },
+    {
+        "race": 2,
+        "class": 1
+    },
+    {
+        "race": 2,
+        "class": 3
+    },
+    {
+        "race": 2,
+        "class": 4
+    },
+    {
+        "race": 2,
+        "class": 7
+    },
+    {
+        "race": 2,
+        "class": 9
+    },
+    {
+        "race": 3,
+        "class": 1
+    },
+    {
+        "race": 3,
+        "class": 2
+    },
+    {
+        "race": 3,
+        "class": 3
+    },
+    {
+        "race": 3,
+        "class": 4
+    },
+    {
+        "race": 3,
+        "class": 5
+    },
+    {
+        "race": 3,
+        "class": 8
+    },
+    {
+        "race": 4,
+        "class": 1
+    },
+    {
+        "race": 4,
+        "class": 3
+    },
+    {
+        "race": 4,
+        "class": 4
+    },
+    {
+        "race": 4,
+        "class": 5
+    },
+    {
+        "race": 4,
+        "class": 11
+    },
+    {
+        "race": 5,
+        "class": 1
+    },
+    {
+        "race": 5,
+        "class": 4
+    },
+    {
+        "race": 5,
+        "class": 5
+    },
+    {
+        "race": 5,
+        "class": 8
+    },
+    {
+        "race": 5,
+        "class": 9
+    },
+    {
+        "race": 6,
+        "class": 1
+    },
+    {
+        "race": 6,
+        "class": 3
+    },
+    {
+        "race": 6,
+        "class": 7
+    },
+    {
+        "race": 6,
+        "class": 11
+    },
+    {
+        "race": 7,
+        "class": 1
+    },
+    {
+        "race": 7,
+        "class": 4
+    },
+    {
+        "race": 7,
+        "class": 8
+    },
+    {
+        "race": 7,
+        "class": 9
+    },
+    {
+        "race": 8,
+        "class": 1
+    },
+    {
+        "race": 8,
+        "class": 3
+    },
+    {
+        "race": 8,
+        "class": 4
+    },
+    {
+        "race": 8,
+        "class": 5
+    },
+    {
+        "race": 8,
+        "class": 7
+    },
+    {
+        "race": 8,
+        "class": 8
+    }
+]

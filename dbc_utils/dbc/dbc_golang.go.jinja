@@ -14,15 +14,17 @@ var (
 
 // Indexes for this DBC file, to make querying easier.
 var (
-	{# If we have many indexed fields, then generate a ByIndex object. #}
-	{{ type_name }}ByIndex {{ index_map_type }}
+	{% if num_indexed_fields > 0 %}
+		{# If we have many indexed fields, then generate a ByIndex object. #}
+		{{ type_name }}ByIndex {{ index_map_type }}
 
-	{# If we only have a single indexed field, just generate separate variables. #}
-	{% if num_indexed_fields == 1 %}		
-		{% for record in records %}
-			{% set indexed_field = record.IndexedFields()[0] %}
-			{{ type_name }}{{ record[indexed_field.name].title().replace(' ', '') }} *{{ type_name }}
-		{% endfor %}
+		{# If we only have a single indexed field, just generate separate variables. #}
+		{% if num_indexed_fields == 1 %}		
+			{% for record in records %}
+				{% set indexed_field = record.IndexedFields()[0] %}
+				{{ type_name }}{{ record[indexed_field.name].title().replace(' ', '') }} *{{ type_name }}
+			{% endfor %}
+		{% endif %}
 	{% endif %}
 )
 
@@ -42,48 +44,50 @@ func init() {
 		{% endfor %}
 	}
 
-	// Set the index.
-	{{ type_name }}ByIndex = make({{ index_map_type }})
+	{% if num_indexed_fields > 0 %}
+		// Set the index.
+		{{ type_name }}ByIndex = make({{ index_map_type }})
 
-	{% if num_indexed_fields > 1 %}
-		// Initialize sub-maps for each indexed field.
-		{% for record in records %}
-			{% for _ in record.IndexedFields()[:-1] %}
-				{{ type_name }}ByIndex
-				{%- for index_field in record.IndexedFields()[:loop.index] -%}
-					{%- if index_field.GoType() == 'string' -%}
-						["{{ record[index_field.name].title().replace(' ', '') }}"]
-					{%- else -%}
-						[{{ index_field.GoName() }}{{ record[index_field.name].title().replace(' ', '') }}]
-					{%- endif -%}
-				{%- endfor -%}
-				= make(
-					{%- for index_field in record.IndexedFields()[loop.index:] -%}
-						map[*{{ index_field.GoName() }}]
+		{% if num_indexed_fields > 1 %}
+			// Initialize sub-maps for each indexed field.
+			{% for record in records %}
+				{% for _ in record.IndexedFields()[:-1] %}
+					{{ type_name }}ByIndex 
+					{%- for index_field in record.IndexedFields()[:loop.index] -%}
+						{%- if index_field.GoType() == 'string' -%}
+							["{{ record[index_field.name].title().replace(' ', '') }}"]
+						{%- else -%}
+							[{{ index_field.GoName() }}{{ record[index_field.name].title().replace(' ', '') }}]
+						{%- endif -%}
 					{%- endfor -%}
-				*{{ type_name }})
+					= make(
+						{%- for index_field in record.IndexedFields()[loop.index:] -%}
+							map[*{{ index_field.GoName() }}]
+						{%- endfor -%}
+					*{{ type_name }})
+				{% endfor %}
 			{% endfor %}
-		{% endfor %}
-	{% endif %}
+		{% endif %}
 
-	// Set the index values.
-	{% for record in records %}
-		{{ type_name }}ByIndex
-		{%- for index_field in record.IndexedFields() -%}
-			{%- if index_field.GoType() == 'string' -%}
-				["{{ record[index_field.name].title().replace(' ', '') }}"]
-			{%- else -%}
-				[{{ index_field.GoName() }}{{ record[index_field.name].title().replace(' ', '') }}]
-			{%- endif -%}
-		{%- endfor -%}
-		= {{ type_name }}ByID[{{ record.id if record.id else record._id }}]
-	{% endfor %}
-
-	{% if num_indexed_fields == 1 %}
-		// As there is only a single index, add some special convenience values.
+		// Set the index values.
 		{% for record in records %}
-			{% set indexed_field = record.IndexedFields()[0] %}
-			{{ type_name }}{{ record[indexed_field.name].title().replace(' ', '') }} = {{ type_name }}ByID[{{ record.id if record.id else record._id }}]
+			{{ type_name }}ByIndex
+			{%- for index_field in record.IndexedFields() -%}
+				{%- if index_field.GoType() == 'string' -%}
+					["{{ record[index_field.name].title().replace(' ', '') }}"]
+				{%- else -%}
+					[{{ index_field.GoName() }}{{ record[index_field.name].title().replace(' ', '') }}]
+				{%- endif -%}
+			{%- endfor -%}
+			= {{ type_name }}ByID[{{ record.id if record.id else record._id }}]
 		{% endfor %}
+
+		{% if num_indexed_fields == 1 %}
+			// As there is only a single index, add some special convenience values.
+			{% for record in records %}
+				{% set indexed_field = record.IndexedFields()[0] %}
+				{{ type_name }}{{ record[indexed_field.name].title().replace(' ', '') }} = {{ type_name }}ByID[{{ record.id if record.id else record._id }}]
+			{% endfor %}
+		{% endif %}
 	{% endif %}
 }
