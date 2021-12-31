@@ -21,12 +21,12 @@ func RunServer(
 	setupSession func(*session.Session)) {
 	log := logrus.WithFields(logrus.Fields{"server": name, "port": port})
 
-	listener, err := net.Listen("tcp", ":"+strconv.Itoa(port))
+	listener, err := net.Listen("tcp", "127.0.0.1:"+strconv.Itoa(port))
 	if err != nil {
 		log.Fatalf("Error while opening port: %v\n", err)
 	}
 
-	log.Infof("Listening for %v connections on :%v...", strings.ToUpper(name), port)
+	log.Infof("Listening for %v connections on :%v...", strings.ToUpper(name), listener.Addr().String())
 
 	for {
 		conn, err := listener.Accept()

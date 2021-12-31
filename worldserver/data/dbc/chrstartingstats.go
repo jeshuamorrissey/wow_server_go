@@ -2,10 +2,15 @@ package dbc
 
 // StartingStats represents data within the ChrStartingStats.dbc file.
 type StartingStats struct {
-	ID       int
-	Class    *Class
-	Race     *Race
-	Strength int
+	ID         int
+	Class      *Class
+	Race       *Race
+	BaseHealth int
+	Strength   int
+	Agility    int
+	Stamina    int
+	Intellect  int
+	Spirit     int
 }
 
 var (
@@ -21,11 +26,16 @@ var (
 func init() {
 	// Set the source of truth.
 	StartingStatsByID = map[int]*StartingStats{
-		0: &StartingStats{
-			ID:       0,
-			Class:    ClassWarrior,
-			Race:     RaceHuman,
-			Strength: 0,
+		0: {
+			ID:         0,
+			Class:      ClassWarrior,
+			Race:       RaceHuman,
+			BaseHealth: 0,
+			Strength:   23,
+			Agility:    20,
+			Stamina:    22,
+			Intellect:  20,
+			Spirit:     21,
 		},
 	}
 

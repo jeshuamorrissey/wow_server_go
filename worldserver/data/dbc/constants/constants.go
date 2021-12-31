@@ -854,3 +854,48 @@ const (
 	DisplayIDInvShirt05  = 9891
 	DisplayIDInvSword04  = 1542
 )
+
+type AttackTargetState uint8
+
+const (
+	AttackTargetStateIntact    = 0 // set when attacker misses
+	AttackTargetStateHit       = 1 // victim got clear/blocked hit
+	AttackTargetStateDodge     = 2
+	AttackTargetStateParry     = 3
+	AttackTargetStateInterrupt = 4
+	AttackTargetStateBlocks    = 5 // unused? not set when blocked, even on full block
+	AttackTargetStateEvades    = 6
+	AttackTargetStateIsImmune  = 7
+	AttackTargetStateDeflects  = 8
+)
+
+type HitInfo uint32
+
+const (
+	HitInfoNormalSwing     = 0x00000000
+	HitInfoUnk1            = 0x00000001 // req correct packet structure
+	HitInfoAffectsVictim   = 0x00000002
+	HitInfoOffhand         = 0x00000004
+	HitInfoUnk2            = 0x00000008
+	HitInfoMiss            = 0x00000010
+	HitInfoFullAbsorb      = 0x00000020
+	HitInfoPartialAbsorb   = 0x00000040
+	HitInfoFullResist      = 0x00000080
+	HitInfoPartialResist   = 0x00000100
+	HitInfoCriticalhit     = 0x00000200 // critical hit
+	HitInfoUnk10           = 0x00000400
+	HitInfoUnk11           = 0x00000800
+	HitInfoUnk12           = 0x00001000
+	HitInfoBlock           = 0x00002000 // blocked damage
+	HitInfoUnk14           = 0x00004000 // set only if meleespellid is present// no world text when victim is hit for 0 dmg(HideWorldTextForNoDamage?)
+	HitInfoUnk15           = 0x00008000 // player victim?// something related to blod sprut visual (BloodSpurtInBack?)
+	HitInfoGlancing        = 0x00010000
+	HitInfoCrushing        = 0x00020000
+	HitInfoNoAnimation     = 0x00040000
+	HitInfoUnk19           = 0x00080000
+	HitInfoUnk20           = 0x00100000
+	HitInfoSwingNoHitSound = 0x00200000 // unused?
+	HitInfoUnk22           = 0x00400000
+	HitInfoRageGain        = 0x00800000
+	HitInfoFakeDamage      = 0x01000000 // enables damage animation even if no damage done, set only if no damage
+)

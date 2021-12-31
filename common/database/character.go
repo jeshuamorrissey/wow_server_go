@@ -108,11 +108,12 @@ func NewCharacter(
 			HealthPercent: 1.0,
 			PowerPercent:  1.0,
 
-			Strength: startingStats.Strength,
-			// Agility:   startingStats.Agility,
-			// Stamina:   startingStats.Stamina,
-			// Intellect: startingStats.Intellect,
-			// Spirit:    startingStats.Spirit,
+			BaseHealth: startingStats.BaseHealth,
+			Strength:   startingStats.Strength,
+			Agility:    startingStats.Agility,
+			Stamina:    startingStats.Stamina,
+			Intellect:  startingStats.Intellect,
+			Spirit:     startingStats.Spirit,
 
 			Level:  1,
 			Race:   race,
@@ -125,6 +126,8 @@ func NewCharacter(
 		HairStyle: hairStyle,
 		HairColor: hairColor,
 		Feature:   feature,
+
+		Money: 10000,
 
 		ZoneID: startingLocation.Zone,
 		MapID:  startingLocation.Map,

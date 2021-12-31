@@ -230,7 +230,7 @@ func init() {
 
 		AttackRate: makeDuration("1.9s"),
 		Damages: map[c.SpellSchool]ItemDamage{
-			c.SpellSchoolPhysical: ItemDamage{
+			c.SpellSchoolPhysical: {
 				Min: 1.0,
 				Max: 3.0,
 			},

@@ -22,6 +22,7 @@ var (
 		system.OpCodeClientStandstatechange:  func() system.ClientPacket { return new(packet.ClientStandStateChange) },
 		system.OpCodeClientTutorialFlag:      func() system.ClientPacket { return new(packet.ClientTutorialFlag) },
 		system.OpCodeClientUpdateAccountData: func() system.ClientPacket { return new(packet.ClientUpdateAccountData) },
+		system.OpCodeClientAttackswing:       func() system.ClientPacket { return new(packet.ClientAttackSwing) },
 
 		// Movement packets have the same receiver.
 		system.OpCodeClientMoveHeartbeat:        func() system.ClientPacket { return packet.NewClientMovePacket(system.OpCodeClientMoveHeartbeat) },

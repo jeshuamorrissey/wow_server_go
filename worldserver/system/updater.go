@@ -15,12 +15,16 @@ const (
 	// the client. Anything with a distance larger than this is considered
 	// "out of range".
 	// TODO(jeshua): Make this reasonable.
-	MaxObjectDistance = 1000
+	MaxObjectDistance = 500
 )
 
 // MakeUpdateObjectPacketFn is a function which takes as input some
 // update information and returns a ServerPacket that can be sent.
 type MakeUpdateObjectPacketFn func(OutOfRangeUpdate, []ObjectUpdate) ServerPacket
+
+// MakeAttackerStateUpdatePackerFn is a function which takes as input some
+// combat information and returns a ServerPacket that can be sent.
+type MakeAttackerStateUpdatePackerFn func(object.GUID, object.GUID, object.AttackInfo) ServerPacket
 
 type updateCache struct {
 	UpdateFields   object.UpdateFieldsMap
@@ -64,22 +68,30 @@ type Updater struct {
 	toUpdateLock sync.Mutex
 	toUpdate     []object.GUID
 
-	makeUpdateObjectPacketFn MakeUpdateObjectPacketFn
+	makeUpdateObjectPacketFn        MakeUpdateObjectPacketFn
+	makeAttackerStateUpdatePackerFn MakeAttackerStateUpdatePackerFn
 }
 
 // NewUpdater makes a new updater object.
-func NewUpdater(log *logrus.Entry, om *object.Manager, makeUpdateObjectPacketFn MakeUpdateObjectPacketFn) *Updater {
+func NewUpdater(log *logrus.Entry, om *object.Manager, makeUpdateObjectPacketFn MakeUpdateObjectPacketFn, makeAttackerStateUpdatePacker MakeAttackerStateUpdatePackerFn) *Updater {
 	u := &Updater{
 		log: log.WithFields(logrus.Fields{
 			"system": "Updater",
 		}),
-		om:                       om,
-		sessions:                 make(map[object.GUID]*loginData),
-		toUpdate:                 make([]object.GUID, 0),
-		makeUpdateObjectPacketFn: makeUpdateObjectPacketFn,
+		om:                              om,
+		sessions:                        make(map[object.GUID]*loginData),
+		toUpdate:                        make([]object.GUID, 0),
+		makeUpdateObjectPacketFn:        makeUpdateObjectPacketFn,
+		makeAttackerStateUpdatePackerFn: makeAttackerStateUpdatePacker,
 	}
 
 	return u
+}
+
+func (u *Updater) TriggerUpdate(playerGUID object.GUID) {
+	u.toUpdateLock.Lock()
+	defer u.toUpdateLock.Unlock()
+	u.toUpdate = append(u.toUpdate, playerGUID)
 }
 
 // Login registers the given player as logged in for the given session.
@@ -266,7 +278,7 @@ func (u *Updater) Run() {
 	})
 
 	for {
-		time.Sleep(time.Second * 1)
+		time.Sleep(time.Millisecond * 30)
 		u.toUpdateLock.Lock()
 
 		// There are some object to update!
@@ -283,5 +295,19 @@ func (u *Updater) Run() {
 
 		u.toUpdate = make([]object.GUID, 0)
 		u.toUpdateLock.Unlock()
+	}
+}
+
+func (u *Updater) SendCombatUpdate(attacker object.UnitInterface, target object.UnitInterface, attackInfo object.AttackInfo) {
+	// Find all players in range of either the attacker or target.
+	for characterGUID, loginData := range u.sessions {
+		character := u.om.Get(characterGUID)
+		if character == nil {
+			continue
+		}
+
+		if attacker.Location().Distance(character.Location()) < MaxObjectDistance || target.Location().Distance(character.Location()) < MaxObjectDistance {
+			loginData.Session.Send(u.makeAttackerStateUpdatePackerFn(attacker.GUID(), target.GUID(), attackInfo))
+		}
 	}
 }

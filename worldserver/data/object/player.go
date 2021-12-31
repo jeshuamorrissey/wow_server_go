@@ -96,7 +96,7 @@ func (p *Player) UpdateFields() UpdateFieldsMap {
 		c.UpdateFieldUnitChannelObjectLow:                             uint32(0), // TODO
 		c.UpdateFieldUnitChannelObjectHigh:                            uint32(0), // TODO
 		c.UpdateFieldUnitHealth:                                       uint32(float32(p.maxHealth()) * p.HealthPercent),
-		c.UpdateFieldUnitPowerStart + c.UpdateField(p.powerType()):    uint32(float32(p.maxPower()) * p.PowerPercent),
+		c.UpdateFieldUnitPowerStart + c.UpdateField(p.powerType()):    uint32(float32(p.maxPower()) * 0.5),
 		c.UpdateFieldUnitMaxHealth:                                    uint32(p.maxHealth()),
 		c.UpdateFieldUnitMaxPowerStart + c.UpdateField(p.powerType()): uint32(p.maxPower()),
 		c.UpdateFieldUnitLevel:                                        uint32(p.Level),
@@ -149,14 +149,12 @@ func (p *Player) UpdateFields() UpdateFieldsMap {
 		c.UpdateFieldUnitBaseMana:                                     uint32(p.BasePower),
 		c.UpdateFieldUnitBaseHealth:                                   uint32(p.BaseHealth),
 		c.UpdateFieldUnitBytes2:                                       uint32(0), // TODO
-		c.UpdateFieldUnitAttackPower:                                  uint32(0), // TODO
-		c.UpdateFieldUnitAttackPowerMods:                              uint32(0), // TODO
+		c.UpdateFieldUnitAttackPower:                                  uint32(p.meleeAttackPower()),
+		c.UpdateFieldUnitAttackPowerMods:                              uint32(p.meleeAttackPowerMods()),
 		c.UpdateFieldUnitAttackPowerMultiplier:                        uint32(0), // TODO
-		c.UpdateFieldUnitRangedAttackPower:                            uint32(0), // TODO
-		c.UpdateFieldUnitRangedAttackPowerMods:                        uint32(0), // TODO
+		c.UpdateFieldUnitRangedAttackPower:                            uint32(p.rangedAttackPower()),
+		c.UpdateFieldUnitRangedAttackPowerMods:                        uint32(p.rangedAttackPowerMods()),
 		c.UpdateFieldUnitRangedAttackPowerMultiplier:                  uint32(0), // TODO
-		c.UpdateFieldUnitMinrangeddamage:                              uint32(0), // TODO
-		c.UpdateFieldUnitMaxrangeddamage:                              uint32(0), // TODO
 		c.UpdateFieldUnitPowerCostModifier:                            uint32(0), // TODO
 		c.UpdateFieldUnitPowerCostModifier01:                          uint32(0), // TODO
 		c.UpdateFieldUnitPowerCostModifier02:                          uint32(0), // TODO
@@ -221,7 +219,7 @@ func (p *Player) UpdateFields() UpdateFieldsMap {
 		c.UpdateFieldPlayerResistancebuffmodsnegative: uint32(0), // TODO
 		c.UpdateFieldPlayerModDamageDonePos:           uint32(0), // TODO
 		c.UpdateFieldPlayerModDamageDoneNeg:           uint32(0), // TODO
-		c.UpdateFieldPlayerModDamageDonePct:           uint32(0), // TODO
+		c.UpdateFieldPlayerModDamageDonePct:           float32(p.damageModPercentage()),
 		c.UpdateFieldPlayerFieldBytes:                 uint32(0), // TODO
 		c.UpdateFieldPlayerAmmoID:                     uint32(0), // TODO
 		c.UpdateFieldPlayerSelfResSpell:               uint32(0), // TODO
@@ -270,17 +268,17 @@ func (p *Player) UpdateFields() UpdateFieldsMap {
 		}
 
 		if slot == c.EquipmentSlotMainHand {
-			fields[c.UpdateFieldUnitBaseattacktime] = uint32(item.Template().AttackRate)
-			fields[c.UpdateFieldUnitMindamage] = uint32(item.Template().Damages[c.SpellSchoolPhysical].Min)
-			fields[c.UpdateFieldUnitMaxdamage] = uint32(item.Template().Damages[c.SpellSchoolPhysical].Max)
+			fields[c.UpdateFieldUnitBaseattacktime] = uint32(item.Template().AttackRate.Milliseconds())
+			fields[c.UpdateFieldUnitMindamage] = float32(item.Template().Damages[c.SpellSchoolPhysical].Min)
+			fields[c.UpdateFieldUnitMaxdamage] = float32(item.Template().Damages[c.SpellSchoolPhysical].Max)
 		} else if slot == c.EquipmentSlotOffHand {
-			fields[c.UpdateFieldUnitOffhandattacktime] = uint32(item.Template().AttackRate)
-			fields[c.UpdateFieldUnitMinoffhanddamage] = uint32(item.Template().Damages[c.SpellSchoolPhysical].Min)
-			fields[c.UpdateFieldUnitMaxoffhanddamage] = uint32(item.Template().Damages[c.SpellSchoolPhysical].Max)
+			fields[c.UpdateFieldUnitOffhandattacktime] = uint32(item.Template().AttackRate.Milliseconds())
+			fields[c.UpdateFieldUnitMinoffhanddamage] = float32(item.Template().Damages[c.SpellSchoolPhysical].Min)
+			fields[c.UpdateFieldUnitMaxoffhanddamage] = float32(item.Template().Damages[c.SpellSchoolPhysical].Max)
 		} else if slot == c.EquipmentSlotRanged {
-			fields[c.UpdateFieldUnitRangedattacktime] = uint32(item.Template().AttackRate)
-			fields[c.UpdateFieldUnitMinrangeddamage] = uint32(item.Template().Damages[c.SpellSchoolPhysical].Min)
-			fields[c.UpdateFieldUnitMaxrangeddamage] = uint32(item.Template().Damages[c.SpellSchoolPhysical].Max)
+			fields[c.UpdateFieldUnitRangedattacktime] = uint32(item.Template().AttackRate.Milliseconds())
+			fields[c.UpdateFieldUnitMinrangeddamage] = float32(item.Template().Damages[c.SpellSchoolPhysical].Min)
+			fields[c.UpdateFieldUnitMaxrangeddamage] = float32(item.Template().Damages[c.SpellSchoolPhysical].Max)
 		}
 	}
 

@@ -1,6 +1,7 @@
 package packet
 
 import (
+	"encoding/binary"
 	"io"
 
 	"github.com/jeshuamorrissey/wow_server_go/worldserver/data/dbc"
@@ -16,6 +17,8 @@ type ClientCreatureQuery struct {
 
 // FromBytes reads packet data from the given buffer.
 func (pkt *ClientCreatureQuery) FromBytes(state *system.State, buffer io.Reader) error {
+	binary.Read(buffer, binary.LittleEndian, &pkt.Entry)
+	binary.Read(buffer, binary.LittleEndian, &pkt.GUID)
 	return nil
 }
 
@@ -24,7 +27,6 @@ func (pkt *ClientCreatureQuery) Handle(state *system.State) ([]system.ServerPack
 	response := new(ServerCreatureQueryResponse)
 
 	response.Unit = nil
-	state.Log.Infof("pkt = %v", pkt)
 	if unit, ok := dbc.Units[int(pkt.Entry)]; ok {
 		response.Unit = unit
 		response.Entry = pkt.Entry

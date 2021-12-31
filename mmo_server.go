@@ -72,7 +72,7 @@ func GenerateTestData(om *object.Manager, db *gorm.DB) error {
 
 	err = om.Add(&object.Unit{
 		GameObject: object.GameObject{
-			Entry:  uint32(dbc.UnitsByName["Defias Thug"].Entry),
+			Entry:  uint32(dbc.UnitsByName["The Man"].Entry),
 			ScaleX: 1.0,
 		},
 
@@ -86,10 +86,38 @@ func GenerateTestData(om *object.Manager, db *gorm.DB) error {
 
 		MovementInfo: object.MovementInfo{
 			Location: object.Location{
-				X: -8949.95,
+				X: -8945.95,
 				Y: -132.493,
 				Z: 83.5312,
-				O: 0.0,
+				O: 180.0,
+			},
+		},
+	})
+
+	if err != nil {
+		return err
+	}
+
+	err = om.Add(&object.Unit{
+		GameObject: object.GameObject{
+			Entry:  uint32(dbc.UnitsByName["The Man"].Entry),
+			ScaleX: 1.0,
+		},
+
+		Level:  1,
+		Race:   dbc.RaceHuman,
+		Class:  dbc.ClassRogue,
+		Gender: c.GenderMale,
+
+		HealthPercent: 1.0,
+		PowerPercent:  1.0,
+
+		MovementInfo: object.MovementInfo{
+			Location: object.Location{
+				X: -8942.95,
+				Y: -132.493,
+				Z: 83.5312,
+				O: 180.0,
 			},
 		},
 	})
@@ -127,8 +155,6 @@ func main() {
 	if err != nil {
 		logrus.Fatalf("Failed to generate test data: %v\n", err)
 	}
-
-	// go om.Run()
 
 	var wg sync.WaitGroup
 	wg.Add(2)

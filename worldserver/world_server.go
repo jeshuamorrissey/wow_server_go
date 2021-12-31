@@ -6,6 +6,7 @@ import (
 	"net"
 	"strconv"
 
+	c "github.com/jeshuamorrissey/wow_server_go/worldserver/data/dbc/constants"
 	"github.com/jeshuamorrissey/wow_server_go/worldserver/data/object"
 	"github.com/jeshuamorrissey/wow_server_go/worldserver/system"
 
@@ -15,7 +16,7 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-func makeSession(om *object.Manager, realm *database.Realm, reader io.Reader, writer io.Writer, log *logrus.Entry, db *gorm.DB, updater *system.Updater) *system.Session {
+func makeSession(om *object.Manager, realm *database.Realm, reader io.Reader, writer io.Writer, log *logrus.Entry, db *gorm.DB, updater *system.Updater, combatManager *system.CombatManager) *system.Session {
 	return system.NewSession(
 		reader,
 		writer,
@@ -25,6 +26,7 @@ func makeSession(om *object.Manager, realm *database.Realm, reader io.Reader, wr
 		log,
 		realm,
 		updater,
+		combatManager,
 	)
 }
 
@@ -40,6 +42,17 @@ func makeObjectUpdatePacket(outOfRangeUpdate system.OutOfRangeUpdate, objectUpda
 	}
 }
 
+func makeAttackerStateUpdatePacker(attacker object.GUID, target object.GUID, attackInfo object.AttackInfo) system.ServerPacket {
+	return &packet.ServerAttackerStateUpdate{
+		HitInfo:      c.HitInfoNormalSwing,
+		Attacker:     attacker,
+		Target:       target,
+		Damage:       int32(attackInfo.Damage),
+		TargetState:  c.AttackTargetStateHit,
+		MeleeSpellID: 0,
+	}
+}
+
 // RunWorldServer takes as input a database and runs an world server referencing
 // it.
 func RunWorldServer(realmName string, port int, om *object.Manager, db *gorm.DB) {
@@ -50,18 +63,22 @@ func RunWorldServer(realmName string, port int, om *object.Manager, db *gorm.DB)
 	}
 
 	log := logrus.WithFields(logrus.Fields{"server": "WORLD", "port": port})
+	log.Logger.SetLevel(logrus.TraceLevel)
 
 	// Start updater.
-	updater := system.NewUpdater(log, om, makeObjectUpdatePacket)
+	updater := system.NewUpdater(log, om, makeObjectUpdatePacket, makeAttackerStateUpdatePacker)
 	go updater.Run()
 
+	// Start the combat manager.
+	combatManager := system.NewCombatManager(log, om, updater)
+
 	// Start session handler.
-	listener, err := net.Listen("tcp", ":"+strconv.Itoa(port))
+	listener, err := net.Listen("tcp", "127.0.0.1:"+strconv.Itoa(port))
 	if err != nil {
 		log.Fatalf("Error while opening port: %v\n", err)
 	}
 
-	log.Infof("Listening for WORLD connections on :%v...", port)
+	log.Infof("Listening for WORLD connections on :%v...", listener.Addr().String())
 
 	for {
 		conn, err := listener.Accept()
@@ -71,7 +88,7 @@ func RunWorldServer(realmName string, port int, om *object.Manager, db *gorm.DB)
 
 		log.Printf("Receiving WORLD connection from %v\n", conn.RemoteAddr())
 		sessLog := logrus.WithFields(logrus.Fields{"server": "WORLD", "account": "???"})
-		sess := makeSession(om, &realm, conn, conn, sessLog, db, updater)
+		sess := makeSession(om, &realm, conn, conn, sessLog, db, updater, combatManager)
 		setupSession(sess)
 		go sess.Run()
 	}

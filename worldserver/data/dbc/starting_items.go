@@ -5,9 +5,9 @@ import (
 )
 
 var (
-	startingItems = map[*Class]map[*Race][]string{
-		ClassWarrior: map[*Race][]string{
-			RaceHuman: []string{
+	startingItems = map[string]map[string][]string{
+		"Warrior": {
+			"Human": {
 				"Recruit's Boots",
 				"Recruit's Pants",
 				"Recruit's Shirt",
@@ -22,7 +22,7 @@ var (
 // to the item that should be in that slot.
 func GetStartingItems(class *Class, race *Race) (map[c.EquipmentSlot]*Item, []*Item) {
 	// items := startingItems[fmt.Sprintf("%d:%d", class, race)]
-	items := startingItems[class][race]
+	items := startingItems[class.Name][race.Name]
 	equipment := make(map[c.EquipmentSlot]*Item)
 	nonEquipment := make([]*Item, 0)
 

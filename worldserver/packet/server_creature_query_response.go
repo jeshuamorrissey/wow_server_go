@@ -19,7 +19,6 @@ func (pkt *ServerCreatureQueryResponse) ToBytes(state *system.State) ([]byte, er
 	buffer := bytes.NewBufferString("")
 
 	if pkt.Unit == nil {
-		state.Log.Infof("errororialakwdj")
 		binary.Write(buffer, binary.LittleEndian, uint32(pkt.Entry|0x80000000))
 		return buffer.Bytes(), nil
 	}

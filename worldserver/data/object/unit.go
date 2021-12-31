@@ -3,10 +3,25 @@ package object
 import (
 	"bytes"
 	"encoding/binary"
+	"time"
 
 	"github.com/jeshuamorrissey/wow_server_go/worldserver/data/dbc"
 	c "github.com/jeshuamorrissey/wow_server_go/worldserver/data/dbc/constants"
 )
+
+type AttackInfo struct {
+	Damage int
+}
+
+type UnitInterface interface {
+	Object
+
+	// MeleeAttackRate should return the time between melee attacks.
+	MeleeAttackRate() time.Duration
+
+	// Attack should calculate what the result of this unit attacking another unit would be.
+	Attack(target UnitInterface) AttackInfo
+}
 
 // Unit represents an instance of an in-game monster.
 type Unit struct {
@@ -202,46 +217,46 @@ func (u *Unit) UpdateFields() UpdateFieldsMap {
 		c.UpdateFieldUnitModCastSpeed:                                 uint32(0), // TODO
 		c.UpdateFieldUnitCreatedBySpell:                               uint32(0), // TODO
 		c.UpdateFieldUnitNpcFlags:                                     uint32(tmpl.Flags()),
-		c.UpdateFieldUnitNpcEmotestate:                                uint32(0), // TODO
-		c.UpdateFieldUnitTrainingPoints:                               uint32(0), // TODO
-		c.UpdateFieldUnitStrength:                                     uint32(0), // TODO
-		c.UpdateFieldUnitAgility:                                      uint32(0), // TODO
-		c.UpdateFieldUnitStamina:                                      uint32(0), // TODO
-		c.UpdateFieldUnitIntellect:                                    uint32(0), // TODO
-		c.UpdateFieldUnitSpirit:                                       uint32(0), // TODO
-		c.UpdateFieldUnitArmor:                                        uint32(0), // TODO
-		c.UpdateFieldUnitHolyResist:                                   uint32(0), // TODO
-		c.UpdateFieldUnitFireResist:                                   uint32(0), // TODO
-		c.UpdateFieldUnitNatureResist:                                 uint32(0), // TODO
-		c.UpdateFieldUnitFrostResist:                                  uint32(0), // TODO
-		c.UpdateFieldUnitShadowResist:                                 uint32(0), // TODO
-		c.UpdateFieldUnitArcaneResist:                                 uint32(0), // TODO
-		c.UpdateFieldUnitBaseMana:                                     uint32(0), // TODO
-		c.UpdateFieldUnitBaseHealth:                                   uint32(0), // TODO
-		c.UpdateFieldUnitBytes2:                                       uint32(0), // TODO
-		c.UpdateFieldUnitAttackPower:                                  uint32(0), // TODO
-		c.UpdateFieldUnitAttackPowerMods:                              uint32(0), // TODO
-		c.UpdateFieldUnitAttackPowerMultiplier:                        uint32(0), // TODO
-		c.UpdateFieldUnitRangedAttackPower:                            uint32(0), // TODO
-		c.UpdateFieldUnitRangedAttackPowerMods:                        uint32(0), // TODO
-		c.UpdateFieldUnitRangedAttackPowerMultiplier:                  uint32(0), // TODO
-		c.UpdateFieldUnitMinrangeddamage:                              uint32(0), // TODO
-		c.UpdateFieldUnitMaxrangeddamage:                              uint32(0), // TODO
-		c.UpdateFieldUnitPowerCostModifier:                            uint32(0), // TODO
-		c.UpdateFieldUnitPowerCostModifier01:                          uint32(0), // TODO
-		c.UpdateFieldUnitPowerCostModifier02:                          uint32(0), // TODO
-		c.UpdateFieldUnitPowerCostModifier03:                          uint32(0), // TODO
-		c.UpdateFieldUnitPowerCostModifier04:                          uint32(0), // TODO
-		c.UpdateFieldUnitPowerCostModifier05:                          uint32(0), // TODO
-		c.UpdateFieldUnitPowerCostModifier06:                          uint32(0), // TODO
-		c.UpdateFieldUnitPowerCostMultiplier:                          uint32(0), // TODO
-		c.UpdateFieldUnitPowerCostMultiplier01:                        uint32(0), // TODO
-		c.UpdateFieldUnitPowerCostMultiplier02:                        uint32(0), // TODO
-		c.UpdateFieldUnitPowerCostMultiplier03:                        uint32(0), // TODO
-		c.UpdateFieldUnitPowerCostMultiplier04:                        uint32(0), // TODO
-		c.UpdateFieldUnitPowerCostMultiplier05:                        uint32(0), // TODO
-		c.UpdateFieldUnitPowerCostMultiplier06:                        uint32(0), // TODO
-		c.UpdateFieldUnitFactiontemplate:                              uint32(4), // TODO
+		c.UpdateFieldUnitNpcEmotestate:                                uint32(0),  // TODO
+		c.UpdateFieldUnitTrainingPoints:                               uint32(0),  // TODO
+		c.UpdateFieldUnitStrength:                                     uint32(0),  // TODO
+		c.UpdateFieldUnitAgility:                                      uint32(0),  // TODO
+		c.UpdateFieldUnitStamina:                                      uint32(0),  // TODO
+		c.UpdateFieldUnitIntellect:                                    uint32(0),  // TODO
+		c.UpdateFieldUnitSpirit:                                       uint32(0),  // TODO
+		c.UpdateFieldUnitArmor:                                        uint32(0),  // TODO
+		c.UpdateFieldUnitHolyResist:                                   uint32(0),  // TODO
+		c.UpdateFieldUnitFireResist:                                   uint32(0),  // TODO
+		c.UpdateFieldUnitNatureResist:                                 uint32(0),  // TODO
+		c.UpdateFieldUnitFrostResist:                                  uint32(0),  // TODO
+		c.UpdateFieldUnitShadowResist:                                 uint32(0),  // TODO
+		c.UpdateFieldUnitArcaneResist:                                 uint32(0),  // TODO
+		c.UpdateFieldUnitBaseMana:                                     uint32(0),  // TODO
+		c.UpdateFieldUnitBaseHealth:                                   uint32(0),  // TODO
+		c.UpdateFieldUnitBytes2:                                       uint32(0),  // TODO
+		c.UpdateFieldUnitAttackPower:                                  uint32(0),  // TODO
+		c.UpdateFieldUnitAttackPowerMods:                              uint32(0),  // TODO
+		c.UpdateFieldUnitAttackPowerMultiplier:                        uint32(0),  // TODO
+		c.UpdateFieldUnitRangedAttackPower:                            uint32(0),  // TODO
+		c.UpdateFieldUnitRangedAttackPowerMods:                        uint32(0),  // TODO
+		c.UpdateFieldUnitRangedAttackPowerMultiplier:                  uint32(0),  // TODO
+		c.UpdateFieldUnitMinrangeddamage:                              uint32(0),  // TODO
+		c.UpdateFieldUnitMaxrangeddamage:                              uint32(0),  // TODO
+		c.UpdateFieldUnitPowerCostModifier:                            uint32(0),  // TODO
+		c.UpdateFieldUnitPowerCostModifier01:                          uint32(0),  // TODO
+		c.UpdateFieldUnitPowerCostModifier02:                          uint32(0),  // TODO
+		c.UpdateFieldUnitPowerCostModifier03:                          uint32(0),  // TODO
+		c.UpdateFieldUnitPowerCostModifier04:                          uint32(0),  // TODO
+		c.UpdateFieldUnitPowerCostModifier05:                          uint32(0),  // TODO
+		c.UpdateFieldUnitPowerCostModifier06:                          uint32(0),  // TODO
+		c.UpdateFieldUnitPowerCostMultiplier:                          uint32(0),  // TODO
+		c.UpdateFieldUnitPowerCostMultiplier01:                        uint32(0),  // TODO
+		c.UpdateFieldUnitPowerCostMultiplier02:                        uint32(0),  // TODO
+		c.UpdateFieldUnitPowerCostMultiplier03:                        uint32(0),  // TODO
+		c.UpdateFieldUnitPowerCostMultiplier04:                        uint32(0),  // TODO
+		c.UpdateFieldUnitPowerCostMultiplier05:                        uint32(0),  // TODO
+		c.UpdateFieldUnitPowerCostMultiplier06:                        uint32(0),  // TODO
+		c.UpdateFieldUnitFactiontemplate:                              uint32(17), // TODO
 	}
 
 	mergedFields := u.GameObject.UpdateFields()

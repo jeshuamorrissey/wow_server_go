@@ -14,9 +14,10 @@ type State struct {
 
 	Log *logrus.Entry
 
-	DB      *gorm.DB
-	OM      *object.Manager
-	Updater *Updater
+	DB            *gorm.DB
+	OM            *object.Manager
+	Updater       *Updater
+	CombatManager *CombatManager
 
 	Realm *database.Realm
 

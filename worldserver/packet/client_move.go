@@ -54,7 +54,12 @@ func (pkt *ClientMove) FromBytes(state *system.State, buffer io.Reader) error {
 func (pkt *ClientMove) Handle(state *system.State) ([]system.ServerPacket, error) {
 	state.Character.MovementInfo = pkt.MovementInfo
 
-	// TODO(jeshua): Update movement! Do this by notifying a movement manager.
+	location := state.Character.Location()
+	location.X = pkt.MovementInfo.Location.X
+	location.Y = pkt.MovementInfo.Location.Y
+	location.Z = pkt.MovementInfo.Location.Z
+	location.O = pkt.MovementInfo.Location.O
+	state.Updater.TriggerUpdate(state.Character.GUID())
 
 	return nil, nil
 }

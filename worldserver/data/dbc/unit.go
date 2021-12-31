@@ -451,10 +451,9 @@ func init() {
 	UnitsByName = make(map[string]*Unit)
 
 	addUnit(&Unit{
-		Name:    "Defias Thug",
-		SubName: "A Bad Dude",
+		Name: "The Man",
 
-		MaxHealth: 100,
+		MaxHealth: 15,
 		MaxPower:  100,
 
 		BoundingRadius: 0.306,

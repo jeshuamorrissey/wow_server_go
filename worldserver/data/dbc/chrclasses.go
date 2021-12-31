@@ -1,10 +1,12 @@
 package dbc
 
+import c "github.com/jeshuamorrissey/wow_server_go/worldserver/data/dbc/constants"
+
 // Class represents data within the ChrClasses.dbc file.
 type Class struct {
 	ID          int
 	PrimaryStat int
-	PowerType   int
+	PowerType   c.Power
 	PetType     string
 	Name        string
 }
@@ -32,66 +34,66 @@ var (
 func init() {
 	// Set the source of truth.
 	ClassByID = map[int]*Class{
-		1: &Class{
+		1: {
 			ID:          1,
 			PrimaryStat: 0,
-			PowerType:   1,
+			PowerType:   c.PowerRage,
 			PetType:     "PET",
 			Name:        "Warrior",
 		},
-		2: &Class{
+		2: {
 			ID:          2,
 			PrimaryStat: 0,
-			PowerType:   0,
+			PowerType:   c.PowerMana,
 			PetType:     "PET",
 			Name:        "Paladin",
 		},
-		3: &Class{
+		3: {
 			ID:          3,
 			PrimaryStat: 1,
-			PowerType:   0,
+			PowerType:   c.PowerMana,
 			PetType:     "PET",
 			Name:        "Hunter",
 		},
-		4: &Class{
+		4: {
 			ID:          4,
 			PrimaryStat: 1,
-			PowerType:   3,
+			PowerType:   c.PowerEnergy,
 			PetType:     "PET",
 			Name:        "Rogue",
 		},
-		5: &Class{
+		5: {
 			ID:          5,
 			PrimaryStat: 0,
-			PowerType:   0,
+			PowerType:   c.PowerMana,
 			PetType:     "PET",
 			Name:        "Priest",
 		},
-		7: &Class{
+		7: {
 			ID:          7,
 			PrimaryStat: 0,
-			PowerType:   0,
+			PowerType:   c.PowerMana,
 			PetType:     "PET",
 			Name:        "Shaman",
 		},
-		8: &Class{
+		8: {
 			ID:          8,
 			PrimaryStat: 0,
-			PowerType:   0,
+			PowerType:   c.PowerMana,
 			PetType:     "PET",
 			Name:        "Mage",
 		},
-		9: &Class{
+		9: {
 			ID:          9,
 			PrimaryStat: 0,
-			PowerType:   0,
+			PowerType:   c.PowerMana,
 			PetType:     "DEMON",
 			Name:        "Warlock",
 		},
-		11: &Class{
+		11: {
 			ID:          11,
 			PrimaryStat: 0,
-			PowerType:   0,
+			PowerType:   c.PowerMana,
 			PetType:     "PET",
 			Name:        "Druid",
 		},
