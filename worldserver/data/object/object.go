@@ -73,4 +73,10 @@ type Object interface {
 
 	// UpdateFields should return the update fields for the object.
 	UpdateFields() UpdateFieldsMap
+
+	// MarshalJSON defines how this object should be serialized.
+	MarshalJSON() ([]byte, error)
+
+	// UnmarshalJSON defines how this object should be deserialized.
+	UnmarshalJSON([]byte) error
 }

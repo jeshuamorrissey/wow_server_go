@@ -88,12 +88,6 @@ func NewUpdater(log *logrus.Entry, om *object.Manager, makeUpdateObjectPacketFn 
 	return u
 }
 
-func (u *Updater) TriggerUpdate(playerGUID object.GUID) {
-	u.toUpdateLock.Lock()
-	defer u.toUpdateLock.Unlock()
-	u.toUpdate = append(u.toUpdate, playerGUID)
-}
-
 // Login registers the given player as logged in for the given session.
 func (u *Updater) Login(playerGUID object.GUID, session *Session) error {
 	u.sessionsLock.Lock()
@@ -203,7 +197,7 @@ func (u *Updater) updatePlayer(guid object.GUID, loginData *loginData) {
 	// Find all objects that are close to this player and make sure they
 	// have been updated.
 	playerObj := u.om.Get(guid)
-	for _, objGeneric := range u.om.Objects() {
+	for _, objGeneric := range u.om.Objects {
 		// If the object is a player, and it is not logged in, just ignore it.
 		// Also do this for items on players.
 		switch obj := objGeneric.(type) {

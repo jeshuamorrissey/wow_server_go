@@ -7,11 +7,8 @@ import (
 	"math/big"
 	"strings"
 
-	"github.com/jinzhu/gorm"
-
 	"github.com/jeshuamorrissey/wow_server_go/authserver/srp"
 	"github.com/jeshuamorrissey/wow_server_go/common"
-	"github.com/jeshuamorrissey/wow_server_go/common/database"
 	"github.com/jeshuamorrissey/wow_server_go/common/session"
 )
 
@@ -96,14 +93,15 @@ func (pkt *ClientLoginChallenge) Handle(stateBase session.State) ([]session.Serv
 	} else if pkt.Version != SupportedGameVersion || pkt.Build != SupportedGameBuild {
 		response.Error = LoginBadVersion
 	} else {
-		// Get information from the session.
-		err := stateBase.DB().Where(&database.Account{Name: string(pkt.AccountName)}).First(&state.Account).Error
-		if err != nil {
-			if err == gorm.ErrRecordNotFound {
-				response.Error = LoginUnknownAccount
-			} else {
-				return nil, err
+		for _, account := range stateBase.Config().Accounts {
+			if strings.ToLower(account.Name) == strings.ToLower(string(pkt.AccountName)) {
+				state.Account = account
+				break
 			}
+		}
+
+		if state.Account == nil {
+			response.Error = LoginUnknownAccount
 		}
 	}
 

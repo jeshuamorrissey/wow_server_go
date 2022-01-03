@@ -1,0 +1,18 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "session",
+    srcs = [
+        "packet.go",
+        "session.go",
+    ],
+    importpath = "github.com/jeshuamorrissey/wow_server_go/common/session",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//common",
+        "//worldserver/data/dbc/constants",
+        "//worldserver/data/object",
+        "//worldserver/data/world",
+        "@com_github_sirupsen_logrus//:logrus",
+    ],
+)

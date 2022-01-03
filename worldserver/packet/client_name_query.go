@@ -4,9 +4,6 @@ import (
 	"encoding/binary"
 	"io"
 
-	"github.com/jeshuamorrissey/wow_server_go/common/database"
-	"github.com/jinzhu/gorm"
-
 	"github.com/jeshuamorrissey/wow_server_go/worldserver/data/object"
 	"github.com/jeshuamorrissey/wow_server_go/worldserver/system"
 )
@@ -28,16 +25,7 @@ func (pkt *ClientNameQuery) Handle(state *system.State) ([]system.ServerPacket, 
 	}
 
 	response := new(ServerNameQueryResponse)
-	response.Character = new(database.Character)
-	err := state.DB.Where(&database.Character{GUID: pkt.GUID}).First(response.Character).Error
-	if err != nil {
-		if err == gorm.ErrRecordNotFound {
-			return nil, nil
-		}
-
-		return nil, err
-	}
-
+	response.Character = state.Account.Character
 	return []system.ServerPacket{response}, nil
 }
 

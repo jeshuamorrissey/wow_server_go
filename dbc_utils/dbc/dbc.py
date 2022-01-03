@@ -188,16 +188,25 @@ class Table():
 
         return header_data + record_data + string_block_data
 
-    def ToGolang(self) -> bytes:
-        """Convert the table to a Golang file."""
+    def ToGolangPart(self) -> (str, bytes):
+        """Convert this table to a Golang partial file.
+
+        This will include the struct defintions and variable definitions and a init function which
+        can be called to setup the data.
+
+        Returns:
+            A tuple of (file data, init function name).
+        """
+        dbc_name = self.record_type.__name__
+        init_function_name = f'{dbc_name}__init'
         args = {
-            'package': 'dbc',
-            'dbc_name': self.record_type.__name__,
+            'dbc_name': dbc_name,
             'type_name': self.record_type.GoTypeName(),
             'fields': [f for f in self.record_type.Fields() if f.name],
             'index_fields': [f for f in self.record_type.Fields() if f.indexed],
             'num_indexed_fields': sum(1 for f in self.record_type.Fields() if f.indexed),
             'records': self.records,
+            'init_function_name': init_function_name,
         }
 
         # Make a go type for the index.
@@ -213,7 +222,7 @@ class Table():
             loader=jinja2.FileSystemLoader(searchpath=os.path.dirname(os.path.realpath(__file__))))
         template_env.trim_blocks = True
         template_env.lstrip_blocks = True
-        return template_env.get_template('dbc_golang.go.jinja').render(**args)
+        return template_env.get_template('dbc_golang_part.go.jinja').render(**args), init_function_name
 
     @classmethod
     def FromJSON(cls, data: bytes, record_type: Type) -> 'Table':

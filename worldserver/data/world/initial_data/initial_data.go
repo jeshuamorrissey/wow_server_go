@@ -1,43 +1,19 @@
-package database
+package initial_data
 
 import (
-	"time"
-
 	"github.com/jeshuamorrissey/wow_server_go/worldserver/data/dbc"
 	c "github.com/jeshuamorrissey/wow_server_go/worldserver/data/dbc/constants"
 	"github.com/jeshuamorrissey/wow_server_go/worldserver/data/object"
-	"github.com/jinzhu/gorm"
+	"github.com/jeshuamorrissey/wow_server_go/worldserver/data/world"
 )
-
-// Character represents a character in the game, linked to an account.
-// The character's information is stored over this structure and a
-// game object.
-type Character struct {
-	gorm.Model
-
-	Name      string `gorm:"unique"`
-	LastLogin *time.Time
-
-	AccountID uint
-	RealmID   uint
-
-	GUID object.GUID
-
-	// Flags.
-	HideHelm        bool
-	HideCloak       bool
-	IsGhost         bool
-	RenameNextLogin bool
-}
 
 // NewCharacter creates a new character entry in the database and
 // returns a pointer to it.
 func NewCharacter(
-	om *object.Manager,
-	account *Account, realm *Realm,
+	config *world.WorldConfig,
 	name string,
 	race *dbc.Race, class *dbc.Class, gender c.Gender,
-	skinColor, face, hairStyle, hairColor, feature uint8) (*Character, error) {
+	skinColor, face, hairStyle, hairColor, feature uint8) (*world.Character, error) {
 	startingEquipment, startingItems := dbc.GetStartingItems(class, race)
 
 	equipment := make(map[c.EquipmentSlot]object.GUID)
@@ -51,7 +27,7 @@ func NewCharacter(
 			Durability: item.MaxDurability,
 		}
 
-		err := om.Add(itemObj)
+		err := config.ObjectManager.Add(itemObj)
 		if err != nil {
 			return nil, err
 		}
@@ -70,7 +46,7 @@ func NewCharacter(
 			Durability: item.MaxDurability,
 		}
 
-		err := om.Add(itemObj)
+		err := config.ObjectManager.Add(itemObj)
 		if err != nil {
 			return nil, err
 		}
@@ -136,51 +112,87 @@ func NewCharacter(
 		Inventory: inventory,
 	}
 
-	err := om.Add(charObj)
+	err := config.ObjectManager.Add(charObj)
 	if err != nil {
 		return nil, err
 	}
 
 	for _, guid := range equipment {
-		if om.Exists(guid) {
-			om.Get(guid).(*object.Item).Owner = charObj.GUID()
-			om.Get(guid).(*object.Item).Container = charObj.GUID()
+		if config.ObjectManager.Exists(guid) {
+			config.ObjectManager.Get(guid).(*object.Item).Owner = charObj.GUID()
+			config.ObjectManager.Get(guid).(*object.Item).Container = charObj.GUID()
 		}
 	}
 
 	for _, guid := range inventory {
-		if om.Exists(guid) {
-			om.Get(guid).(*object.Item).Owner = charObj.GUID()
-			om.Get(guid).(*object.Item).Container = charObj.GUID()
+		if config.ObjectManager.Exists(guid) {
+			config.ObjectManager.Get(guid).(*object.Item).Owner = charObj.GUID()
+			config.ObjectManager.Get(guid).(*object.Item).Container = charObj.GUID()
 		}
 	}
 
-	return &Character{
-		Name:      name,
-		GUID:      charObj.GUID(),
-		AccountID: account.ID,
-		RealmID:   realm.ID,
+	return &world.Character{
+		Name: name,
+		GUID: charObj.GUID(),
 	}, nil
 }
 
-// Flags returns an set of flags based on the character's state.
-func (char *Character) Flags() uint32 {
-	var flags uint32
-	if char.HideHelm {
-		flags |= uint32(c.CharacterFlagHideHelm)
+func PopulateWorld(config *world.WorldConfig) error {
+	err := config.ObjectManager.Add(&object.Unit{
+		GameObject: object.GameObject{
+			Entry:  uint32(dbc.UnitsByName["The Man"].Entry),
+			ScaleX: 1.0,
+		},
+
+		Level:  1,
+		Race:   dbc.RaceHuman,
+		Class:  dbc.ClassRogue,
+		Gender: c.GenderMale,
+
+		HealthPercent: 1.0,
+		PowerPercent:  1.0,
+
+		MovementInfo: object.MovementInfo{
+			Location: object.Location{
+				X: -8945.95,
+				Y: -132.493,
+				Z: 83.5312,
+				O: 180.0,
+			},
+		},
+	})
+
+	if err != nil {
+		return err
 	}
 
-	if char.HideCloak {
-		flags |= uint32(c.CharacterFlagHideCloak)
+	err = config.ObjectManager.Add(&object.Unit{
+		GameObject: object.GameObject{
+			Entry:  uint32(dbc.UnitsByName["The Man"].Entry),
+			ScaleX: 1.0,
+		},
+
+		Level:  1,
+		Race:   dbc.RaceHuman,
+		Class:  dbc.ClassRogue,
+		Gender: c.GenderMale,
+
+		HealthPercent: 1.0,
+		PowerPercent:  1.0,
+
+		MovementInfo: object.MovementInfo{
+			Location: object.Location{
+				X: -8942.95,
+				Y: -132.493,
+				Z: 83.5312,
+				O: 180.0,
+			},
+		},
+	})
+
+	if err != nil {
+		return err
 	}
 
-	if char.IsGhost {
-		flags |= uint32(c.CharacterFlagGhost)
-	}
-
-	if char.RenameNextLogin {
-		flags |= uint32(c.CharacterFlagRename)
-	}
-
-	return flags
+	return nil
 }

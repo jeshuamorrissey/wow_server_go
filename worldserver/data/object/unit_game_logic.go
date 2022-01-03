@@ -14,7 +14,8 @@ const (
 )
 
 func (u *Unit) powerType() c.Power {
-	return u.Class.PowerType
+	return c.PowerMana
+	// return u.Class.PowerType
 }
 
 func (u *Unit) maxHealth() int {

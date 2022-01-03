@@ -1,9 +1,8 @@
 package system
 
 import (
-	"github.com/jeshuamorrissey/wow_server_go/common/database"
 	"github.com/jeshuamorrissey/wow_server_go/worldserver/data/object"
-	"github.com/jinzhu/gorm"
+	"github.com/jeshuamorrissey/wow_server_go/worldserver/data/world"
 	"github.com/sirupsen/logrus"
 )
 
@@ -14,13 +13,11 @@ type State struct {
 
 	Log *logrus.Entry
 
-	DB            *gorm.DB
+	Config        *world.WorldConfig
 	OM            *object.Manager
 	Updater       *Updater
 	CombatManager *CombatManager
 
-	Realm *database.Realm
-
-	Account   *database.Account
+	Account   *world.Account
 	Character *object.Player
 }

@@ -86,9 +86,7 @@ func (pkt *ClientLoginProof) Handle(stateBase session.State) ([]session.ServerPa
 
 		state.AddLogField("account", state.Account.Name)
 
-		state.Account.SessionKeyStr = new(string)
-		*state.Account.SessionKeyStr = K.Text(16)
-		stateBase.DB().Save(state.Account)
+		state.Account.SessionKeyStr = K.Text(16)
 	}
 
 	return []session.ServerPacket{response}, nil

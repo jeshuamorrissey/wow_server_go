@@ -3,11 +3,10 @@ package packet
 import (
 	"encoding/binary"
 	"io"
+	"strings"
 
-	"github.com/jeshuamorrissey/wow_server_go/common/database"
 	c "github.com/jeshuamorrissey/wow_server_go/worldserver/data/dbc/constants"
 	"github.com/jeshuamorrissey/wow_server_go/worldserver/system"
-	"github.com/jinzhu/gorm"
 )
 
 // ClientAuthSession is the initial message sent from the server
@@ -50,19 +49,19 @@ func (pkt *ClientAuthSession) Handle(state *system.State) ([]system.ServerPacket
 	response := new(ServerAuthResponse)
 	response.Error = c.AuthOK
 
-	state.Account = new(database.Account)
-	err := state.DB.Where(&database.Account{Name: string(pkt.AccountName)}).First(state.Account).Error
-	if err != nil {
-		if err == gorm.ErrRecordNotFound {
-			response.Error = c.AuthUnknownAccount
-		} else {
-			return nil, err
+	for _, account := range state.Config.Accounts {
+		if strings.ToUpper(account.Name) == strings.ToUpper(string(pkt.AccountName)) {
+			state.Account = account
 		}
+	}
+
+	if state.Account == nil {
+		response.Error = c.AuthUnknownAccount
 	}
 
 	// TODO(jeshua): validate the information sent by the client.
 	// If there is no session key, account is invalid.
-	if state.Account.SessionKey() == nil {
+	if state.Account != nil && state.Account.SessionKey() == nil {
 		response.Error = c.AuthBadServerProof
 	}
 

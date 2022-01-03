@@ -1,6 +1,10 @@
 package object
 
-import c "github.com/jeshuamorrissey/wow_server_go/worldserver/data/dbc/constants"
+import (
+	"encoding/json"
+
+	c "github.com/jeshuamorrissey/wow_server_go/worldserver/data/dbc/constants"
+)
 
 // GameObject represents a generic game object.
 type GameObject struct {
@@ -25,6 +29,14 @@ func (o *GameObject) SetGUID(guid GUID) { o.guid = guid }
 
 // Location returns the location of the object.
 func (o *GameObject) Location() *Location { return nil }
+
+func (o *GameObject) MarshalJSON() ([]byte, error) {
+	return json.Marshal(o)
+}
+
+func (o *GameObject) UnmarshalJSON(data []byte) error {
+	return json.Unmarshal(data, o)
+}
 
 // MovementUpdate calculates and returns the movement update for the
 // object.

@@ -10,9 +10,7 @@ import (
 	"sync"
 
 	"github.com/jeshuamorrissey/wow_server_go/common"
-	"github.com/jeshuamorrissey/wow_server_go/common/database"
-	"github.com/jeshuamorrissey/wow_server_go/worldserver/data/object"
-	"github.com/jinzhu/gorm"
+	"github.com/jeshuamorrissey/wow_server_go/worldserver/data/world"
 	"github.com/sirupsen/logrus"
 )
 
@@ -39,22 +37,19 @@ func NewSession(
 	input io.Reader,
 	output io.Writer,
 	opCodeToPacket map[OpCode]func() ClientPacket,
-	db *gorm.DB,
-	objectManager *object.Manager,
+	config *world.WorldConfig,
 	log *logrus.Entry,
-	realm *database.Realm,
 	updater *Updater,
 	combatManager *CombatManager,
 ) *Session {
 	state := &State{
 		Log: log,
 
-		DB:            db,
-		OM:            objectManager,
+		Config:        config,
+		OM:            config.ObjectManager,
 		CombatManager: combatManager,
 		Updater:       updater,
 
-		Realm:     realm,
 		Account:   nil,
 		Character: nil,
 	}

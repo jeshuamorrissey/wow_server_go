@@ -8,11 +8,10 @@ import (
 	"strings"
 
 	"github.com/jeshuamorrissey/wow_server_go/common"
-	"github.com/jeshuamorrissey/wow_server_go/common/database"
 	"github.com/jeshuamorrissey/wow_server_go/worldserver/data/dbc"
 	c "github.com/jeshuamorrissey/wow_server_go/worldserver/data/dbc/constants"
+	"github.com/jeshuamorrissey/wow_server_go/worldserver/data/world/initial_data"
 	"github.com/jeshuamorrissey/wow_server_go/worldserver/system"
-	"github.com/jinzhu/gorm"
 )
 
 func normalizeCharacterName(name string) string {
@@ -74,17 +73,15 @@ func (pkt *ClientCharCreate) Handle(state *system.State) ([]system.ServerPacket,
 		return []system.ServerPacket{response}, nil
 	}
 
-	// Check if name already exists.
-	var char database.Character
-	err := state.DB.Where(&database.Character{Name: pkt.Name}).First(&char).Error
-	if err != gorm.ErrRecordNotFound {
-		response.Error = c.CharErrorCodeCreateNameInUse
+	// If the character already exists, fail.
+	if state.Account.Character != nil {
+		response.Error = c.CharErrorCodeCreateFailed
 		return []system.ServerPacket{response}, nil
 	}
 
 	// Make the character.
-	charObj, err := database.NewCharacter(
-		state.OM, state.Account, state.Realm,
+	charObj, err := initial_data.NewCharacter(
+		state.Config,
 		pkt.Name,
 		pkt.Race, pkt.Class, pkt.Gender,
 		pkt.SkinColor, pkt.Face, pkt.HairStyle, pkt.HairColor, pkt.Feature)
@@ -93,11 +90,7 @@ func (pkt *ClientCharCreate) Handle(state *system.State) ([]system.ServerPacket,
 		return []system.ServerPacket{response}, nil
 	}
 
-	err = state.DB.Create(charObj).Error
-	if err != nil {
-		response.Error = c.CharErrorCodeCreateFailed
-		return []system.ServerPacket{response}, nil
-	}
+	state.Account.Character = charObj
 
 	return []system.ServerPacket{response}, nil
 }

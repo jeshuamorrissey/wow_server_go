@@ -1,6 +1,7 @@
 package object
 
 import (
+	"encoding/json"
 	"time"
 
 	"github.com/jeshuamorrissey/wow_server_go/worldserver/data/dbc"
@@ -32,6 +33,14 @@ type Item struct {
 
 // Manager returns the manager associated with this object.
 func (i *Item) Manager() *Manager { return i.GameObject.Manager() }
+
+func (i *Item) MarshalJSON() ([]byte, error) {
+	return json.Marshal(i)
+}
+
+func (i *Item) UnmarshalJSON(data []byte) error {
+	return json.Unmarshal(data, i)
+}
 
 // SetManager updates the manager associated with this object.
 func (i *Item) SetManager(manager *Manager) { i.GameObject.SetManager(manager) }

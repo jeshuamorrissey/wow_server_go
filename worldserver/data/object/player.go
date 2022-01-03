@@ -1,6 +1,8 @@
 package object
 
 import (
+	"encoding/json"
+
 	"github.com/jeshuamorrissey/wow_server_go/worldserver/data/dbc"
 	c "github.com/jeshuamorrissey/wow_server_go/worldserver/data/dbc/constants"
 	"github.com/sirupsen/logrus"
@@ -67,6 +69,14 @@ func (p *Player) SetGUID(guid GUID) { p.GameObject.SetGUID(guid) }
 
 // Location returns the location of the object.
 func (p *Player) Location() *Location { return p.Unit.Location() }
+
+func (p *Player) MarshalJSON() ([]byte, error) {
+	return json.Marshal(p)
+}
+
+func (p *Player) UnmarshalJSON(data []byte) error {
+	return json.Unmarshal(data, p)
+}
 
 // MovementUpdate calculates and returns the movement update for the
 // object.

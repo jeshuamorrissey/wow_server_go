@@ -1,0 +1,5 @@
+filegroup(
+    name = "dbc_data",
+    srcs = glob(["*.json"]),
+    visibility = ["//visibility:public"],
+)

@@ -3,6 +3,7 @@ package object
 import (
 	"bytes"
 	"encoding/binary"
+	"encoding/json"
 	"time"
 
 	"github.com/jeshuamorrissey/wow_server_go/worldserver/data/dbc"
@@ -101,6 +102,14 @@ func (u *Unit) SetGUID(guid GUID) { u.GameObject.SetGUID(guid) }
 // Location returns the location of the object.
 func (u *Unit) Location() *Location { return &u.MovementInfo.Location }
 
+func (u *Unit) MarshalJSON() ([]byte, error) {
+	return json.Marshal(u)
+}
+
+func (u *Unit) UnmarshalJSON(data []byte) error {
+	return json.Unmarshal(data, u)
+}
+
 // MovementUpdate calculates and returns the movement update for the
 // object.
 func (u *Unit) MovementUpdate() []byte {
@@ -151,7 +160,6 @@ func (u *Unit) MovementUpdate() []byte {
 	// Spline update goes HERE.
 
 	return buffer.Bytes()
-
 }
 
 // UpdateFields populates and returns the updated fields for the

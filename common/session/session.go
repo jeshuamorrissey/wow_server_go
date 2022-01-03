@@ -8,7 +8,7 @@ import (
 	"github.com/jeshuamorrissey/wow_server_go/common"
 	c "github.com/jeshuamorrissey/wow_server_go/worldserver/data/dbc/constants"
 	"github.com/jeshuamorrissey/wow_server_go/worldserver/data/object"
-	"github.com/jinzhu/gorm"
+	"github.com/jeshuamorrissey/wow_server_go/worldserver/data/world"
 	"github.com/sirupsen/logrus"
 )
 
@@ -21,8 +21,8 @@ type OpCode interface {
 // State is a generic interface which represents some data that needs to be stored
 // with the session. This state will vary depending on the server.
 type State interface {
-	// DB should return a reference to the DB to use in this handler.
-	DB() *gorm.DB
+	// Config should return a reference to the world config object.
+	Config() *world.WorldConfig
 
 	// Log returns a reference to the logger to use.
 	Log() *logrus.Entry

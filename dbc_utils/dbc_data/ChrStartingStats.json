@@ -2,6 +2,11 @@
     {
         "class": "Warrior",
         "race": "Human",
-        "strength": 0
+        "strength": 20,
+        "agility": 20,
+        "stamina": 20,
+        "intellect": 20,
+        "spirit": 20,
+        "base_health": 50
     }
 ]

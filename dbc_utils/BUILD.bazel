@@ -1,0 +1,17 @@
+load("@rules_python//python:defs.bzl", "py_binary")
+
+py_binary(
+    name = "dbc_generator",
+    srcs = ["dbc_generator.py"],
+    deps = ["//dbc_utils/dbc"],
+)
+
+py_binary(
+    name = "golang_generator",
+    srcs = ["golang_generator.py"],
+    visibility = ["//visibility:public"],
+    deps = [
+        ":dbc_generator",
+        "//dbc_utils/dbc",
+    ],
+)

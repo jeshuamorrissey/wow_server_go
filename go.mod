@@ -4,7 +4,6 @@ go 1.17
 
 require (
 	github.com/jinzhu/gorm v1.9.16
-	github.com/mattn/go-sqlite3 v1.14.10
 	github.com/sirupsen/logrus v1.8.1
 	gotest.tools v2.2.0+incompatible
 )

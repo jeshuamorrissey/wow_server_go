@@ -1,0 +1,24 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "packet",
+    srcs = [
+        "login_challenge.go",
+        "login_constants.go",
+        "login_proof.go",
+        "loginerrorcode_string.go",
+        "op_code.go",
+        "opcode_string.go",
+        "realmlist.go",
+        "state.go",
+    ],
+    importpath = "github.com/jeshuamorrissey/wow_server_go/authserver/packet",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//authserver/srp",
+        "//common",
+        "//common/session",
+        "//worldserver/data/world",
+        "@com_github_sirupsen_logrus//:logrus",
+    ],
+)

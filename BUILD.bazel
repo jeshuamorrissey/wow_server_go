@@ -1,0 +1,44 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_binary", "go_library")
+load("@bazel_gazelle//:def.bzl", "gazelle")
+
+# gazelle:prefix github.com/jeshuamorrissey/wow_server_go
+gazelle(name = "gazelle")
+
+gazelle(
+    name = "gazelle-update-repos",
+    args = [
+        "-from_file=go.mod",
+        "-to_macro=tools/deps.bzl%go_dependencies",
+        "-prune",
+    ],
+    command = "update-repos",
+)
+
+genrule(
+    name = "example_save",
+    srcs = [],
+    outs = ["world.json"],
+    cmd = "$(location //tools/new_game) -name jeshua > $@",
+    tools = ["//tools/new_game"],
+)
+
+go_binary(
+    name = "project",
+    data = [":example_save"],
+    embed = [":wow_server_go_lib"],
+    visibility = ["//visibility:public"],
+)
+
+go_library(
+    name = "wow_server_go_lib",
+    srcs = ["mmo_server.go"],
+    importpath = "github.com/jeshuamorrissey/wow_server_go",
+    visibility = ["//visibility:private"],
+    deps = [
+        "//authserver",
+        "//worldserver",
+        "//worldserver/data/world",
+        "@com_github_mattn_go_sqlite3//:go-sqlite3",
+        "@com_github_sirupsen_logrus//:logrus",
+    ],
+)

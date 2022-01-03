@@ -1,6 +1,8 @@
 package object
 
 import (
+	"encoding/json"
+
 	c "github.com/jeshuamorrissey/wow_server_go/worldserver/data/dbc/constants"
 )
 
@@ -31,6 +33,14 @@ func (cn *Container) Location() *Location {
 	}
 
 	return cn.Manager().Get(cn.Container).Location()
+}
+
+func (cn *Container) MarshalJSON() ([]byte, error) {
+	return json.Marshal(cn)
+}
+
+func (cn *Container) UnmarshalJSON(data []byte) error {
+	return json.Unmarshal(data, cn)
 }
 
 // MovementUpdate calculates and returns the movement update for the

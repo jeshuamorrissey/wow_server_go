@@ -3,17 +3,18 @@ package packet
 import (
 	"bytes"
 	"encoding/binary"
+	"fmt"
 
-	"github.com/jeshuamorrissey/wow_server_go/common/database"
 	c "github.com/jeshuamorrissey/wow_server_go/worldserver/data/dbc/constants"
 	"github.com/jeshuamorrissey/wow_server_go/worldserver/data/object"
+	"github.com/jeshuamorrissey/wow_server_go/worldserver/data/world"
 	"github.com/jeshuamorrissey/wow_server_go/worldserver/system"
 	"github.com/sirupsen/logrus"
 )
 
 // ServerCharEnum is sent back in response to ClientPing.
 type ServerCharEnum struct {
-	Characters []*database.Character
+	Characters []*world.Character
 }
 
 // ToBytes writes out the packet to an array of bytes.
@@ -28,6 +29,8 @@ func (pkt *ServerCharEnum) ToBytes(state *system.State) ([]byte, error) {
 			state.Log.Errorf("GameObject doesn't exist for character %v!", char.Name)
 			continue
 		}
+
+		fmt.Printf("%v\n", state.Config.ObjectManager.Objects)
 
 		charObj := state.OM.Get(char.GUID).(*object.Player)
 		binary.Write(buffer, binary.LittleEndian, charObj.GUID().Low())
@@ -53,7 +56,7 @@ func (pkt *ServerCharEnum) ToBytes(state *system.State) ([]byte, error) {
 		binary.Write(buffer, binary.LittleEndian, uint32(0)) // GuildID
 		binary.Write(buffer, binary.LittleEndian, char.Flags())
 
-		if char.LastLogin == nil {
+		if !char.HasLoggedIn {
 			buffer.WriteByte(1)
 		} else {
 			buffer.WriteByte(0)

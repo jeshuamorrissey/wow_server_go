@@ -59,7 +59,7 @@ func (pkt *ClientMove) Handle(state *system.State) ([]system.ServerPacket, error
 	location.Y = pkt.MovementInfo.Location.Y
 	location.Z = pkt.MovementInfo.Location.Z
 	location.O = pkt.MovementInfo.Location.O
-	state.Updater.TriggerUpdate(state.Character.GUID())
+	state.OM.Update(state.Character.GUID())
 
 	return nil, nil
 }
