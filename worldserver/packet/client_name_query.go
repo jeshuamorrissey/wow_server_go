@@ -4,13 +4,14 @@ import (
 	"encoding/binary"
 	"io"
 
-	"github.com/jeshuamorrissey/wow_server_go/worldserver/data/object"
+	"github.com/jeshuamorrissey/wow_server_go/worldserver/data/dynamic/interfaces"
+	"github.com/jeshuamorrissey/wow_server_go/worldserver/data/static"
 	"github.com/jeshuamorrissey/wow_server_go/worldserver/system"
 )
 
 // ClientNameQuery is sent from the client periodically.
 type ClientNameQuery struct {
-	GUID object.GUID
+	GUID interfaces.GUID
 }
 
 // FromBytes reads packet data from the given buffer.
@@ -30,6 +31,6 @@ func (pkt *ClientNameQuery) Handle(state *system.State) ([]system.ServerPacket, 
 }
 
 // OpCode gets the opcode of the packet.
-func (*ClientNameQuery) OpCode() system.OpCode {
-	return system.OpCodeClientNameQuery
+func (*ClientNameQuery) OpCode() static.OpCode {
+	return static.OpCodeClientNameQuery
 }

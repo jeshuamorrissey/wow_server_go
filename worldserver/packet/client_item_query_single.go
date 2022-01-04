@@ -4,15 +4,15 @@ import (
 	"encoding/binary"
 	"io"
 
-	"github.com/jeshuamorrissey/wow_server_go/worldserver/data/dbc"
-	"github.com/jeshuamorrissey/wow_server_go/worldserver/data/object"
+	"github.com/jeshuamorrissey/wow_server_go/worldserver/data/dynamic/interfaces"
+	"github.com/jeshuamorrissey/wow_server_go/worldserver/data/static"
 	"github.com/jeshuamorrissey/wow_server_go/worldserver/system"
 )
 
 // ClientItemQuerySingle is sent from the client periodically.
 type ClientItemQuerySingle struct {
 	Entry uint32
-	GUID  object.GUID
+	GUID  interfaces.GUID
 }
 
 // FromBytes reads packet data from the given buffer.
@@ -28,17 +28,13 @@ func (pkt *ClientItemQuerySingle) Handle(state *system.State) ([]system.ServerPa
 
 	response.Entry = pkt.Entry
 	response.Item = nil
-	if item, ok := dbc.Items[int(pkt.Entry)]; ok {
+	if item, ok := static.Items[int(pkt.Entry)]; ok {
 		response.Item = item
 	} else if pkt.GUID != 0 && state.OM.Exists(pkt.GUID) {
-		itemObjGeneric := state.OM.Get(pkt.GUID)
-		if itemObjGeneric != nil {
-			switch itemObj := itemObjGeneric.(type) {
-			case *object.Item:
-				response.Item = itemObj.Template()
-			case *object.Container:
-				response.Item = itemObj.Template()
-			}
+		if item := state.OM.GetItem(pkt.GUID); item != nil {
+			response.Item = item.GetTemplate()
+		} else if container := state.OM.GetContainer(pkt.GUID); container != nil {
+			response.Item = container.GetTemplate()
 		}
 	}
 
@@ -46,6 +42,6 @@ func (pkt *ClientItemQuerySingle) Handle(state *system.State) ([]system.ServerPa
 }
 
 // OpCode gets the opcode of the packet.
-func (*ClientItemQuerySingle) OpCode() system.OpCode {
-	return system.OpCodeClientItemQuerySingle
+func (*ClientItemQuerySingle) OpCode() static.OpCode {
+	return static.OpCodeClientItemQuerySingle
 }

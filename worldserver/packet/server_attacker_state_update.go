@@ -4,20 +4,20 @@ import (
 	"bytes"
 	"encoding/binary"
 
-	c "github.com/jeshuamorrissey/wow_server_go/worldserver/data/dbc/constants"
-	"github.com/jeshuamorrissey/wow_server_go/worldserver/data/object"
+	"github.com/jeshuamorrissey/wow_server_go/worldserver/data/dynamic/interfaces"
+	"github.com/jeshuamorrissey/wow_server_go/worldserver/data/static"
 	"github.com/jeshuamorrissey/wow_server_go/worldserver/system"
 )
 
 // ServerAttackerStateUpdate is sent back in response to ClientPing.
 type ServerAttackerStateUpdate struct {
-	HitInfo        c.HitInfo
-	Attacker       object.GUID
-	Target         object.GUID
+	HitInfo        static.HitInfo
+	Attacker       interfaces.GUID
+	Target         interfaces.GUID
 	Damage         int32
 	OriginalDamage int32
 	OverDamage     int32
-	TargetState    c.AttackTargetState
+	TargetState    static.AttackTargetState
 	AttackerState  uint32
 	MeleeSpellID   uint32
 	BlockAmount    uint32
@@ -37,11 +37,11 @@ func (pkt *ServerAttackerStateUpdate) ToBytes(state *system.State) ([]byte, erro
 	is_sub_damage := 1
 	binary.Write(buffer, binary.LittleEndian, uint8(is_sub_damage)) // TODO: SubDamage
 	if is_sub_damage != 0 {
-		binary.Write(buffer, binary.LittleEndian, uint32(c.SpellSchoolPhysical)) // Damage school mask
-		binary.Write(buffer, binary.LittleEndian, float32(pkt.Damage))           // sub damage
-		binary.Write(buffer, binary.LittleEndian, uint32(pkt.Damage))            // sub damage
-		binary.Write(buffer, binary.LittleEndian, int32(pkt.Absorb))             // absorbed
-		binary.Write(buffer, binary.LittleEndian, int32(0))                      // reissted
+		binary.Write(buffer, binary.LittleEndian, uint32(static.SpellSchoolPhysical)) // Damage school mask
+		binary.Write(buffer, binary.LittleEndian, float32(pkt.Damage))                // sub damage
+		binary.Write(buffer, binary.LittleEndian, uint32(pkt.Damage))                 // sub damage
+		binary.Write(buffer, binary.LittleEndian, int32(pkt.Absorb))                  // absorbed
+		binary.Write(buffer, binary.LittleEndian, int32(0))                           // reissted
 	}
 
 	binary.Write(buffer, binary.LittleEndian, uint8(pkt.TargetState))
@@ -58,6 +58,6 @@ func (pkt *ServerAttackerStateUpdate) ToBytes(state *system.State) ([]byte, erro
 }
 
 // OpCode gets the opcode of the packet.
-func (*ServerAttackerStateUpdate) OpCode() system.OpCode {
-	return system.OpCodeServerAttackerstateupdate
+func (*ServerAttackerStateUpdate) OpCode() static.OpCode {
+	return static.OpCodeServerAttackerstateupdate
 }

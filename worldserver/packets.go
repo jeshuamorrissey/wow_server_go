@@ -1,40 +1,41 @@
 package worldserver
 
 import (
+	"github.com/jeshuamorrissey/wow_server_go/worldserver/data/static"
 	"github.com/jeshuamorrissey/wow_server_go/worldserver/packet"
 	"github.com/jeshuamorrissey/wow_server_go/worldserver/system"
 )
 
 var (
-	opCodeToPacket = map[system.OpCode]func() system.ClientPacket{
-		system.OpCodeClientAuthSession:       func() system.ClientPacket { return new(packet.ClientAuthSession) },
-		system.OpCodeClientCharCreate:        func() system.ClientPacket { return new(packet.ClientCharCreate) },
-		system.OpCodeClientCharDelete:        func() system.ClientPacket { return new(packet.ClientCharDelete) },
-		system.OpCodeClientCharEnum:          func() system.ClientPacket { return new(packet.ClientCharEnum) },
-		system.OpCodeClientCreatureQuery:     func() system.ClientPacket { return new(packet.ClientCreatureQuery) },
-		system.OpCodeClientItemQuerySingle:   func() system.ClientPacket { return new(packet.ClientItemQuerySingle) },
-		system.OpCodeClientLogoutRequest:     func() system.ClientPacket { return new(packet.ClientLogoutRequest) },
-		system.OpCodeClientNameQuery:         func() system.ClientPacket { return new(packet.ClientNameQuery) },
-		system.OpCodeClientPing:              func() system.ClientPacket { return new(packet.ClientPing) },
-		system.OpCodeClientPlayerLogin:       func() system.ClientPacket { return new(packet.ClientPlayerLogin) },
-		system.OpCodeClientQueryTime:         func() system.ClientPacket { return new(packet.ClientQueryTime) },
-		system.OpCodeClientSetActiveMover:    func() system.ClientPacket { return new(packet.ClientSetActiveMover) },
-		system.OpCodeClientStandstatechange:  func() system.ClientPacket { return new(packet.ClientStandStateChange) },
-		system.OpCodeClientTutorialFlag:      func() system.ClientPacket { return new(packet.ClientTutorialFlag) },
-		system.OpCodeClientUpdateAccountData: func() system.ClientPacket { return new(packet.ClientUpdateAccountData) },
-		system.OpCodeClientAttackswing:       func() system.ClientPacket { return new(packet.ClientAttackSwing) },
+	opCodeToPacket = map[static.OpCode]func() system.ClientPacket{
+		static.OpCodeClientAuthSession:       func() system.ClientPacket { return new(packet.ClientAuthSession) },
+		static.OpCodeClientCharCreate:        func() system.ClientPacket { return new(packet.ClientCharCreate) },
+		static.OpCodeClientCharDelete:        func() system.ClientPacket { return new(packet.ClientCharDelete) },
+		static.OpCodeClientCharEnum:          func() system.ClientPacket { return new(packet.ClientCharEnum) },
+		static.OpCodeClientCreatureQuery:     func() system.ClientPacket { return new(packet.ClientCreatureQuery) },
+		static.OpCodeClientItemQuerySingle:   func() system.ClientPacket { return new(packet.ClientItemQuerySingle) },
+		static.OpCodeClientLogoutRequest:     func() system.ClientPacket { return new(packet.ClientLogoutRequest) },
+		static.OpCodeClientNameQuery:         func() system.ClientPacket { return new(packet.ClientNameQuery) },
+		static.OpCodeClientPing:              func() system.ClientPacket { return new(packet.ClientPing) },
+		static.OpCodeClientPlayerLogin:       func() system.ClientPacket { return new(packet.ClientPlayerLogin) },
+		static.OpCodeClientQueryTime:         func() system.ClientPacket { return new(packet.ClientQueryTime) },
+		static.OpCodeClientSetActiveMover:    func() system.ClientPacket { return new(packet.ClientSetActiveMover) },
+		static.OpCodeClientStandstatechange:  func() system.ClientPacket { return new(packet.ClientStandStateChange) },
+		static.OpCodeClientTutorialFlag:      func() system.ClientPacket { return new(packet.ClientTutorialFlag) },
+		static.OpCodeClientUpdateAccountData: func() system.ClientPacket { return new(packet.ClientUpdateAccountData) },
+		static.OpCodeClientAttackswing:       func() system.ClientPacket { return new(packet.ClientAttackSwing) },
 
 		// Movement packets have the same receiver.
-		system.OpCodeClientMoveHeartbeat:        func() system.ClientPacket { return packet.NewClientMovePacket(system.OpCodeClientMoveHeartbeat) },
-		system.OpCodeClientMoveSetFacing:        func() system.ClientPacket { return packet.NewClientMovePacket(system.OpCodeClientMoveSetFacing) },
-		system.OpCodeClientMoveStartBackward:    func() system.ClientPacket { return packet.NewClientMovePacket(system.OpCodeClientMoveStartBackward) },
-		system.OpCodeClientMoveStartForward:     func() system.ClientPacket { return packet.NewClientMovePacket(system.OpCodeClientMoveStartForward) },
-		system.OpCodeClientMoveStartStrafeLeft:  func() system.ClientPacket { return packet.NewClientMovePacket(system.OpCodeClientMoveStartStrafeLeft) },
-		system.OpCodeClientMoveStartStrafeRight: func() system.ClientPacket { return packet.NewClientMovePacket(system.OpCodeClientMoveStartStrafeRight) },
-		system.OpCodeClientMoveStartTurnLeft:    func() system.ClientPacket { return packet.NewClientMovePacket(system.OpCodeClientMoveStartTurnLeft) },
-		system.OpCodeClientMoveStartTurnRight:   func() system.ClientPacket { return packet.NewClientMovePacket(system.OpCodeClientMoveStartTurnRight) },
-		system.OpCodeClientMoveStop:             func() system.ClientPacket { return packet.NewClientMovePacket(system.OpCodeClientMoveStop) },
-		system.OpCodeClientMoveStopStrafe:       func() system.ClientPacket { return packet.NewClientMovePacket(system.OpCodeClientMoveStopStrafe) },
-		system.OpCodeClientMoveStopTurn:         func() system.ClientPacket { return packet.NewClientMovePacket(system.OpCodeClientMoveStopTurn) },
+		static.OpCodeClientMoveHeartbeat:        func() system.ClientPacket { return packet.NewClientMovePacket(static.OpCodeClientMoveHeartbeat) },
+		static.OpCodeClientMoveSetFacing:        func() system.ClientPacket { return packet.NewClientMovePacket(static.OpCodeClientMoveSetFacing) },
+		static.OpCodeClientMoveStartBackward:    func() system.ClientPacket { return packet.NewClientMovePacket(static.OpCodeClientMoveStartBackward) },
+		static.OpCodeClientMoveStartForward:     func() system.ClientPacket { return packet.NewClientMovePacket(static.OpCodeClientMoveStartForward) },
+		static.OpCodeClientMoveStartStrafeLeft:  func() system.ClientPacket { return packet.NewClientMovePacket(static.OpCodeClientMoveStartStrafeLeft) },
+		static.OpCodeClientMoveStartStrafeRight: func() system.ClientPacket { return packet.NewClientMovePacket(static.OpCodeClientMoveStartStrafeRight) },
+		static.OpCodeClientMoveStartTurnLeft:    func() system.ClientPacket { return packet.NewClientMovePacket(static.OpCodeClientMoveStartTurnLeft) },
+		static.OpCodeClientMoveStartTurnRight:   func() system.ClientPacket { return packet.NewClientMovePacket(static.OpCodeClientMoveStartTurnRight) },
+		static.OpCodeClientMoveStop:             func() system.ClientPacket { return packet.NewClientMovePacket(static.OpCodeClientMoveStop) },
+		static.OpCodeClientMoveStopStrafe:       func() system.ClientPacket { return packet.NewClientMovePacket(static.OpCodeClientMoveStopStrafe) },
+		static.OpCodeClientMoveStopTurn:         func() system.ClientPacket { return packet.NewClientMovePacket(static.OpCodeClientMoveStopTurn) },
 	}
 )

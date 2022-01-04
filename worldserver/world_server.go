@@ -5,16 +5,16 @@ import (
 	"net"
 	"strconv"
 
-	c "github.com/jeshuamorrissey/wow_server_go/worldserver/data/dbc/constants"
-	"github.com/jeshuamorrissey/wow_server_go/worldserver/data/object"
-	"github.com/jeshuamorrissey/wow_server_go/worldserver/data/world"
+	"github.com/jeshuamorrissey/wow_server_go/worldserver/data/config"
+	"github.com/jeshuamorrissey/wow_server_go/worldserver/data/dynamic/interfaces"
+	"github.com/jeshuamorrissey/wow_server_go/worldserver/data/static"
 	"github.com/jeshuamorrissey/wow_server_go/worldserver/system"
 
 	"github.com/jeshuamorrissey/wow_server_go/worldserver/packet"
 	"github.com/sirupsen/logrus"
 )
 
-func makeSession(config *world.WorldConfig, reader io.Reader, writer io.Writer, log *logrus.Entry, updater *system.Updater, combatManager *system.CombatManager) *system.Session {
+func makeSession(config *config.Config, reader io.Reader, writer io.Writer, log *logrus.Entry, updater *system.Updater, combatManager *system.CombatManager) *system.Session {
 	return system.NewSession(
 		reader,
 		writer,
@@ -38,20 +38,20 @@ func makeObjectUpdatePacket(outOfRangeUpdate system.OutOfRangeUpdate, objectUpda
 	}
 }
 
-func makeAttackerStateUpdatePacker(attacker object.GUID, target object.GUID, attackInfo object.AttackInfo) system.ServerPacket {
+func makeAttackerStateUpdatePacker(attacker interfaces.GUID, target interfaces.GUID, attackInfo interfaces.AttackInfo) system.ServerPacket {
 	return &packet.ServerAttackerStateUpdate{
-		HitInfo:      c.HitInfoNormalSwing,
+		HitInfo:      static.HitInfoNormalSwing,
 		Attacker:     attacker,
 		Target:       target,
 		Damage:       int32(attackInfo.Damage),
-		TargetState:  c.AttackTargetStateHit,
+		TargetState:  static.AttackTargetStateHit,
 		MeleeSpellID: 0,
 	}
 }
 
 // RunWorldServer takes as input a database and runs an world server referencing
 // it.
-func RunWorldServer(realmName string, port int, config *world.WorldConfig) {
+func RunWorldServer(realmName string, port int, config *config.Config) {
 	log := logrus.WithFields(logrus.Fields{"server": "WORLD", "port": port})
 	log.Logger.SetLevel(logrus.TraceLevel)
 

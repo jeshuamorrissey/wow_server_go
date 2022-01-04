@@ -6,10 +6,9 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/jeshuamorrissey/wow_server_go/worldserver/data/dbc"
-	c "github.com/jeshuamorrissey/wow_server_go/worldserver/data/dbc/constants"
-	"github.com/jeshuamorrissey/wow_server_go/worldserver/data/world"
-	"github.com/jeshuamorrissey/wow_server_go/worldserver/data/world/initial_data"
+	"github.com/jeshuamorrissey/wow_server_go/tools/new_game/initial_data"
+	"github.com/jeshuamorrissey/wow_server_go/worldserver/data/config"
+	"github.com/jeshuamorrissey/wow_server_go/worldserver/data/static"
 )
 
 func main() {
@@ -24,14 +23,14 @@ func main() {
 	}
 
 	// Make an empty configuration file.
-	config := world.NewWorldConfig(name)
+	config := config.NewConfig(name)
 
 	// Make a character.
 	var err error
 	config.Accounts[0].Character, err = initial_data.NewCharacter(
 		config,
 		"Jeshua",
-		dbc.RaceHuman, dbc.ClassWarrior, c.GenderMale,
+		static.RaceHuman, static.ClassWarrior, static.GenderMale,
 		1, 1, 1, 1, 1)
 	if err != nil {
 		log.Fatalf("Failed to create character: %v", err)

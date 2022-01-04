@@ -4,13 +4,13 @@ import (
 	"encoding/binary"
 	"io"
 
-	c "github.com/jeshuamorrissey/wow_server_go/worldserver/data/dbc/constants"
+	"github.com/jeshuamorrissey/wow_server_go/worldserver/data/static"
 	"github.com/jeshuamorrissey/wow_server_go/worldserver/system"
 )
 
 // ClientCharDelete is sent from the client when deleting a character.
 type ClientCharDelete struct {
-	HighGUID c.HighGUID
+	HighGUID static.HighGUID
 	ID       uint32
 }
 
@@ -24,11 +24,11 @@ func (pkt *ClientCharDelete) FromBytes(state *system.State, buffer io.Reader) er
 // Handle will ensure that the given account exists.
 func (pkt *ClientCharDelete) Handle(state *system.State) ([]system.ServerPacket, error) {
 	response := new(ServerCharDelete)
-	response.Error = c.CharErrorCodeDeleteFailed
+	response.Error = static.CharErrorCodeDeleteFailed
 	return []system.ServerPacket{response}, nil
 }
 
 // OpCode returns the opcode for this packet.
-func (pkt *ClientCharDelete) OpCode() system.OpCode {
-	return system.OpCodeClientCharDelete
+func (pkt *ClientCharDelete) OpCode() static.OpCode {
+	return static.OpCodeClientCharDelete
 }

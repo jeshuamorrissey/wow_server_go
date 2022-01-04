@@ -4,15 +4,15 @@ import (
 	"encoding/binary"
 	"io"
 
-	"github.com/jeshuamorrissey/wow_server_go/worldserver/data/dbc"
-	"github.com/jeshuamorrissey/wow_server_go/worldserver/data/object"
+	"github.com/jeshuamorrissey/wow_server_go/worldserver/data/dynamic/interfaces"
+	"github.com/jeshuamorrissey/wow_server_go/worldserver/data/static"
 	"github.com/jeshuamorrissey/wow_server_go/worldserver/system"
 )
 
 // ClientCreatureQuery is sent from the client periodically.
 type ClientCreatureQuery struct {
 	Entry uint32
-	GUID  object.GUID
+	GUID  interfaces.GUID
 }
 
 // FromBytes reads packet data from the given buffer.
@@ -27,11 +27,11 @@ func (pkt *ClientCreatureQuery) Handle(state *system.State) ([]system.ServerPack
 	response := new(ServerCreatureQueryResponse)
 
 	response.Unit = nil
-	if unit, ok := dbc.Units[int(pkt.Entry)]; ok {
+	if unit, ok := static.Units[int(pkt.Entry)]; ok {
 		response.Unit = unit
 		response.Entry = pkt.Entry
 	} else if pkt.GUID != 0 && state.OM.Exists(pkt.GUID) {
-		response.Unit = state.OM.Get(pkt.GUID).(*object.Unit).Template()
+		response.Unit = state.OM.GetUnit(pkt.GUID).Template()
 		response.Entry = uint32(response.Unit.Entry)
 	}
 
@@ -39,6 +39,6 @@ func (pkt *ClientCreatureQuery) Handle(state *system.State) ([]system.ServerPack
 }
 
 // OpCode gets the opcode of the packet.
-func (*ClientCreatureQuery) OpCode() system.OpCode {
-	return system.OpCodeClientCreatureQuery
+func (*ClientCreatureQuery) OpCode() static.OpCode {
+	return static.OpCodeClientCreatureQuery
 }

@@ -3,6 +3,7 @@ package packet
 import (
 	"io"
 
+	"github.com/jeshuamorrissey/wow_server_go/worldserver/data/static"
 	"github.com/jeshuamorrissey/wow_server_go/worldserver/system"
 )
 
@@ -23,6 +24,6 @@ func (pkt *ClientCharEnum) Handle(state *system.State) ([]system.ServerPacket, e
 }
 
 // OpCode returns the opcode for this packet.
-func (pkt *ClientCharEnum) OpCode() system.OpCode {
-	return system.OpCodeClientCharEnum
+func (pkt *ClientCharEnum) OpCode() static.OpCode {
+	return static.OpCodeClientCharEnum
 }

@@ -7,7 +7,7 @@ import (
 	"strings"
 
 	"github.com/jeshuamorrissey/wow_server_go/common/session"
-	"github.com/jeshuamorrissey/wow_server_go/worldserver/data/world"
+	"github.com/jeshuamorrissey/wow_server_go/worldserver/data/config"
 	"github.com/sirupsen/logrus"
 )
 
@@ -16,8 +16,8 @@ import (
 func RunServer(
 	name string,
 	port int,
-	config *world.WorldConfig,
-	makeSession func(io.Reader, io.Writer, *logrus.Entry, *world.WorldConfig) *session.Session,
+	config *config.Config,
+	makeSession func(io.Reader, io.Writer, *logrus.Entry, *config.Config) *session.Session,
 	setupSession func(*session.Session)) {
 	log := logrus.WithFields(logrus.Fields{"server": name, "port": port})
 

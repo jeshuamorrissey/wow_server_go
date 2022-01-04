@@ -4,13 +4,14 @@ import (
 	"encoding/binary"
 	"io"
 
-	"github.com/jeshuamorrissey/wow_server_go/worldserver/data/object"
+	"github.com/jeshuamorrissey/wow_server_go/worldserver/data/dynamic/interfaces"
+	"github.com/jeshuamorrissey/wow_server_go/worldserver/data/static"
 	"github.com/jeshuamorrissey/wow_server_go/worldserver/system"
 )
 
 // ClientPlayerLogin is sent from the client periodically.
 type ClientPlayerLogin struct {
-	GUID object.GUID
+	GUID interfaces.GUID
 }
 
 // FromBytes reads packet data from the given buffer.
@@ -26,7 +27,7 @@ func (pkt *ClientPlayerLogin) Handle(state *system.State) ([]system.ServerPacket
 		return []system.ServerPacket{}, nil
 	}
 
-	player := state.OM.Get(pkt.GUID).(*object.Player)
+	player := state.OM.GetPlayer(pkt.GUID)
 	state.Updater.Login(player.GUID(), state.Session)
 	state.Character = player
 
@@ -44,6 +45,6 @@ func (pkt *ClientPlayerLogin) Handle(state *system.State) ([]system.ServerPacket
 }
 
 // OpCode gets the opcode of the packet.
-func (*ClientPlayerLogin) OpCode() system.OpCode {
-	return system.OpCodeClientPlayerLogin
+func (*ClientPlayerLogin) OpCode() static.OpCode {
+	return static.OpCodeClientPlayerLogin
 }

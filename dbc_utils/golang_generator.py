@@ -22,7 +22,7 @@ from dbc import dbc
 def gen_golang_file(chunks: List[bytes], init_function_names: List[str]) -> bytes:
     """Convert the table to a Golang file."""
     args = {
-        'package': 'dbc',
+        'package': 'static',
         'chunks': chunks,
         'init_function_names': init_function_names,
     }

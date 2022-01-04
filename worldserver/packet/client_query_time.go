@@ -3,6 +3,7 @@ package packet
 import (
 	"io"
 
+	"github.com/jeshuamorrissey/wow_server_go/worldserver/data/static"
 	"github.com/jeshuamorrissey/wow_server_go/worldserver/system"
 )
 
@@ -20,6 +21,6 @@ func (pkt *ClientQueryTime) Handle(state *system.State) ([]system.ServerPacket, 
 }
 
 // OpCode gets the opcode of the packet.
-func (*ClientQueryTime) OpCode() system.OpCode {
-	return system.OpCodeClientQueryTime
+func (*ClientQueryTime) OpCode() static.OpCode {
+	return static.OpCodeClientQueryTime
 }

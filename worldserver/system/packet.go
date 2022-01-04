@@ -2,12 +2,14 @@ package system
 
 import (
 	"io"
+
+	"github.com/jeshuamorrissey/wow_server_go/worldserver/data/static"
 )
 
 // Packet is a generic packet.
 type Packet interface {
 	// OpCode returns the opcode for the given packet as an int.
-	OpCode() OpCode
+	OpCode() static.OpCode
 }
 
 // ServerPacket is a packet sent from this server to a client.

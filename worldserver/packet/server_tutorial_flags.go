@@ -6,6 +6,7 @@ import (
 
 	"github.com/jeshuamorrissey/wow_server_go/common"
 
+	"github.com/jeshuamorrissey/wow_server_go/worldserver/data/static"
 	"github.com/jeshuamorrissey/wow_server_go/worldserver/system"
 )
 
@@ -30,6 +31,6 @@ func (pkt *ServerTutorialFlags) ToBytes(state *system.State) ([]byte, error) {
 }
 
 // OpCode gets the opcode of the packet.
-func (*ServerTutorialFlags) OpCode() system.OpCode {
-	return system.OpCodeServerTutorialFlags
+func (*ServerTutorialFlags) OpCode() static.OpCode {
+	return static.OpCodeServerTutorialFlags
 }

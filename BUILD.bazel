@@ -37,8 +37,7 @@ go_library(
     deps = [
         "//authserver",
         "//worldserver",
-        "//worldserver/data/world",
-        "@com_github_mattn_go_sqlite3//:go-sqlite3",
+        "//worldserver/data/config",
         "@com_github_sirupsen_logrus//:logrus",
     ],
 )

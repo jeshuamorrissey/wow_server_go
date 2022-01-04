@@ -4,14 +4,15 @@ import (
 	"encoding/binary"
 	"io"
 
-	"github.com/jeshuamorrissey/wow_server_go/worldserver/data/object"
+	"github.com/jeshuamorrissey/wow_server_go/worldserver/data/dynamic/interfaces"
+	"github.com/jeshuamorrissey/wow_server_go/worldserver/data/static"
 
 	"github.com/jeshuamorrissey/wow_server_go/worldserver/system"
 )
 
 // ClientSetActiveMover is sent from the client periodically.
 type ClientSetActiveMover struct {
-	GUID object.GUID
+	GUID interfaces.GUID
 }
 
 // FromBytes reads packet data from the given buffer.
@@ -30,6 +31,6 @@ func (pkt *ClientSetActiveMover) Handle(state *system.State) ([]system.ServerPac
 }
 
 // OpCode gets the opcode of the packet.
-func (*ClientSetActiveMover) OpCode() system.OpCode {
-	return system.OpCodeClientSetActiveMover
+func (*ClientSetActiveMover) OpCode() static.OpCode {
+	return static.OpCodeClientSetActiveMover
 }

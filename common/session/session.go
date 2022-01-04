@@ -6,9 +6,9 @@ import (
 	"io"
 
 	"github.com/jeshuamorrissey/wow_server_go/common"
-	c "github.com/jeshuamorrissey/wow_server_go/worldserver/data/dbc/constants"
-	"github.com/jeshuamorrissey/wow_server_go/worldserver/data/object"
-	"github.com/jeshuamorrissey/wow_server_go/worldserver/data/world"
+	"github.com/jeshuamorrissey/wow_server_go/worldserver/data/config"
+	"github.com/jeshuamorrissey/wow_server_go/worldserver/data/dynamic/interfaces"
+	"github.com/jeshuamorrissey/wow_server_go/worldserver/data/static"
 	"github.com/sirupsen/logrus"
 )
 
@@ -22,7 +22,7 @@ type OpCode interface {
 // with the session. This state will vary depending on the server.
 type State interface {
 	// Config should return a reference to the world config object.
-	Config() *world.WorldConfig
+	Config() *config.Config
 
 	// Log returns a reference to the logger to use.
 	Log() *logrus.Entry
@@ -57,7 +57,7 @@ type Session struct {
 	output io.Writer
 
 	// Update object field cache.
-	updateFieldCache map[object.GUID]map[c.UpdateField]interface{}
+	updateFieldCache map[interfaces.GUID]map[static.UpdateField]interface{}
 
 	state State
 }

@@ -4,29 +4,29 @@ import (
 	"math/big"
 
 	"github.com/jeshuamorrissey/wow_server_go/common/session"
-	"github.com/jeshuamorrissey/wow_server_go/worldserver/data/world"
+	"github.com/jeshuamorrissey/wow_server_go/worldserver/data/config"
 	"github.com/sirupsen/logrus"
 )
 
 // State represents all information required by the AuthServer.
 type State struct {
-	config  *world.WorldConfig
+	config  *config.Config
 	log     *logrus.Entry
 	session *session.Session
 
 	PublicEphemeral  big.Int
 	PrivateEphemeral big.Int
 
-	Account *world.Account
+	Account *config.Account
 }
 
 // NewState creates a new state based on the given DB connection.
-func NewState(config *world.WorldConfig, log *logrus.Entry) *State {
+func NewState(config *config.Config, log *logrus.Entry) *State {
 	return &State{config: config, log: log}
 }
 
 // DB returns a reference to the Database object stored in this state.
-func (s *State) Config() *world.WorldConfig {
+func (s *State) Config() *config.Config {
 	return s.config
 }
 

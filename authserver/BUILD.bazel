@@ -13,7 +13,7 @@ go_library(
         "//common",
         "//common/server",
         "//common/session",
-        "//worldserver/data/world",
+        "//worldserver/data/config",
         "@com_github_sirupsen_logrus//:logrus",
     ],
 )

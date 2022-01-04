@@ -9,9 +9,9 @@ go_library(
     importpath = "github.com/jeshuamorrissey/wow_server_go/worldserver",
     visibility = ["//visibility:public"],
     deps = [
-        "//worldserver/data/dbc/constants",
-        "//worldserver/data/object",
-        "//worldserver/data/world",
+        "//worldserver/data/config",
+        "//worldserver/data/dynamic/interfaces",
+        "//worldserver/data/static",
         "//worldserver/packet",
         "//worldserver/system",
         "@com_github_sirupsen_logrus//:logrus",

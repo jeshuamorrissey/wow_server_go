@@ -6,7 +6,6 @@ go_library(
         "login_challenge.go",
         "login_constants.go",
         "login_proof.go",
-        "loginerrorcode_string.go",
         "op_code.go",
         "opcode_string.go",
         "realmlist.go",
@@ -18,7 +17,7 @@ go_library(
         "//authserver/srp",
         "//common",
         "//common/session",
-        "//worldserver/data/world",
+        "//worldserver/data/config",
         "@com_github_sirupsen_logrus//:logrus",
     ],
 )

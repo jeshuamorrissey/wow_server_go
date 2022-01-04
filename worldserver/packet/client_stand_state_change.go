@@ -4,13 +4,13 @@ import (
 	"encoding/binary"
 	"io"
 
-	c "github.com/jeshuamorrissey/wow_server_go/worldserver/data/dbc/constants"
+	"github.com/jeshuamorrissey/wow_server_go/worldserver/data/static"
 	"github.com/jeshuamorrissey/wow_server_go/worldserver/system"
 )
 
 // ClientStandStateChange is sent from the client periodically.
 type ClientStandStateChange struct {
-	State c.StandState
+	State static.StandState
 }
 
 // FromBytes reads packet data from the given buffer.
@@ -30,6 +30,6 @@ func (pkt *ClientStandStateChange) Handle(state *system.State) ([]system.ServerP
 }
 
 // OpCode gets the opcode of the packet.
-func (*ClientStandStateChange) OpCode() system.OpCode {
-	return system.OpCodeClientStandstatechange
+func (*ClientStandStateChange) OpCode() static.OpCode {
+	return static.OpCodeClientStandstatechange
 }

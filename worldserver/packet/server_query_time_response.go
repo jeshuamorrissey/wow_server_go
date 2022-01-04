@@ -5,6 +5,7 @@ import (
 	"encoding/binary"
 	"time"
 
+	"github.com/jeshuamorrissey/wow_server_go/worldserver/data/static"
 	"github.com/jeshuamorrissey/wow_server_go/worldserver/system"
 )
 
@@ -21,6 +22,6 @@ func (pkt *ServerQueryTimeResponse) ToBytes(state *system.State) ([]byte, error)
 }
 
 // OpCode gets the opcode of the packet.
-func (*ServerQueryTimeResponse) OpCode() system.OpCode {
-	return system.OpCodeServerQueryTimeResponse
+func (*ServerQueryTimeResponse) OpCode() static.OpCode {
+	return static.OpCodeServerQueryTimeResponse
 }

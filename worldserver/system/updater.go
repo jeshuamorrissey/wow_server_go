@@ -5,8 +5,9 @@ import (
 	"sync"
 	"time"
 
-	c "github.com/jeshuamorrissey/wow_server_go/worldserver/data/dbc/constants"
-	"github.com/jeshuamorrissey/wow_server_go/worldserver/data/object"
+	"github.com/jeshuamorrissey/wow_server_go/worldserver/data/dynamic"
+	"github.com/jeshuamorrissey/wow_server_go/worldserver/data/dynamic/interfaces"
+	"github.com/jeshuamorrissey/wow_server_go/worldserver/data/static"
 	"github.com/sirupsen/logrus"
 )
 
@@ -24,63 +25,63 @@ type MakeUpdateObjectPacketFn func(OutOfRangeUpdate, []ObjectUpdate) ServerPacke
 
 // MakeAttackerStateUpdatePackerFn is a function which takes as input some
 // combat information and returns a ServerPacket that can be sent.
-type MakeAttackerStateUpdatePackerFn func(object.GUID, object.GUID, object.AttackInfo) ServerPacket
+type MakeAttackerStateUpdatePackerFn func(interfaces.GUID, interfaces.GUID, interfaces.AttackInfo) ServerPacket
 
 type updateCache struct {
-	UpdateFields   object.UpdateFieldsMap
+	UpdateFields   interfaces.UpdateFieldsMap
 	MovementUpdate []byte
 }
 
 // OutOfRangeUpdate represents a list of GUIDs which are no longer in range.
 type OutOfRangeUpdate struct {
-	GUIDS []object.GUID
+	GUIDS []interfaces.GUID
 }
 
 // ObjectUpdate represents an update to an individual object.
 type ObjectUpdate struct {
-	GUID        object.GUID
-	UpdateType  c.UpdateType
-	UpdateFlags c.UpdateFlags
+	GUID        interfaces.GUID
+	UpdateType  static.UpdateType
+	UpdateFlags static.UpdateFlags
 	IsSelf      bool
-	TypeID      c.TypeID
+	TypeID      static.TypeID
 
 	MovementUpdate  []byte
 	NumUpdateFields int
-	UpdateFields    object.UpdateFieldsMap
+	UpdateFields    interfaces.UpdateFieldsMap
 
-	VictimGUID object.GUID
+	VictimGUID interfaces.GUID
 	WorldTime  uint32
 }
 
 type loginData struct {
 	Session     *Session
-	UpdateCache map[object.GUID]*updateCache
+	UpdateCache map[interfaces.GUID]*updateCache
 }
 
 // Updater manages sending object updates to sessions based on when objects have been changed.
 type Updater struct {
 	log *logrus.Entry
-	om  *object.Manager
+	om  *dynamic.ObjectManager
 
 	sessionsLock sync.Mutex
-	sessions     map[object.GUID]*loginData // logged in character --> Session
+	sessions     map[interfaces.GUID]*loginData // logged in character --> Session
 
 	toUpdateLock sync.Mutex
-	toUpdate     []object.GUID
+	toUpdate     []interfaces.GUID
 
 	makeUpdateObjectPacketFn        MakeUpdateObjectPacketFn
 	makeAttackerStateUpdatePackerFn MakeAttackerStateUpdatePackerFn
 }
 
 // NewUpdater makes a new updater object.
-func NewUpdater(log *logrus.Entry, om *object.Manager, makeUpdateObjectPacketFn MakeUpdateObjectPacketFn, makeAttackerStateUpdatePacker MakeAttackerStateUpdatePackerFn) *Updater {
+func NewUpdater(log *logrus.Entry, om *dynamic.ObjectManager, makeUpdateObjectPacketFn MakeUpdateObjectPacketFn, makeAttackerStateUpdatePacker MakeAttackerStateUpdatePackerFn) *Updater {
 	u := &Updater{
 		log: log.WithFields(logrus.Fields{
 			"system": "Updater",
 		}),
 		om:                              om,
-		sessions:                        make(map[object.GUID]*loginData),
-		toUpdate:                        make([]object.GUID, 0),
+		sessions:                        make(map[interfaces.GUID]*loginData),
+		toUpdate:                        make([]interfaces.GUID, 0),
 		makeUpdateObjectPacketFn:        makeUpdateObjectPacketFn,
 		makeAttackerStateUpdatePackerFn: makeAttackerStateUpdatePacker,
 	}
@@ -89,7 +90,7 @@ func NewUpdater(log *logrus.Entry, om *object.Manager, makeUpdateObjectPacketFn 
 }
 
 // Login registers the given player as logged in for the given session.
-func (u *Updater) Login(playerGUID object.GUID, session *Session) error {
+func (u *Updater) Login(playerGUID interfaces.GUID, session *Session) error {
 	u.sessionsLock.Lock()
 	defer u.sessionsLock.Unlock()
 
@@ -103,13 +104,13 @@ func (u *Updater) Login(playerGUID object.GUID, session *Session) error {
 
 	u.sessions[playerGUID] = &loginData{
 		Session:     session,
-		UpdateCache: make(map[object.GUID]*updateCache),
+		UpdateCache: make(map[interfaces.GUID]*updateCache),
 	}
 
 	u.log.Tracef("Registered GUID=%v", playerGUID)
 
 	// Mark the player as logged in.
-	u.om.Get(playerGUID).(*object.Player).IsLoggedIn = true
+	u.om.GetPlayer(playerGUID).IsLoggedIn = true
 
 	u.toUpdateLock.Lock()
 	defer u.toUpdateLock.Unlock()
@@ -119,7 +120,7 @@ func (u *Updater) Login(playerGUID object.GUID, session *Session) error {
 }
 
 // Logout deregisters the player.
-func (u *Updater) Logout(playerGUID object.GUID) error {
+func (u *Updater) Logout(playerGUID interfaces.GUID) error {
 	u.sessionsLock.Lock()
 	defer u.sessionsLock.Unlock()
 
@@ -128,7 +129,7 @@ func (u *Updater) Logout(playerGUID object.GUID) error {
 	}
 
 	// Mark the player as logged in.
-	u.om.Get(playerGUID).(*object.Player).IsLoggedIn = false
+	u.om.GetPlayer(playerGUID).IsLoggedIn = false
 
 	delete(u.sessions, playerGUID)
 	return nil
@@ -136,27 +137,35 @@ func (u *Updater) Logout(playerGUID object.GUID) error {
 
 func (u *Updater) makeUpdates(
 	loginData *loginData,
-	playerObj, obj object.Object,
+	player interfaces.Object,
+	objectToUpdate interfaces.Object,
 	outOfRangeUpdate *OutOfRangeUpdate,
 	objectUpdates *[]ObjectUpdate) {
-	if obj.Location() != nil {
-		if obj.Location().Distance(playerObj.Location()) < MaxObjectDistance {
+	if objectToUpdate.GetLocation() != nil {
+		var movementUpdate []byte = nil
+		switch objectToUpdateTyped := objectToUpdate.(type) {
+		case *dynamic.Unit:
+		case *dynamic.Player:
+			movementUpdate = objectToUpdateTyped.MovementUpdate()
+		}
+
+		if objectToUpdate.GetLocation().Distance(player.GetLocation()) < MaxObjectDistance {
 			update := ObjectUpdate{
-				GUID:            obj.GUID(),
-				UpdateFlags:     object.UpdateFlags(obj),
-				IsSelf:          obj.GUID() == playerObj.GUID(),
-				TypeID:          object.TypeID(obj),
-				MovementUpdate:  obj.MovementUpdate(),
-				NumUpdateFields: object.NumUpdateFields(obj),
-				UpdateFields:    obj.UpdateFields(),
+				GUID:            objectToUpdate.GUID(),
+				UpdateFlags:     dynamic.UpdateFlags(objectToUpdate),
+				IsSelf:          objectToUpdate.GUID() == player.GUID(),
+				TypeID:          dynamic.TypeID(objectToUpdate),
+				MovementUpdate:  movementUpdate,
+				NumUpdateFields: dynamic.NumUpdateFields(objectToUpdate),
+				UpdateFields:    objectToUpdate.UpdateFields(),
 				VictimGUID:      0, // TODO: what is this?
 				WorldTime:       0, // TODO: what is this?
 			}
 
 			// If we have seen the object, update it.
-			lastUpdateFields, ok := loginData.UpdateCache[obj.GUID()]
+			lastUpdateFields, ok := loginData.UpdateCache[objectToUpdate.GUID()]
 			if ok {
-				update.UpdateType = c.UpdateTypeValues
+				update.UpdateType = static.UpdateTypeValues
 
 				for k, v := range lastUpdateFields.UpdateFields {
 					if update.UpdateFields[k] == v {
@@ -165,12 +174,12 @@ func (u *Updater) makeUpdates(
 				}
 			} else {
 				if update.MovementUpdate != nil {
-					update.UpdateType = c.UpdateTypeCreateObject2
+					update.UpdateType = static.UpdateTypeCreateObject2
 				} else {
-					update.UpdateType = c.UpdateTypeCreateObject
+					update.UpdateType = static.UpdateTypeCreateObject
 				}
 
-				loginData.UpdateCache[obj.GUID()] = &updateCache{
+				loginData.UpdateCache[objectToUpdate.GUID()] = &updateCache{
 					UpdateFields:   update.UpdateFields,
 					MovementUpdate: update.MovementUpdate,
 				}
@@ -179,17 +188,17 @@ func (u *Updater) makeUpdates(
 			*objectUpdates = append(*objectUpdates, update)
 		} else {
 			// If the object was in range, but no longer is, delete it.
-			if _, ok := loginData.UpdateCache[obj.GUID()]; ok {
-				delete(loginData.UpdateCache, obj.GUID())
-				outOfRangeUpdate.GUIDS = append(outOfRangeUpdate.GUIDS, obj.GUID())
+			if _, ok := loginData.UpdateCache[objectToUpdate.GUID()]; ok {
+				delete(loginData.UpdateCache, objectToUpdate.GUID())
+				outOfRangeUpdate.GUIDS = append(outOfRangeUpdate.GUIDS, objectToUpdate.GUID())
 			}
 		}
 	}
 }
 
-func (u *Updater) updatePlayer(guid object.GUID, loginData *loginData) {
+func (u *Updater) updatePlayer(guid interfaces.GUID, loginData *loginData) {
 	outOfRangeUpdate := OutOfRangeUpdate{
-		GUIDS: make([]object.GUID, 0),
+		GUIDS: make([]interfaces.GUID, 0),
 	}
 
 	objectUpdates := make([]ObjectUpdate, 0)
@@ -197,59 +206,50 @@ func (u *Updater) updatePlayer(guid object.GUID, loginData *loginData) {
 	// Find all objects that are close to this player and make sure they
 	// have been updated.
 	playerObj := u.om.Get(guid)
-	for _, objGeneric := range u.om.Objects {
-		// If the object is a player, and it is not logged in, just ignore it.
-		// Also do this for items on players.
-		switch obj := objGeneric.(type) {
-		case *object.Player:
-			if !obj.IsLoggedIn {
-				continue
-			}
-
-			for _, itemGUID := range obj.Inventory {
-				if u.om.Exists(itemGUID) {
-					u.makeUpdates(loginData, playerObj, u.om.Get(itemGUID), &outOfRangeUpdate, &objectUpdates)
-				}
-			}
-
-			for _, itemGUID := range obj.Equipment {
-				if u.om.Exists(itemGUID) {
-					u.makeUpdates(loginData, playerObj, u.om.Get(itemGUID), &outOfRangeUpdate, &objectUpdates)
-				}
-			}
-
-			for _, bagGUID := range obj.Bags {
-				if u.om.Exists(bagGUID) {
-					bag := u.om.Get(bagGUID).(*object.Container)
-					u.makeUpdates(loginData, playerObj, bag, &outOfRangeUpdate, &objectUpdates)
-					for _, itemGUID := range bag.Items {
-						if u.om.Exists(itemGUID) {
-							u.makeUpdates(loginData, playerObj, u.om.Get(itemGUID), &outOfRangeUpdate, &objectUpdates)
-						}
-					}
-				}
-			}
-		case *object.Item:
-			continue
-		case *object.Container:
+	for _, player := range u.om.Players {
+		if !player.IsLoggedIn {
 			continue
 		}
 
-		u.makeUpdates(loginData, playerObj, objGeneric, &outOfRangeUpdate, &objectUpdates)
+		for _, itemGUID := range player.Inventory {
+			if u.om.Exists(itemGUID) {
+				u.makeUpdates(loginData, playerObj, u.om.GetItem(itemGUID), &outOfRangeUpdate, &objectUpdates)
+			}
+		}
+
+		for _, itemGUID := range player.Equipment {
+			if u.om.Exists(itemGUID) {
+				u.makeUpdates(loginData, playerObj, u.om.GetItem(itemGUID), &outOfRangeUpdate, &objectUpdates)
+			}
+		}
+
+		for _, bagGUID := range player.Bags {
+			if u.om.Exists(bagGUID) {
+				bag := u.om.GetContainer(bagGUID)
+				u.makeUpdates(loginData, playerObj, bag, &outOfRangeUpdate, &objectUpdates)
+				for _, itemGUID := range bag.Items {
+					if u.om.Exists(itemGUID) {
+						u.makeUpdates(loginData, playerObj, u.om.GetItem(itemGUID), &outOfRangeUpdate, &objectUpdates)
+					}
+				}
+			}
+		}
+
+		u.makeUpdates(loginData, playerObj, player, &outOfRangeUpdate, &objectUpdates)
 	}
 
 	pkt := u.makeUpdateObjectPacketFn(outOfRangeUpdate, objectUpdates)
 	loginData.Session.Send(pkt)
 }
 
-func (u *Updater) updateOtherPlayers(guid object.GUID) {
+func (u *Updater) updateOtherPlayers(guid interfaces.GUID) {
 	for playerGUID, loginData := range u.sessions {
 		if playerGUID == guid {
 			continue
 		}
 
 		outOfRangeUpdate := OutOfRangeUpdate{
-			GUIDS: make([]object.GUID, 0),
+			GUIDS: make([]interfaces.GUID, 0),
 		}
 
 		objectUpdates := make([]ObjectUpdate, 0)
@@ -264,13 +264,6 @@ func (u *Updater) updateOtherPlayers(guid object.GUID) {
 // Run starts the updater, which will constantly scan for object updates.
 // Should be run as a goroutine.
 func (u *Updater) Run() {
-	// Register an OnChange event.
-	u.om.AwaitChange(func(guid object.GUID) {
-		u.toUpdateLock.Lock()
-		defer u.toUpdateLock.Unlock()
-		u.toUpdate = append(u.toUpdate, guid)
-	})
-
 	for {
 		time.Sleep(time.Millisecond * 30)
 		u.toUpdateLock.Lock()
@@ -287,20 +280,20 @@ func (u *Updater) Run() {
 			u.updateOtherPlayers(guid)
 		}
 
-		u.toUpdate = make([]object.GUID, 0)
+		u.toUpdate = make([]interfaces.GUID, 0)
 		u.toUpdateLock.Unlock()
 	}
 }
 
-func (u *Updater) SendCombatUpdate(attacker object.UnitInterface, target object.UnitInterface, attackInfo object.AttackInfo) {
+func (u *Updater) SendCombatUpdate(attacker interfaces.Unit, target interfaces.Unit, attackInfo interfaces.AttackInfo) {
 	// Find all players in range of either the attacker or target.
-	for characterGUID, loginData := range u.sessions {
-		character := u.om.Get(characterGUID)
-		if character == nil {
+	for playerGUID, loginData := range u.sessions {
+		player := u.om.Get(playerGUID)
+		if player == nil {
 			continue
 		}
 
-		if attacker.Location().Distance(character.Location()) < MaxObjectDistance || target.Location().Distance(character.Location()) < MaxObjectDistance {
+		if attacker.GetLocation().Distance(player.GetLocation()) < MaxObjectDistance || target.GetLocation().Distance(player.GetLocation()) < MaxObjectDistance {
 			loginData.Session.Send(u.makeAttackerStateUpdatePackerFn(attacker.GUID(), target.GUID(), attackInfo))
 		}
 	}

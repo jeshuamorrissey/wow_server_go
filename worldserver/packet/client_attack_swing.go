@@ -4,14 +4,14 @@ import (
 	"encoding/binary"
 	"io"
 
-	c "github.com/jeshuamorrissey/wow_server_go/worldserver/data/dbc/constants"
-	"github.com/jeshuamorrissey/wow_server_go/worldserver/data/object"
+	"github.com/jeshuamorrissey/wow_server_go/worldserver/data/dynamic/interfaces"
+	"github.com/jeshuamorrissey/wow_server_go/worldserver/data/static"
 	"github.com/jeshuamorrissey/wow_server_go/worldserver/system"
 )
 
 // ClientAttackSwing is sent from the client periodically.
 type ClientAttackSwing struct {
-	Target object.GUID
+	Target interfaces.GUID
 }
 
 // FromBytes reads packet data from the given buffer.
@@ -28,13 +28,11 @@ func (pkt *ClientAttackSwing) Handle(state *system.State) ([]system.ServerPacket
 		return []system.ServerPacket{}, nil
 	}
 
-	state.Log.Infof("Player is attacking %v", target.(*object.Unit).Template().Name)
-
 	// Setup a callback using the battle syste.
-	u1 := state.OM.Get(object.MakeGUID(1, c.HighGUIDUnit))
-	u2 := state.OM.Get(object.MakeGUID(2, c.HighGUIDUnit))
-	state.CombatManager.StartAttack(u1.(object.UnitInterface), u2.(object.UnitInterface))
-	state.CombatManager.StartAttack(u2.(object.UnitInterface), u1.(object.UnitInterface))
+	u1 := state.OM.GetUnit(interfaces.MakeGUID(1, static.HighGUIDUnit))
+	u2 := state.OM.GetUnit(interfaces.MakeGUID(2, static.HighGUIDUnit))
+	state.CombatManager.StartAttack(u1, u2)
+	state.CombatManager.StartAttack(u2, u1)
 
 	return []system.ServerPacket{
 		&ServerAttackStart{Attacker: state.Character.GUID(), Target: target.GUID()},
@@ -42,6 +40,6 @@ func (pkt *ClientAttackSwing) Handle(state *system.State) ([]system.ServerPacket
 }
 
 // OpCode gets the opcode of the packet.
-func (*ClientAttackSwing) OpCode() system.OpCode {
-	return system.OpCodeClientAttackswing
+func (*ClientAttackSwing) OpCode() static.OpCode {
+	return static.OpCodeClientAttackswing
 }

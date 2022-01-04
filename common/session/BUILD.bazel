@@ -10,9 +10,9 @@ go_library(
     visibility = ["//visibility:public"],
     deps = [
         "//common",
-        "//worldserver/data/dbc/constants",
-        "//worldserver/data/object",
-        "//worldserver/data/world",
+        "//worldserver/data/config",
+        "//worldserver/data/dynamic/interfaces",
+        "//worldserver/data/static",
         "@com_github_sirupsen_logrus//:logrus",
     ],
 )

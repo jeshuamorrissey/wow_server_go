@@ -5,7 +5,7 @@ import (
 	"io"
 	"strings"
 
-	c "github.com/jeshuamorrissey/wow_server_go/worldserver/data/dbc/constants"
+	"github.com/jeshuamorrissey/wow_server_go/worldserver/data/static"
 	"github.com/jeshuamorrissey/wow_server_go/worldserver/system"
 )
 
@@ -47,7 +47,7 @@ func (pkt *ClientAuthSession) FromBytes(state *system.State, buffer io.Reader) e
 // Handle will ensure that the given account exists.
 func (pkt *ClientAuthSession) Handle(state *system.State) ([]system.ServerPacket, error) {
 	response := new(ServerAuthResponse)
-	response.Error = c.AuthOK
+	response.Error = static.AuthOK
 
 	for _, account := range state.Config.Accounts {
 		if strings.ToUpper(account.Name) == strings.ToUpper(string(pkt.AccountName)) {
@@ -56,16 +56,16 @@ func (pkt *ClientAuthSession) Handle(state *system.State) ([]system.ServerPacket
 	}
 
 	if state.Account == nil {
-		response.Error = c.AuthUnknownAccount
+		response.Error = static.AuthUnknownAccount
 	}
 
 	// TODO(jeshua): validate the information sent by the client.
 	// If there is no session key, account is invalid.
 	if state.Account != nil && state.Account.SessionKey() == nil {
-		response.Error = c.AuthBadServerProof
+		response.Error = static.AuthBadServerProof
 	}
 
-	if response.Error == c.AuthOK {
+	if response.Error == static.AuthOK {
 		state.Log = state.Log.WithField("account", state.Account.Name)
 		state.Log.Infof("Account %v authenticated!", state.Account.Name)
 	}
@@ -74,6 +74,6 @@ func (pkt *ClientAuthSession) Handle(state *system.State) ([]system.ServerPacket
 }
 
 // OpCode returns the opcode for this packet.
-func (pkt *ClientAuthSession) OpCode() system.OpCode {
-	return system.OpCodeClientAuthSession
+func (pkt *ClientAuthSession) OpCode() static.OpCode {
+	return static.OpCodeClientAuthSession
 }

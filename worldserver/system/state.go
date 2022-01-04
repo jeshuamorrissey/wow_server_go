@@ -1,8 +1,8 @@
 package system
 
 import (
-	"github.com/jeshuamorrissey/wow_server_go/worldserver/data/object"
-	"github.com/jeshuamorrissey/wow_server_go/worldserver/data/world"
+	"github.com/jeshuamorrissey/wow_server_go/worldserver/data/config"
+	"github.com/jeshuamorrissey/wow_server_go/worldserver/data/dynamic"
 	"github.com/sirupsen/logrus"
 )
 
@@ -13,11 +13,11 @@ type State struct {
 
 	Log *logrus.Entry
 
-	Config        *world.WorldConfig
-	OM            *object.Manager
+	Config        *config.Config
+	OM            *dynamic.ObjectManager
 	Updater       *Updater
 	CombatManager *CombatManager
 
-	Account   *world.Account
-	Character *object.Player
+	Account   *config.Account
+	Character *dynamic.Player
 }
