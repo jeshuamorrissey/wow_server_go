@@ -24,7 +24,7 @@ type Item struct {
 	Entry         int
 	Name          string
 	Description   string
-	DisplayID     int
+	DisplayID     DisplayID
 	Class         ItemClass
 	SubClass      ItemSubClass
 	Quality       ItemQuality

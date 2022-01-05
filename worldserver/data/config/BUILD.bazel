@@ -26,6 +26,5 @@ go_library(
         "//authserver/srp",
         "//worldserver/data/dynamic",
         "//worldserver/data/dynamic/interfaces",
-        "//worldserver/data/static",
     ],
 )

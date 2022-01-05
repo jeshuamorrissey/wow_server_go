@@ -2,7 +2,6 @@ package packet
 
 // LoginErrorCode is a common type for all error codes returned
 // during the login process.
-//go:generate stringer -type=LoginErrorCode
 type LoginErrorCode uint8
 
 // ErrorCodes used the login process.

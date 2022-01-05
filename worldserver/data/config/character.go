@@ -2,7 +2,6 @@ package config
 
 import (
 	"github.com/jeshuamorrissey/wow_server_go/worldserver/data/dynamic/interfaces"
-	"github.com/jeshuamorrissey/wow_server_go/worldserver/data/static"
 )
 
 type CharacterSettings struct {
@@ -20,13 +19,13 @@ type Character struct {
 // Flags returns an set of flags based on the character's state.
 func (char *Character) Flags() uint32 {
 	var flags uint32
-	if char.Settings.HideHelm {
-		flags |= uint32(static.CharacterFlagHideHelm)
-	}
+	// if char.Settings.HideHelm {
+	// 	flags |= uint32(static.CharacterFlagHideHelm)
+	// }
 
-	if char.Settings.HideCloak {
-		flags |= uint32(static.CharacterFlagHideCloak)
-	}
+	// if char.Settings.HideCloak {
+	// 	flags |= uint32(static.CharacterFlagHideCloak)
+	// }
 
 	// if char.Settings.IsGhost {
 	// 	flags |= uint32(static.CharacterFlagGhost)

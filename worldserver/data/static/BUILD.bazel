@@ -1,4 +1,5 @@
 load("@io_bazel_rules_go//go:def.bzl", "go_library")
+load("//tools/bazel:gen_strings.bzl", "gen_strings")
 
 genrule(
     name = "dbc_data",
@@ -8,17 +9,48 @@ genrule(
     tools = ["//dbc_utils:golang_generator"],
 )
 
-go_library(
-    name = "dbc",
-    srcs = [
-        "dbc_data.go",
-        "item.go",
-        "starting_items.go",
-        "unit.go",
+gen_strings(
+    name = "enum_strings",
+    srcs = glob(["*.go"]),
+    types = [
+        "AttackTargetState",
+        "AuthErrorCode",
+        "BagFamily",
+        "Bonding",
+        "Byte1Flags",
+        "Byte2Flags",
+        "CharacterFlag",
+        "CharErrorCode",
+        "DisplayID",
+        "EquipmentSlot",
+        "FoodType",
+        "Gender",
+        "HighGUID",
+        "HitInfo",
+        "InventoryType",
+        "ItemClass",
+        "ItemFlag",
+        "ItemPrototypeFlag",
+        "ItemQuality",
+        "ItemSubClass",
+        "Language",
+        "MovementFlag",
+        "OpCode",
+        "PlayerBytes",
+        "PlayerFlag",
+        "Power",
+        "SheathType",
+        "SpellCategory",
+        "SpellSchool",
+        "StandState",
+        "Stat",
+        "Team",
+        "TypeID",
+        "TypeMask",
+        "UpdateField",
+        "UpdateFlags",
+        "UpdateType",
     ],
-    importpath = "github.com/jeshuamorrissey/wow_server_go/worldserver/data/dbc",
-    visibility = ["//visibility:public"],
-    deps = ["//worldserver/data/dbc/constants"],
 )
 
 go_library(
@@ -31,6 +63,7 @@ go_library(
         "op_code.go",
         "starting_items.go",
         "unit.go",
+        ":enum_strings",  # keep
     ],
     importpath = "github.com/jeshuamorrissey/wow_server_go/worldserver/data/static",
     visibility = ["//visibility:public"],

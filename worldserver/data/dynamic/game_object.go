@@ -7,14 +7,14 @@ import (
 
 // GameObject represents a generic game object.
 type GameObject struct {
-	guid   interfaces.GUID
+	ID     interfaces.GUID
 	Entry  uint32
 	ScaleX float32
 }
 
 // Object interface methods.
-func (o *GameObject) GUID() interfaces.GUID             { return o.guid }
-func (o *GameObject) SetGUID(guid interfaces.GUID)      { o.guid = guid }
+func (o *GameObject) GUID() interfaces.GUID             { return o.ID }
+func (o *GameObject) SetGUID(guid interfaces.GUID)      { o.ID = guid }
 func (o *GameObject) GetLocation() *interfaces.Location { return nil }
 
 func (o *GameObject) UpdateFields() interfaces.UpdateFieldsMap {

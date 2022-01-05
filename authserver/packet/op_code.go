@@ -1,7 +1,6 @@
 package packet
 
 // OpCode is the opcode type used by the auth server.
-//go:generate stringer -type=OpCode -trimprefix=OpCode
 type OpCode int
 
 // OpCodes used by the AuthServer.

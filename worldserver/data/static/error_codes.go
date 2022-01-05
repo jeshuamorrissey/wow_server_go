@@ -2,7 +2,6 @@ package static
 
 // CharErrorCode is a common type for all error codes returned
 // during the character creation/deletion process.
-//go:generate stringer -type=CharErrorCode -trimprefix=CharErrorCode
 type CharErrorCode uint8
 
 // ErrorCodes used the character creation/deletion process.
@@ -43,7 +42,6 @@ const (
 
 // AuthErrorCode is a common type for all error codes returned
 // during the login process.
-//go:generate stringer -type=AuthErrorCode
 type AuthErrorCode uint8
 
 // ErrorCodes used the login process.

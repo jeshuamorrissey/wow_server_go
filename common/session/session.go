@@ -15,7 +15,6 @@ import (
 // OpCode is an integer type which is used to distinguish which packets are which.
 type OpCode interface {
 	Int() int
-	String() string
 }
 
 // State is a generic interface which represents some data that needs to be stored
@@ -95,14 +94,14 @@ func (s *Session) readPacket(buffer io.Reader) (ClientPacket, error) {
 
 	builder, ok := s.opCodeToPacket[opCode]
 	if !ok {
-		s.log.Warnf("<-- %v [UNHANDLED]", opCode.String())
+		s.log.Warnf("<-- %v [UNHANDLED]", opCode)
 		return nil, nil
 	}
 
 	pkt := builder()
 	pkt.Read(bytes.NewReader(data))
 
-	s.log.Tracef("<-- %v", opCode.String())
+	s.log.Tracef("<-- %v", opCode)
 
 	return pkt, nil
 }
@@ -114,7 +113,7 @@ func (s *Session) AddLogField(key string, value interface{}) {
 
 // SendPacket will send a packet back to the given output.
 func (s *Session) SendPacket(pkt ServerPacket) error {
-	s.log.Tracef("--> %v", pkt.OpCode().String())
+	s.log.Tracef("--> %v", pkt.OpCode())
 
 	// Write the header.
 	pktData := pkt.Bytes(s.state)

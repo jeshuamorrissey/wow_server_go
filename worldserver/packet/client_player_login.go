@@ -22,6 +22,7 @@ func (pkt *ClientPlayerLogin) FromBytes(state *system.State, buffer io.Reader) e
 
 // Handle will ensure that the given account exists.
 func (pkt *ClientPlayerLogin) Handle(state *system.State) ([]system.ServerPacket, error) {
+	state.Log.Infof("%v %v", pkt, state.OM.Players)
 	if !state.OM.Exists(pkt.GUID) {
 		state.Log.Errorf("Attempt to log in with unknown GUID %v!", pkt.GUID)
 		return []system.ServerPacket{}, nil

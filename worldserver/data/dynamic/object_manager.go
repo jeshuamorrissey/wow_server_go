@@ -98,25 +98,25 @@ func (m *ObjectManager) Add(object interfaces.Object) {
 		m.Containers[objectTyped.GUID()] = objectTyped
 	case *GameObject:
 		if objectTyped.GUID() == 0 {
-			objectTyped.SetGUID(m.getNextID(static.HighGUIDContainer))
+			objectTyped.SetGUID(m.getNextID(static.HighGUIDGameobject))
 		}
 
 		m.GameObjects[objectTyped.GUID()] = objectTyped
 	case *Item:
 		if objectTyped.GUID() == 0 {
-			objectTyped.SetGUID(m.getNextID(static.HighGUIDContainer))
+			objectTyped.SetGUID(m.getNextID(static.HighGUIDItem))
 		}
 
 		m.Items[objectTyped.GUID()] = objectTyped
 	case *Player:
 		if objectTyped.GUID() == 0 {
-			objectTyped.SetGUID(m.getNextID(static.HighGUIDContainer))
+			objectTyped.SetGUID(m.getNextID(static.HighGUIDPlayer))
 		}
 
 		m.Players[objectTyped.GUID()] = objectTyped
 	case *Unit:
 		if objectTyped.GUID() == 0 {
-			objectTyped.SetGUID(m.getNextID(static.HighGUIDContainer))
+			objectTyped.SetGUID(m.getNextID(static.HighGUIDUnit))
 		}
 
 		m.Units[objectTyped.GUID()] = objectTyped

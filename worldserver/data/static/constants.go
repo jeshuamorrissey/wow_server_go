@@ -33,7 +33,6 @@ func (c Coins) Gold() int {
 }
 
 // SpellSchool information.
-//go:generate stringer -type=SpellSchool -trimprefix=SpellSchool
 type SpellSchool uint8
 
 // SpellSchool values.
@@ -48,7 +47,6 @@ const (
 )
 
 // BagFamily information.
-//go:generate stringer -type=BagFamily -trimprefix=BagFamily
 type BagFamily uint8
 
 // BagFamily values.
@@ -66,7 +64,6 @@ const (
 )
 
 // Bonding information.
-//go:generate stringer -type=Bonding -trimprefix=Bonding
 type Bonding uint8
 
 // Bonding values.
@@ -79,7 +76,6 @@ const (
 )
 
 // ItemClass information.
-//go:generate stringer -type=ItemClass -trimprefix=ItemClass
 type ItemClass uint8
 
 // ItemClass values.
@@ -99,7 +95,6 @@ const (
 )
 
 // ItemSubClass information.
-//go:generate stringer -type=ItemSubClass -trimprefix=ItemSubClass
 type ItemSubClass uint8
 
 // ItemSubClass values.
@@ -185,7 +180,6 @@ const (
 )
 
 // FoodType information.
-//go:generate stringer -type=FoodType -trimprefix=FoodType
 type FoodType uint8
 
 // FoodType values.
@@ -201,7 +195,6 @@ const (
 )
 
 // InventoryType information.
-//go:generate stringer -type=InventoryType -trimprefix=InventoryType
 type InventoryType uint8
 
 // InventoryType values.
@@ -238,7 +231,6 @@ const (
 )
 
 // Language information.
-//go:generate stringer -type=Language -trimprefix=Language
 type Language uint8
 
 // Language values.
@@ -260,7 +252,6 @@ const (
 )
 
 // ItemQuality information.
-//go:generate stringer -type=ItemQuality -trimprefix=ItemQuality
 type ItemQuality uint8
 
 // ItemQuality values.
@@ -275,7 +266,6 @@ const (
 )
 
 // SheathType information.
-//go:generate stringer -type=SheathType -trimprefix=SheathType
 type SheathType uint8
 
 // SheathType values.
@@ -291,7 +281,6 @@ const (
 )
 
 // Stat information.
-//go:generate stringer -type=Stat -trimprefix=Stat
 type Stat uint8
 
 // Stat values.
@@ -304,7 +293,6 @@ const (
 )
 
 // SpellCategory information.
-//go:generate stringer -type=SpellCategory -trimprefix=SpellCategory
 type SpellCategory uint8
 
 // SpellCategory values.
@@ -314,7 +302,6 @@ const (
 )
 
 // Gender information.
-//go:generate stringer -type=Gender -trimprefix=Gender
 type Gender uint8
 
 // Gender values.
@@ -325,7 +312,6 @@ const (
 )
 
 // TypeID is a enum value which maps to a object's type ID.
-//go:generate stringer -type=TypeID -trimprefix=TypeID
 type TypeID int
 
 // TypeID values.
@@ -341,7 +327,6 @@ const (
 )
 
 // TypeMask is a enum value which maps to a object's type ID.
-//go:generate stringer -type=TypeMask -trimprefix=TypeMask
 type TypeMask int
 
 // TypeMask values.
@@ -357,7 +342,6 @@ const (
 )
 
 // UpdateFlags is a enum value which maps to a object's type ID.
-//go:generate stringer -type=UpdateFlags -trimprefix=UpdateFlags
 type UpdateFlags int
 
 // UpdateFlags values.
@@ -373,7 +357,6 @@ const (
 )
 
 // HighGUID is a enum value which maps to a object's type ID.
-//go:generate stringer -type=HighGUID -trimprefix=HighGUID
 type HighGUID uint32
 
 // HighGUID values.
@@ -391,7 +374,6 @@ const (
 )
 
 // EquipmentSlot is a enum value which maps to a object's type ID.
-//go:generate stringer -type=EquipmentSlot -trimprefix=EquipmentSlot
 type EquipmentSlot uint32
 
 // EquipmentSlot values.
@@ -418,7 +400,6 @@ const (
 )
 
 // CharacterFlag is a enum value which maps to a object's type ID.
-//go:generate stringer -type=CharacterFlag -trimprefix=CharacterFlag
 type CharacterFlag uint32
 
 // CharacterFlag values.
@@ -434,7 +415,6 @@ const (
 )
 
 // PlayerFlag is a enum value which maps to a object's type ID.
-//go:generate stringer -type=PlayerFlag -trimprefix=PlayerFlag
 type PlayerFlag uint32
 
 // PlayerFlag values.
@@ -458,7 +438,6 @@ const (
 )
 
 // PlayerBytes is a enum value which maps to a object's type ID.
-//go:generate stringer -type=PlayerBytes -trimprefix=PlayerBytes
 type PlayerBytes uint32
 
 // PlayerBytes values.
@@ -469,7 +448,6 @@ const (
 )
 
 // UpdateField is a enum value which maps to a object's type ID.
-//go:generate stringer -type=UpdateField -trimprefix=UpdateField
 type UpdateField uint32
 
 // UpdateField values.
@@ -696,7 +674,6 @@ const (
 )
 
 // ItemFlag is a enum value which maps to a object's type ID.
-//go:generate stringer -type=ItemFlag -trimprefix=ItemFlag
 type ItemFlag uint32
 
 // ItemFlag values.
@@ -709,7 +686,6 @@ const (
 )
 
 // ItemPrototypeFlag is a enum value which maps to a object's type ID.
-//go:generate stringer -type=ItemPrototypeFlag -trimprefix=ItemPrototypeFlag
 type ItemPrototypeFlag uint32
 
 // ItemPrototypeFlag values.
@@ -731,7 +707,6 @@ const (
 )
 
 // Power is a enum value which maps to a object's type ID.
-//go:generate stringer -type=Power -trimprefix=Power
 type Power uint32
 
 // Power values.
@@ -744,7 +719,6 @@ const (
 )
 
 // Team is a enum value which maps to a object's type ID.
-//go:generate stringer -type=Team -trimprefix=Team
 type Team uint32
 
 // Team values.
@@ -754,7 +728,6 @@ const (
 )
 
 // StandState is a enum value which maps to a object's type ID.
-//go:generate stringer -type=StandState -trimprefix=StandState
 type StandState uint32
 
 // StandState values.
@@ -771,7 +744,6 @@ const (
 )
 
 // Byte1Flags is a enum value which maps to a object's type ID.
-//go:generate stringer -type=Byte1Flags -trimprefix=Byte1Flags
 type Byte1Flags uint32
 
 // Byte1Flags values.
@@ -783,7 +755,6 @@ const (
 )
 
 // Byte2Flags is a enum value which maps to a object's type ID.
-//go:generate stringer -type=Byte2Flags -trimprefix=Byte2Flags
 type Byte2Flags uint32
 
 // Byte2Flags values.
@@ -798,7 +769,6 @@ const (
 )
 
 // UpdateType is a enum value which maps to a object's type ID.
-//go:generate stringer -type=UpdateType -trimprefix=UpdateType
 type UpdateType uint8
 
 // Byte2Flags values.
@@ -812,7 +782,6 @@ const (
 )
 
 // MovementFlag is a enum value which maps to a object's type ID.
-//go:generate stringer -type=MovementFlag -trimprefix=MovementFlag
 type MovementFlag uint32
 
 // Byte2Flags values.
@@ -843,59 +812,58 @@ const (
 )
 
 // DisplayID is a enum value which maps to a object's type ID.
-//go:generate stringer -type=DisplayID -trimprefix=DisplayID
 type DisplayID uint32
 
 // DisplayID values.
 const (
-	DisplayIDInvBoots06  = 10141
-	DisplayIDInvPants02  = 9892
-	DisplayIDInvShield09 = 18730
-	DisplayIDInvShirt05  = 9891
-	DisplayIDInvSword04  = 1542
+	DisplayIDInvBoots06  DisplayID = 10141
+	DisplayIDInvPants02  DisplayID = 9892
+	DisplayIDInvShield09 DisplayID = 18730
+	DisplayIDInvShirt05  DisplayID = 9891
+	DisplayIDInvSword04  DisplayID = 1542
 )
 
 type AttackTargetState uint8
 
 const (
-	AttackTargetStateIntact    = 0 // set when attacker misses
-	AttackTargetStateHit       = 1 // victim got clear/blocked hit
-	AttackTargetStateDodge     = 2
-	AttackTargetStateParry     = 3
-	AttackTargetStateInterrupt = 4
-	AttackTargetStateBlocks    = 5 // unused? not set when blocked, even on full block
-	AttackTargetStateEvades    = 6
-	AttackTargetStateIsImmune  = 7
-	AttackTargetStateDeflects  = 8
+	AttackTargetStateIntact    AttackTargetState = 0 // set when attacker misses
+	AttackTargetStateHit       AttackTargetState = 1 // victim got clear/blocked hit
+	AttackTargetStateDodge     AttackTargetState = 2
+	AttackTargetStateParry     AttackTargetState = 3
+	AttackTargetStateInterrupt AttackTargetState = 4
+	AttackTargetStateBlocks    AttackTargetState = 5 // unused? not set when blocked, even on full block
+	AttackTargetStateEvades    AttackTargetState = 6
+	AttackTargetStateIsImmune  AttackTargetState = 7
+	AttackTargetStateDeflects  AttackTargetState = 8
 )
 
 type HitInfo uint32
 
 const (
-	HitInfoNormalSwing     = 0x00000000
-	HitInfoUnk1            = 0x00000001 // req correct packet structure
-	HitInfoAffectsVictim   = 0x00000002
-	HitInfoOffhand         = 0x00000004
-	HitInfoUnk2            = 0x00000008
-	HitInfoMiss            = 0x00000010
-	HitInfoFullAbsorb      = 0x00000020
-	HitInfoPartialAbsorb   = 0x00000040
-	HitInfoFullResist      = 0x00000080
-	HitInfoPartialResist   = 0x00000100
-	HitInfoCriticalhit     = 0x00000200 // critical hit
-	HitInfoUnk10           = 0x00000400
-	HitInfoUnk11           = 0x00000800
-	HitInfoUnk12           = 0x00001000
-	HitInfoBlock           = 0x00002000 // blocked damage
-	HitInfoUnk14           = 0x00004000 // set only if meleespellid is present// no world text when victim is hit for 0 dmg(HideWorldTextForNoDamage?)
-	HitInfoUnk15           = 0x00008000 // player victim?// something related to blod sprut visual (BloodSpurtInBack?)
-	HitInfoGlancing        = 0x00010000
-	HitInfoCrushing        = 0x00020000
-	HitInfoNoAnimation     = 0x00040000
-	HitInfoUnk19           = 0x00080000
-	HitInfoUnk20           = 0x00100000
-	HitInfoSwingNoHitSound = 0x00200000 // unused?
-	HitInfoUnk22           = 0x00400000
-	HitInfoRageGain        = 0x00800000
-	HitInfoFakeDamage      = 0x01000000 // enables damage animation even if no damage done, set only if no damage
+	HitInfoNormalSwing     HitInfo = 0x00000000
+	HitInfoUnk1            HitInfo = 0x00000001 // req correct packet structure
+	HitInfoAffectsVictim   HitInfo = 0x00000002
+	HitInfoOffhand         HitInfo = 0x00000004
+	HitInfoUnk2            HitInfo = 0x00000008
+	HitInfoMiss            HitInfo = 0x00000010
+	HitInfoFullAbsorb      HitInfo = 0x00000020
+	HitInfoPartialAbsorb   HitInfo = 0x00000040
+	HitInfoFullResist      HitInfo = 0x00000080
+	HitInfoPartialResist   HitInfo = 0x00000100
+	HitInfoCriticalhit     HitInfo = 0x00000200 // critical hit
+	HitInfoUnk10           HitInfo = 0x00000400
+	HitInfoUnk11           HitInfo = 0x00000800
+	HitInfoUnk12           HitInfo = 0x00001000
+	HitInfoBlock           HitInfo = 0x00002000 // blocked damage
+	HitInfoUnk14           HitInfo = 0x00004000 // set only if meleespellid is present// no world text when victim is hit for 0 dmg(HideWorldTextForNoDamage?)
+	HitInfoUnk15           HitInfo = 0x00008000 // player victim?// something related to blod sprut visual (BloodSpurtInBack?)
+	HitInfoGlancing        HitInfo = 0x00010000
+	HitInfoCrushing        HitInfo = 0x00020000
+	HitInfoNoAnimation     HitInfo = 0x00040000
+	HitInfoUnk19           HitInfo = 0x00080000
+	HitInfoUnk20           HitInfo = 0x00100000
+	HitInfoSwingNoHitSound HitInfo = 0x00200000 // unused?
+	HitInfoUnk22           HitInfo = 0x00400000
+	HitInfoRageGain        HitInfo = 0x00800000
+	HitInfoFakeDamage      HitInfo = 0x01000000 // enables damage animation even if no damage done, set only if no damage
 )
