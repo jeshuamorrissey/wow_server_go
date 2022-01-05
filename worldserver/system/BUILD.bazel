@@ -1,0 +1,22 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "system",
+    srcs = [
+        "combat_manager.go",
+        "packet.go",
+        "session.go",
+        "state.go",
+        "updater.go",
+    ],
+    importpath = "github.com/jeshuamorrissey/wow_server_go/worldserver/system",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//common",
+        "//worldserver/data/config",
+        "//worldserver/data/dynamic",
+        "//worldserver/data/dynamic/interfaces",
+        "//worldserver/data/static",
+        "@com_github_sirupsen_logrus//:logrus",
+    ],
+)

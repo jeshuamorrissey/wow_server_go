@@ -1,0 +1,10 @@
+load("@rules_python//python:defs.bzl", "py_library")
+
+py_library(
+    name = "dbc",
+    srcs = glob(["*.py"]),
+    data = glob(["*.jinja"]),
+    visibility = [
+        "//dbc_utils:__subpackages__",
+    ],
+)

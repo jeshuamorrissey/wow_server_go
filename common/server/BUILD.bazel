@@ -1,0 +1,13 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "server",
+    srcs = ["server.go"],
+    importpath = "github.com/jeshuamorrissey/wow_server_go/common/server",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//common/session",
+        "//worldserver/data/config",
+        "@com_github_sirupsen_logrus//:logrus",
+    ],
+)

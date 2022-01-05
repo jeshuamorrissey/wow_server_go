@@ -3,6 +3,7 @@ package packet
 import (
 	"bytes"
 
+	"github.com/jeshuamorrissey/wow_server_go/worldserver/data/static"
 	"github.com/jeshuamorrissey/wow_server_go/worldserver/system"
 )
 
@@ -16,6 +17,6 @@ func (pkt *ServerLogoutComplete) ToBytes(state *system.State) ([]byte, error) {
 }
 
 // OpCode gets the opcode of the packet.
-func (*ServerLogoutComplete) OpCode() system.OpCode {
-	return system.OpCodeServerLogoutComplete
+func (*ServerLogoutComplete) OpCode() static.OpCode {
+	return static.OpCodeServerLogoutComplete
 }

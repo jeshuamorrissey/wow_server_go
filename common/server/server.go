@@ -7,7 +7,7 @@ import (
 	"strings"
 
 	"github.com/jeshuamorrissey/wow_server_go/common/session"
-	"github.com/jinzhu/gorm"
+	"github.com/jeshuamorrissey/wow_server_go/worldserver/data/config"
 	"github.com/sirupsen/logrus"
 )
 
@@ -16,8 +16,8 @@ import (
 func RunServer(
 	name string,
 	port int,
-	db *gorm.DB,
-	makeSession func(io.Reader, io.Writer, *logrus.Entry, *gorm.DB) *session.Session,
+	config *config.Config,
+	makeSession func(io.Reader, io.Writer, *logrus.Entry, *config.Config) *session.Session,
 	setupSession func(*session.Session)) {
 	log := logrus.WithFields(logrus.Fields{"server": name, "port": port})
 
@@ -36,7 +36,7 @@ func RunServer(
 
 		log.Printf("Receiving %v connection from %v\n", strings.ToUpper(name), conn.RemoteAddr())
 		sessLog := logrus.WithFields(logrus.Fields{"server": name, "account": "???"})
-		sess := makeSession(conn, conn, sessLog, db)
+		sess := makeSession(conn, conn, sessLog, config)
 		setupSession(sess)
 		go sess.Run()
 	}

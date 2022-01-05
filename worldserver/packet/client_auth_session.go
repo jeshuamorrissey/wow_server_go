@@ -3,11 +3,10 @@ package packet
 import (
 	"encoding/binary"
 	"io"
+	"strings"
 
-	"github.com/jeshuamorrissey/wow_server_go/common/database"
-	c "github.com/jeshuamorrissey/wow_server_go/worldserver/data/dbc/constants"
+	"github.com/jeshuamorrissey/wow_server_go/worldserver/data/static"
 	"github.com/jeshuamorrissey/wow_server_go/worldserver/system"
-	"github.com/jinzhu/gorm"
 )
 
 // ClientAuthSession is the initial message sent from the server
@@ -48,25 +47,25 @@ func (pkt *ClientAuthSession) FromBytes(state *system.State, buffer io.Reader) e
 // Handle will ensure that the given account exists.
 func (pkt *ClientAuthSession) Handle(state *system.State) ([]system.ServerPacket, error) {
 	response := new(ServerAuthResponse)
-	response.Error = c.AuthOK
+	response.Error = static.AuthOK
 
-	state.Account = new(database.Account)
-	err := state.DB.Where(&database.Account{Name: string(pkt.AccountName)}).First(state.Account).Error
-	if err != nil {
-		if err == gorm.ErrRecordNotFound {
-			response.Error = c.AuthUnknownAccount
-		} else {
-			return nil, err
+	for _, account := range state.Config.Accounts {
+		if strings.ToUpper(account.Name) == strings.ToUpper(string(pkt.AccountName)) {
+			state.Account = account
 		}
+	}
+
+	if state.Account == nil {
+		response.Error = static.AuthUnknownAccount
 	}
 
 	// TODO(jeshua): validate the information sent by the client.
 	// If there is no session key, account is invalid.
-	if state.Account.SessionKey() == nil {
-		response.Error = c.AuthBadServerProof
+	if state.Account != nil && state.Account.SessionKey() == nil {
+		response.Error = static.AuthBadServerProof
 	}
 
-	if response.Error == c.AuthOK {
+	if response.Error == static.AuthOK {
 		state.Log = state.Log.WithField("account", state.Account.Name)
 		state.Log.Infof("Account %v authenticated!", state.Account.Name)
 	}
@@ -75,6 +74,6 @@ func (pkt *ClientAuthSession) Handle(state *system.State) ([]system.ServerPacket
 }
 
 // OpCode returns the opcode for this packet.
-func (pkt *ClientAuthSession) OpCode() system.OpCode {
-	return system.OpCodeClientAuthSession
+func (pkt *ClientAuthSession) OpCode() static.OpCode {
+	return static.OpCodeClientAuthSession
 }

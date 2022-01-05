@@ -3,49 +3,50 @@ package system
 import (
 	"time"
 
-	"github.com/jeshuamorrissey/wow_server_go/worldserver/data/object"
+	"github.com/jeshuamorrissey/wow_server_go/worldserver/data/dynamic"
+	"github.com/jeshuamorrissey/wow_server_go/worldserver/data/dynamic/interfaces"
 	"github.com/sirupsen/logrus"
 )
 
 type battle struct {
-	attacker object.UnitInterface
-	target   object.UnitInterface
+	attacker interfaces.Unit
+	target   interfaces.Unit
 
 	attackTimer          *time.Timer
-	handleAttackCallback func(object.AttackInfo)
+	handleAttackCallback func(interfaces.AttackInfo)
 }
 
 // CombatManager manages sending object updates to sessions based on when objects have been changed.
 type CombatManager struct {
 	log     *logrus.Entry
-	om      *object.Manager
+	om      *dynamic.ObjectManager
 	updater *Updater
 
-	battles map[object.GUID]*battle
+	battles map[interfaces.GUID]*battle
 }
 
-// NewCombatManager makes a new CombatManager object.
-func NewCombatManager(log *logrus.Entry, om *object.Manager, updater *Updater) *CombatManager {
+// NewCombatManager makes a new CombatManager dynamic.
+func NewCombatManager(log *logrus.Entry, om *dynamic.ObjectManager, updater *Updater) *CombatManager {
 	u := &CombatManager{
 		log: log.WithFields(logrus.Fields{
 			"system": "Combat Manager",
 		}),
 		om:      om,
 		updater: updater,
-		battles: make(map[object.GUID]*battle),
+		battles: make(map[interfaces.GUID]*battle),
 	}
 
 	return u
 }
 
 func (cm *CombatManager) handleAttack(battle *battle) {
-	cm.updater.SendCombatUpdate(battle.attacker, battle.target, battle.attacker.Attack(battle.target))
-	time.AfterFunc(battle.attacker.MeleeAttackRate(), func() {
+	cm.updater.SendCombatUpdate(battle.attacker, battle.target, *battle.attacker.ResolveMeleeAttack(battle.target))
+	time.AfterFunc(battle.attacker.MeleeMainHandAttackRate(), func() {
 		cm.handleAttack(battle)
 	})
 }
 
-func (cm *CombatManager) StartAttack(attacker object.UnitInterface, target object.UnitInterface) {
+func (cm *CombatManager) StartAttack(attacker interfaces.Unit, target interfaces.Unit) {
 	battle := &battle{
 		attacker: attacker,
 		target:   target,
@@ -55,7 +56,7 @@ func (cm *CombatManager) StartAttack(attacker object.UnitInterface, target objec
 	cm.handleAttack(battle)
 }
 
-func (cm *CombatManager) StopAttack(attackerGUID object.GUID) {
+func (cm *CombatManager) StopAttack(attackerGUID interfaces.GUID) {
 	battle, ok := cm.battles[attackerGUID]
 	if ok {
 		if battle.attackTimer != nil {

@@ -3,32 +3,31 @@ package packet
 import (
 	"math/big"
 
-	"github.com/jeshuamorrissey/wow_server_go/common/database"
 	"github.com/jeshuamorrissey/wow_server_go/common/session"
-	"github.com/jinzhu/gorm"
+	"github.com/jeshuamorrissey/wow_server_go/worldserver/data/config"
 	"github.com/sirupsen/logrus"
 )
 
 // State represents all information required by the AuthServer.
 type State struct {
-	db      *gorm.DB
+	config  *config.Config
 	log     *logrus.Entry
 	session *session.Session
 
 	PublicEphemeral  big.Int
 	PrivateEphemeral big.Int
 
-	Account database.Account
+	Account *config.Account
 }
 
 // NewState creates a new state based on the given DB connection.
-func NewState(db *gorm.DB, log *logrus.Entry) *State {
-	return &State{db: db, log: log}
+func NewState(config *config.Config, log *logrus.Entry) *State {
+	return &State{config: config, log: log}
 }
 
 // DB returns a reference to the Database object stored in this state.
-func (s *State) DB() *gorm.DB {
-	return s.db
+func (s *State) Config() *config.Config {
+	return s.config
 }
 
 // Log returns a reference to the Database object stored in this state.

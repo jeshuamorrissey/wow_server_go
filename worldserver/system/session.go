@@ -10,9 +10,8 @@ import (
 	"sync"
 
 	"github.com/jeshuamorrissey/wow_server_go/common"
-	"github.com/jeshuamorrissey/wow_server_go/common/database"
-	"github.com/jeshuamorrissey/wow_server_go/worldserver/data/object"
-	"github.com/jinzhu/gorm"
+	"github.com/jeshuamorrissey/wow_server_go/worldserver/data/config"
+	"github.com/jeshuamorrissey/wow_server_go/worldserver/data/static"
 	"github.com/sirupsen/logrus"
 )
 
@@ -25,7 +24,7 @@ type Session struct {
 	output     io.Writer
 
 	// A mapping of opCode --> callback to create the client packet.
-	opCodeToPacket map[OpCode]func() ClientPacket
+	opCodeToPacket map[static.OpCode]func() ClientPacket
 
 	// State that is to be passed to each handler.
 	state *State
@@ -38,23 +37,20 @@ type Session struct {
 func NewSession(
 	input io.Reader,
 	output io.Writer,
-	opCodeToPacket map[OpCode]func() ClientPacket,
-	db *gorm.DB,
-	objectManager *object.Manager,
+	opCodeToPacket map[static.OpCode]func() ClientPacket,
+	config *config.Config,
 	log *logrus.Entry,
-	realm *database.Realm,
 	updater *Updater,
 	combatManager *CombatManager,
 ) *Session {
 	state := &State{
 		Log: log,
 
-		DB:            db,
-		OM:            objectManager,
+		Config:        config,
+		OM:            config.ObjectManager,
 		CombatManager: combatManager,
 		Updater:       updater,
 
-		Realm:     realm,
 		Account:   nil,
 		Character: nil,
 	}
@@ -81,8 +77,8 @@ func (s *Session) Send(pkt ServerPacket) error {
 		return err
 	}
 
-	if opCode == OpCodeServerUpdateObject && len(pktData) > 100 {
-		opCode = OpCodeServerCompressedUpdateObject
+	if opCode == static.OpCodeServerUpdateObject && len(pktData) > 100 {
+		opCode = static.OpCodeServerCompressedUpdateObject
 
 		var compressedPktData bytes.Buffer
 		writer, err := zlib.NewWriterLevel(&compressedPktData, zlib.BestCompression)
@@ -166,7 +162,7 @@ func (s *Session) readPacket() (ClientPacket, error) {
 
 	builder, ok := s.opCodeToPacket[opCode]
 	if !ok {
-		s.state.Log.Warnf("<-- %v [UNHANDLED]", opCode.String())
+		s.state.Log.Warnf("<-- %v [UNHANDLED]", opCode)
 		return nil, nil
 	}
 
@@ -178,15 +174,15 @@ func (s *Session) readPacket() (ClientPacket, error) {
 	return pkt, nil
 }
 
-func (s *Session) readHeader() (OpCode, int, error) {
+func (s *Session) readHeader() (static.OpCode, int, error) {
 	headerData := make([]byte, 6)
 	n, err := s.input.Read(headerData)
 	if err != nil {
-		return OpCode(0), 0, fmt.Errorf("erorr while reading header: %v", err)
+		return static.OpCode(0), 0, fmt.Errorf("erorr while reading header: %v", err)
 	}
 
 	if n != len(headerData) {
-		return OpCode(0), 0, errors.New("short read when reading opcode data")
+		return static.OpCode(0), 0, errors.New("short read when reading opcode data")
 	}
 
 	// If there is a session key in the state, then we need to decrypt.
@@ -204,12 +200,12 @@ func (s *Session) readHeader() (OpCode, int, error) {
 
 	// In the world server, the length is the first 2 bytes in the pkt.
 	length := int(binary.BigEndian.Uint16(headerData[:2]))
-	opCode := OpCode(binary.LittleEndian.Uint32(headerData[2:]))
+	opCode := static.OpCode(binary.LittleEndian.Uint32(headerData[2:]))
 
 	return opCode, length - 4, nil
 }
 
-func (s *Session) makeHeader(packetLen int, opCode OpCode) ([]byte, error) {
+func (s *Session) makeHeader(packetLen int, opCode static.OpCode) ([]byte, error) {
 	lengthData := make([]byte, 2)
 	opCodeData := make([]byte, 2)
 

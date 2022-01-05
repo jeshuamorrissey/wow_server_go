@@ -1,0 +1,17 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
+
+go_library(
+    name = "srp",
+    srcs = ["srp.go"],
+    importpath = "github.com/jeshuamorrissey/wow_server_go/authserver/srp",
+    visibility = ["//visibility:public"],
+)
+
+go_test(
+    name = "srp_test",
+    srcs = ["srp_test.go"],
+    deps = [
+        ":srp",
+        "@tools_gotest//assert",
+    ],
+)

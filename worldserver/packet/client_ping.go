@@ -4,6 +4,7 @@ import (
 	"encoding/binary"
 	"io"
 
+	"github.com/jeshuamorrissey/wow_server_go/worldserver/data/static"
 	"github.com/jeshuamorrissey/wow_server_go/worldserver/system"
 )
 
@@ -29,6 +30,6 @@ func (pkt *ClientPing) Handle(state *system.State) ([]system.ServerPacket, error
 }
 
 // OpCode gets the opcode of the packet.
-func (*ClientPing) OpCode() system.OpCode {
-	return system.OpCodeClientPing
+func (*ClientPing) OpCode() static.OpCode {
+	return static.OpCodeClientPing
 }

@@ -1,0 +1,19 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_binary", "go_library")
+
+go_library(
+    name = "new_game_lib",
+    srcs = ["new_game.go"],
+    importpath = "github.com/jeshuamorrissey/wow_server_go/tools/new_game",
+    visibility = ["//visibility:private"],
+    deps = [
+        "//tools/new_game/initial_data",
+        "//worldserver/data/config",
+        "//worldserver/data/static",
+    ],
+)
+
+go_binary(
+    name = "new_game",
+    embed = [":new_game_lib"],
+    visibility = ["//visibility:public"],
+)

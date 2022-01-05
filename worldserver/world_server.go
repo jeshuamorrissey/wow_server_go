@@ -1,30 +1,26 @@
 package worldserver
 
 import (
-	"fmt"
 	"io"
 	"net"
 	"strconv"
 
-	c "github.com/jeshuamorrissey/wow_server_go/worldserver/data/dbc/constants"
-	"github.com/jeshuamorrissey/wow_server_go/worldserver/data/object"
+	"github.com/jeshuamorrissey/wow_server_go/worldserver/data/config"
+	"github.com/jeshuamorrissey/wow_server_go/worldserver/data/dynamic/interfaces"
+	"github.com/jeshuamorrissey/wow_server_go/worldserver/data/static"
 	"github.com/jeshuamorrissey/wow_server_go/worldserver/system"
 
-	"github.com/jeshuamorrissey/wow_server_go/common/database"
 	"github.com/jeshuamorrissey/wow_server_go/worldserver/packet"
-	"github.com/jinzhu/gorm"
 	"github.com/sirupsen/logrus"
 )
 
-func makeSession(om *object.Manager, realm *database.Realm, reader io.Reader, writer io.Writer, log *logrus.Entry, db *gorm.DB, updater *system.Updater, combatManager *system.CombatManager) *system.Session {
+func makeSession(config *config.Config, reader io.Reader, writer io.Writer, log *logrus.Entry, updater *system.Updater, combatManager *system.CombatManager) *system.Session {
 	return system.NewSession(
 		reader,
 		writer,
 		opCodeToPacket,
-		db,
-		om,
+		config,
 		log,
-		realm,
 		updater,
 		combatManager,
 	)
@@ -42,35 +38,29 @@ func makeObjectUpdatePacket(outOfRangeUpdate system.OutOfRangeUpdate, objectUpda
 	}
 }
 
-func makeAttackerStateUpdatePacker(attacker object.GUID, target object.GUID, attackInfo object.AttackInfo) system.ServerPacket {
+func makeAttackerStateUpdatePacker(attacker interfaces.GUID, target interfaces.GUID, attackInfo interfaces.AttackInfo) system.ServerPacket {
 	return &packet.ServerAttackerStateUpdate{
-		HitInfo:      c.HitInfoNormalSwing,
+		HitInfo:      static.HitInfoNormalSwing,
 		Attacker:     attacker,
 		Target:       target,
 		Damage:       int32(attackInfo.Damage),
-		TargetState:  c.AttackTargetStateHit,
+		TargetState:  static.AttackTargetStateHit,
 		MeleeSpellID: 0,
 	}
 }
 
 // RunWorldServer takes as input a database and runs an world server referencing
 // it.
-func RunWorldServer(realmName string, port int, om *object.Manager, db *gorm.DB) {
-	var realm database.Realm
-	err := db.Where("name = ?", realmName).First(&realm).Error
-	if err != nil {
-		panic(fmt.Sprintf("Unknown realm %v", realmName))
-	}
-
+func RunWorldServer(realmName string, port int, config *config.Config) {
 	log := logrus.WithFields(logrus.Fields{"server": "WORLD", "port": port})
 	log.Logger.SetLevel(logrus.TraceLevel)
 
 	// Start updater.
-	updater := system.NewUpdater(log, om, makeObjectUpdatePacket, makeAttackerStateUpdatePacker)
+	updater := system.NewUpdater(log, config.ObjectManager, makeObjectUpdatePacket, makeAttackerStateUpdatePacker)
 	go updater.Run()
 
 	// Start the combat manager.
-	combatManager := system.NewCombatManager(log, om, updater)
+	combatManager := system.NewCombatManager(log, config.ObjectManager, updater)
 
 	// Start session handler.
 	listener, err := net.Listen("tcp", "127.0.0.1:"+strconv.Itoa(port))
@@ -88,7 +78,7 @@ func RunWorldServer(realmName string, port int, om *object.Manager, db *gorm.DB)
 
 		log.Printf("Receiving WORLD connection from %v\n", conn.RemoteAddr())
 		sessLog := logrus.WithFields(logrus.Fields{"server": "WORLD", "account": "???"})
-		sess := makeSession(om, &realm, conn, conn, sessLog, db, updater, combatManager)
+		sess := makeSession(config, conn, conn, sessLog, updater, combatManager)
 		setupSession(sess)
 		go sess.Run()
 	}

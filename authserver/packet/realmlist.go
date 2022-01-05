@@ -5,7 +5,6 @@ import (
 	"encoding/binary"
 	"io"
 
-	"github.com/jeshuamorrissey/wow_server_go/common/database"
 	"github.com/jeshuamorrissey/wow_server_go/common/session"
 )
 
@@ -68,27 +67,17 @@ func (*ServerRealmlist) OpCode() session.OpCode {
 
 // Handle will check the database for the account and send an appropriate response.
 func (pkt *ClientRealmlist) Handle(stateBase session.State) ([]session.ServerPacket, error) {
-	// state := stateBase.(*State)
 	response := new(ServerRealmlist)
 
-	// Get information from the session.
-	var realms []database.Realm
-	err := stateBase.DB().Find(&realms).Error
-	if err != nil {
-		return nil, err
-	}
-
-	for _, realm := range realms {
-		response.Realms = append(response.Realms, Realm{
-			Icon:          0,
-			Flags:         0,
-			Name:          realm.Name,
-			Address:       realm.Host,
-			Population:    0,
-			NumCharacters: 0,
-			Timezone:      0,
-		})
-	}
+	response.Realms = append(response.Realms, Realm{
+		Icon:          0,
+		Flags:         0,
+		Name:          stateBase.Config().Name,
+		Address:       "localhost:5001",
+		Population:    0,
+		NumCharacters: 0,
+		Timezone:      0,
+	})
 
 	return []session.ServerPacket{response}, nil
 }

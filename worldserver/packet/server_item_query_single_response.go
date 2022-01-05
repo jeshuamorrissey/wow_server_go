@@ -4,15 +4,14 @@ import (
 	"bytes"
 	"encoding/binary"
 
-	"github.com/jeshuamorrissey/wow_server_go/worldserver/data/dbc"
-	c "github.com/jeshuamorrissey/wow_server_go/worldserver/data/dbc/constants"
+	"github.com/jeshuamorrissey/wow_server_go/worldserver/data/static"
 	"github.com/jeshuamorrissey/wow_server_go/worldserver/system"
 )
 
 // ServerItemQuerySingleResponse is sent back in response to ClientPing.
 type ServerItemQuerySingleResponse struct {
 	Entry uint32
-	Item  *dbc.Item
+	Item  *static.Item
 }
 
 // ToBytes writes out the packet to an array of bytes.
@@ -71,13 +70,13 @@ func (pkt *ServerItemQuerySingleResponse) ToBytes(state *system.State) ([]byte, 
 		binary.Write(buffer, binary.LittleEndian, uint32(0))  // DamageType
 	}
 
-	binary.Write(buffer, binary.LittleEndian, uint32(pkt.Item.Resistances[c.SpellSchoolPhysical]))
-	binary.Write(buffer, binary.LittleEndian, uint32(pkt.Item.Resistances[c.SpellSchoolHoly]))
-	binary.Write(buffer, binary.LittleEndian, uint32(pkt.Item.Resistances[c.SpellSchoolFire]))
-	binary.Write(buffer, binary.LittleEndian, uint32(pkt.Item.Resistances[c.SpellSchoolNature]))
-	binary.Write(buffer, binary.LittleEndian, uint32(pkt.Item.Resistances[c.SpellSchoolFrost]))
-	binary.Write(buffer, binary.LittleEndian, uint32(pkt.Item.Resistances[c.SpellSchoolShadow]))
-	binary.Write(buffer, binary.LittleEndian, uint32(pkt.Item.Resistances[c.SpellSchoolArcane]))
+	binary.Write(buffer, binary.LittleEndian, uint32(pkt.Item.Resistances[static.SpellSchoolPhysical]))
+	binary.Write(buffer, binary.LittleEndian, uint32(pkt.Item.Resistances[static.SpellSchoolHoly]))
+	binary.Write(buffer, binary.LittleEndian, uint32(pkt.Item.Resistances[static.SpellSchoolFire]))
+	binary.Write(buffer, binary.LittleEndian, uint32(pkt.Item.Resistances[static.SpellSchoolNature]))
+	binary.Write(buffer, binary.LittleEndian, uint32(pkt.Item.Resistances[static.SpellSchoolFrost]))
+	binary.Write(buffer, binary.LittleEndian, uint32(pkt.Item.Resistances[static.SpellSchoolShadow]))
+	binary.Write(buffer, binary.LittleEndian, uint32(pkt.Item.Resistances[static.SpellSchoolArcane]))
 	binary.Write(buffer, binary.LittleEndian, uint32(pkt.Item.AttackRate.Seconds()*1000))
 	binary.Write(buffer, binary.LittleEndian, uint32(0))  // RequiredAmmoType
 	binary.Write(buffer, binary.LittleEndian, float32(0)) // RangedModRange
@@ -112,6 +111,6 @@ func (pkt *ServerItemQuerySingleResponse) ToBytes(state *system.State) ([]byte, 
 }
 
 // OpCode gets the opcode of the packet.
-func (*ServerItemQuerySingleResponse) OpCode() system.OpCode {
-	return system.OpCodeServerItemQuerySingleResponse
+func (*ServerItemQuerySingleResponse) OpCode() static.OpCode {
+	return static.OpCodeServerItemQuerySingleResponse
 }

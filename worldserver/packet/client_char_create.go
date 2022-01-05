@@ -8,11 +8,9 @@ import (
 	"strings"
 
 	"github.com/jeshuamorrissey/wow_server_go/common"
-	"github.com/jeshuamorrissey/wow_server_go/common/database"
-	"github.com/jeshuamorrissey/wow_server_go/worldserver/data/dbc"
-	c "github.com/jeshuamorrissey/wow_server_go/worldserver/data/dbc/constants"
+	"github.com/jeshuamorrissey/wow_server_go/tools/new_game/initial_data"
+	"github.com/jeshuamorrissey/wow_server_go/worldserver/data/static"
 	"github.com/jeshuamorrissey/wow_server_go/worldserver/system"
-	"github.com/jinzhu/gorm"
 )
 
 func normalizeCharacterName(name string) string {
@@ -21,24 +19,24 @@ func normalizeCharacterName(name string) string {
 	return strings.Title(name)
 }
 
-func validateCharacterName(name string) c.CharErrorCode {
+func validateCharacterName(name string) static.CharErrorCode {
 	if len(name) == 0 {
-		return c.CharErrorCodeNameNoName
-	} else if len(name) > c.MaxPlayerNameLength {
-		return c.CharErrorCodeNameTooLong
-	} else if len(name) < c.MinPlayerNameLength {
-		return c.CharErrorCodeNameTooShort
+		return static.CharErrorCodeNameNoName
+	} else if len(name) > static.MaxPlayerNameLength {
+		return static.CharErrorCodeNameTooLong
+	} else if len(name) < static.MinPlayerNameLength {
+		return static.CharErrorCodeNameTooShort
 	}
 
-	return c.CharErrorCodeCreateSuccess
+	return static.CharErrorCodeCreateSuccess
 }
 
 // ClientCharCreate is sent from the client when making a character.
 type ClientCharCreate struct {
 	Name      string
-	Race      *dbc.Race
-	Class     *dbc.Class
-	Gender    c.Gender
+	Race      *static.Race
+	Class     *static.Class
+	Gender    static.Gender
 	SkinColor uint8
 	Face      uint8
 	HairStyle uint8
@@ -66,43 +64,37 @@ func (pkt *ClientCharCreate) FromBytes(state *system.State, bufferBase io.Reader
 // Handle will ensure that the given account exists.
 func (pkt *ClientCharCreate) Handle(state *system.State) ([]system.ServerPacket, error) {
 	response := new(ServerCharCreate)
-	response.Error = c.CharErrorCodeCreateSuccess
+	response.Error = static.CharErrorCodeCreateSuccess
 
 	// Check for invalid names.
 	response.Error = validateCharacterName(pkt.Name)
-	if response.Error != c.CharErrorCodeCreateSuccess {
+	if response.Error != static.CharErrorCodeCreateSuccess {
 		return []system.ServerPacket{response}, nil
 	}
 
-	// Check if name already exists.
-	var char database.Character
-	err := state.DB.Where(&database.Character{Name: pkt.Name}).First(&char).Error
-	if err != gorm.ErrRecordNotFound {
-		response.Error = c.CharErrorCodeCreateNameInUse
+	// If the character already exists, fail.
+	if state.Account.Character != nil {
+		response.Error = static.CharErrorCodeCreateFailed
 		return []system.ServerPacket{response}, nil
 	}
 
 	// Make the character.
-	charObj, err := database.NewCharacter(
-		state.OM, state.Account, state.Realm,
+	charObj, err := initial_data.NewCharacter(
+		state.Config,
 		pkt.Name,
 		pkt.Race, pkt.Class, pkt.Gender,
 		pkt.SkinColor, pkt.Face, pkt.HairStyle, pkt.HairColor, pkt.Feature)
 	if err != nil {
-		response.Error = c.CharErrorCodeCreateError
+		response.Error = static.CharErrorCodeCreateError
 		return []system.ServerPacket{response}, nil
 	}
 
-	err = state.DB.Create(charObj).Error
-	if err != nil {
-		response.Error = c.CharErrorCodeCreateFailed
-		return []system.ServerPacket{response}, nil
-	}
+	state.Account.Character = charObj
 
 	return []system.ServerPacket{response}, nil
 }
 
 // OpCode returns the opcode for this packet.
-func (pkt *ClientCharCreate) OpCode() system.OpCode {
-	return system.OpCodeClientCharCreate
+func (pkt *ClientCharCreate) OpCode() static.OpCode {
+	return static.OpCodeClientCharCreate
 }

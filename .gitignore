@@ -1,3 +1,7 @@
 bazel-*
 .vscode
 __pycache__
+
+# Generated files; added as symlinks to the repo for complete.
+# TODO(jeshua): find a better solution for this.
+worldserver/data/static/dbc_data.go

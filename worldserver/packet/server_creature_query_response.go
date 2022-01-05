@@ -4,14 +4,14 @@ import (
 	"bytes"
 	"encoding/binary"
 
-	"github.com/jeshuamorrissey/wow_server_go/worldserver/data/dbc"
+	"github.com/jeshuamorrissey/wow_server_go/worldserver/data/static"
 	"github.com/jeshuamorrissey/wow_server_go/worldserver/system"
 )
 
 // ServerCreatureQueryResponse is sent back in response to ClientPing.
 type ServerCreatureQueryResponse struct {
 	Entry uint32
-	Unit  *dbc.Unit
+	Unit  *static.Unit
 }
 
 // ToBytes writes out the packet to an array of bytes.
@@ -46,6 +46,6 @@ func (pkt *ServerCreatureQueryResponse) ToBytes(state *system.State) ([]byte, er
 }
 
 // OpCode gets the opcode of the packet.
-func (*ServerCreatureQueryResponse) OpCode() system.OpCode {
-	return system.OpCodeServerCreatureQueryResponse
+func (*ServerCreatureQueryResponse) OpCode() static.OpCode {
+	return static.OpCodeServerCreatureQueryResponse
 }

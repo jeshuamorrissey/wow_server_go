@@ -3,7 +3,7 @@ package packet
 import (
 	"io"
 
-	"github.com/jeshuamorrissey/wow_server_go/common/database"
+	"github.com/jeshuamorrissey/wow_server_go/worldserver/data/static"
 	"github.com/jeshuamorrissey/wow_server_go/worldserver/system"
 )
 
@@ -19,16 +19,11 @@ func (pkt *ClientCharEnum) FromBytes(state *system.State, buffer io.Reader) erro
 // Handle will ensure that the given account exists.
 func (pkt *ClientCharEnum) Handle(state *system.State) ([]system.ServerPacket, error) {
 	response := new(ServerCharEnum)
-
-	err := state.DB.Where(&database.Character{AccountID: state.Account.ID, RealmID: state.Realm.ID}).Find(&response.Characters).Error
-	if err != nil {
-		return nil, err
-	}
-
+	response.Characters = append(response.Characters, state.Account.Character)
 	return []system.ServerPacket{response}, nil
 }
 
 // OpCode returns the opcode for this packet.
-func (pkt *ClientCharEnum) OpCode() system.OpCode {
-	return system.OpCodeClientCharEnum
+func (pkt *ClientCharEnum) OpCode() static.OpCode {
+	return static.OpCodeClientCharEnum
 }

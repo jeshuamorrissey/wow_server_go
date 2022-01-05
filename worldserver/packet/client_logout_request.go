@@ -3,6 +3,7 @@ package packet
 import (
 	"io"
 
+	"github.com/jeshuamorrissey/wow_server_go/worldserver/data/static"
 	"github.com/jeshuamorrissey/wow_server_go/worldserver/system"
 )
 
@@ -31,6 +32,6 @@ func (pkt *ClientLogoutRequest) Handle(state *system.State) ([]system.ServerPack
 }
 
 // OpCode gets the opcode of the packet.
-func (*ClientLogoutRequest) OpCode() system.OpCode {
-	return system.OpCodeClientLogoutRequest
+func (*ClientLogoutRequest) OpCode() static.OpCode {
+	return static.OpCodeClientLogoutRequest
 }

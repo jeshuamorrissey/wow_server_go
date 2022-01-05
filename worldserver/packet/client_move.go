@@ -4,19 +4,19 @@ import (
 	"encoding/binary"
 	"io"
 
-	c "github.com/jeshuamorrissey/wow_server_go/worldserver/data/dbc/constants"
-	"github.com/jeshuamorrissey/wow_server_go/worldserver/data/object"
+	"github.com/jeshuamorrissey/wow_server_go/worldserver/data/dynamic/interfaces"
+	"github.com/jeshuamorrissey/wow_server_go/worldserver/data/static"
 	"github.com/jeshuamorrissey/wow_server_go/worldserver/system"
 )
 
 // ClientMove is sent from the client periodically.
 type ClientMove struct {
-	MoveOpCode   system.OpCode
-	MovementInfo object.MovementInfo
+	MoveOpCode   static.OpCode
+	MovementInfo interfaces.MovementInfo
 }
 
 // NewClientMovePacket constructs a new movement packet and returns it.
-func NewClientMovePacket(opCode system.OpCode) *ClientMove {
+func NewClientMovePacket(opCode static.OpCode) *ClientMove {
 	return &ClientMove{
 		MoveOpCode: opCode,
 	}
@@ -27,23 +27,23 @@ func (pkt *ClientMove) FromBytes(state *system.State, buffer io.Reader) error {
 	binary.Read(buffer, binary.LittleEndian, &pkt.MovementInfo.MoveFlags)
 	binary.Read(buffer, binary.LittleEndian, &pkt.MovementInfo.Time)
 	binary.Read(buffer, binary.LittleEndian, &pkt.MovementInfo.Location)
-	if pkt.MovementInfo.MoveFlags|c.MovementFlagOnTransport != 0 {
+	if pkt.MovementInfo.MoveFlags|static.MovementFlagOnTransport != 0 {
 		binary.Read(buffer, binary.LittleEndian, &pkt.MovementInfo.Transport)
 	}
 
-	if pkt.MovementInfo.MoveFlags|c.MovementFlagSwimming != 0 {
+	if pkt.MovementInfo.MoveFlags|static.MovementFlagSwimming != 0 {
 		binary.Read(buffer, binary.LittleEndian, &pkt.MovementInfo.Pitch)
 	}
 
-	if pkt.MovementInfo.MoveFlags|c.MovementFlagOnTransport == 0 {
+	if pkt.MovementInfo.MoveFlags|static.MovementFlagOnTransport == 0 {
 		binary.Read(buffer, binary.LittleEndian, &pkt.MovementInfo.FallTime)
 	}
 
-	if pkt.MovementInfo.MoveFlags|c.MovementFlagFalling != 0 {
+	if pkt.MovementInfo.MoveFlags|static.MovementFlagFalling != 0 {
 		binary.Read(buffer, binary.LittleEndian, &pkt.MovementInfo.Jump)
 	}
 
-	if pkt.MovementInfo.MoveFlags|c.MovementFlagSplineElevation != 0 {
+	if pkt.MovementInfo.MoveFlags|static.MovementFlagSplineElevation != 0 {
 		binary.Read(buffer, binary.LittleEndian, &pkt.MovementInfo.Unk1)
 	}
 
@@ -54,17 +54,16 @@ func (pkt *ClientMove) FromBytes(state *system.State, buffer io.Reader) error {
 func (pkt *ClientMove) Handle(state *system.State) ([]system.ServerPacket, error) {
 	state.Character.MovementInfo = pkt.MovementInfo
 
-	location := state.Character.Location()
+	location := state.Character.GetLocation()
 	location.X = pkt.MovementInfo.Location.X
 	location.Y = pkt.MovementInfo.Location.Y
 	location.Z = pkt.MovementInfo.Location.Z
 	location.O = pkt.MovementInfo.Location.O
-	state.Updater.TriggerUpdate(state.Character.GUID())
 
 	return nil, nil
 }
 
 // OpCode gets the opcode of the packet.
-func (pkt *ClientMove) OpCode() system.OpCode {
+func (pkt *ClientMove) OpCode() static.OpCode {
 	return pkt.MoveOpCode
 }

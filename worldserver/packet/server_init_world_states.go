@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/binary"
 
+	"github.com/jeshuamorrissey/wow_server_go/worldserver/data/static"
 	"github.com/jeshuamorrissey/wow_server_go/worldserver/system"
 )
 
@@ -36,6 +37,6 @@ func (pkt *ServerInitWorldStates) ToBytes(state *system.State) ([]byte, error) {
 }
 
 // OpCode gets the opcode of the packet.
-func (*ServerInitWorldStates) OpCode() system.OpCode {
-	return system.OpCodeServerInitWorldStates
+func (*ServerInitWorldStates) OpCode() static.OpCode {
+	return static.OpCodeServerInitWorldStates
 }

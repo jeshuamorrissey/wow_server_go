@@ -1,93 +1,11 @@
 package {{ package }}
 
-// {{ type_name }} represents data within the {{ dbc_name }}.dbc file.
-type {{ type_name }} struct {
-	{% for field in fields %}
-		{{ field.GoName() }} {{ field.GoType() }}
-	{% endfor %}
-}
-
-var (
-	// {{ type_name }}ByID is the primary source of truth, storing data for for this DBC.
-	{{ type_name }}ByID map[int]*{{ type_name }}
-)
-
-// Indexes for this DBC file, to make querying easier.
-var (
-	{% if num_indexed_fields > 0 %}
-		{# If we have many indexed fields, then generate a ByIndex object. #}
-		{{ type_name }}ByIndex {{ index_map_type }}
-
-		{# If we only have a single indexed field, just generate separate variables. #}
-		{% if num_indexed_fields == 1 %}		
-			{% for record in records %}
-				{% set indexed_field = record.IndexedFields()[0] %}
-				{{ type_name }}{{ record[indexed_field.name].title().replace(' ', '') }} *{{ type_name }}
-			{% endfor %}
-		{% endif %}
-	{% endif %}
-)
+{% for chunk in chunks %}
+	{{ chunk }}
+{% endfor %}
 
 func init() {
-	// Set the source of truth.
-	{{ type_name }}ByID = map[int]*{{ type_name }}{
-		{% for record in records %}
-			{{ record.id if record.id else record._id }}: &{{ type_name }}{
-				{% for field in fields %}
-					{% if not field.foreign_key_field %}
-						{{ field.GoName() }}: {{ record.GoValue(field.name) }},
-					{% else %}
-						{{ field.GoName() }}: {{ field.foreign_key_type }}{{ record[field.name] }},
-					{% endif %}
-				{% endfor %}
-			},
-		{% endfor %}
-	}
-
-	{% if num_indexed_fields > 0 %}
-		// Set the index.
-		{{ type_name }}ByIndex = make({{ index_map_type }})
-
-		{% if num_indexed_fields > 1 %}
-			// Initialize sub-maps for each indexed field.
-			{% for record in records %}
-				{% for _ in record.IndexedFields()[:-1] %}
-					{{ type_name }}ByIndex 
-					{%- for index_field in record.IndexedFields()[:loop.index] -%}
-						{%- if index_field.GoType() == 'string' -%}
-							["{{ record[index_field.name].title().replace(' ', '') }}"]
-						{%- else -%}
-							[{{ index_field.GoName() }}{{ record[index_field.name].title().replace(' ', '') }}]
-						{%- endif -%}
-					{%- endfor -%}
-					= make(
-						{%- for index_field in record.IndexedFields()[loop.index:] -%}
-							map[*{{ index_field.GoName() }}]
-						{%- endfor -%}
-					*{{ type_name }})
-				{% endfor %}
-			{% endfor %}
-		{% endif %}
-
-		// Set the index values.
-		{% for record in records %}
-			{{ type_name }}ByIndex
-			{%- for index_field in record.IndexedFields() -%}
-				{%- if index_field.GoType() == 'string' -%}
-					["{{ record[index_field.name].title().replace(' ', '') }}"]
-				{%- else -%}
-					[{{ index_field.GoName() }}{{ record[index_field.name].title().replace(' ', '') }}]
-				{%- endif -%}
-			{%- endfor -%}
-			= {{ type_name }}ByID[{{ record.id if record.id else record._id }}]
-		{% endfor %}
-
-		{% if num_indexed_fields == 1 %}
-			// As there is only a single index, add some special convenience values.
-			{% for record in records %}
-				{% set indexed_field = record.IndexedFields()[0] %}
-				{{ type_name }}{{ record[indexed_field.name].title().replace(' ', '') }} = {{ type_name }}ByID[{{ record.id if record.id else record._id }}]
-			{% endfor %}
-		{% endif %}
-	{% endif %}
+	{% for init_function_name in init_function_names %}
+		{{ init_function_name }}()
+	{% endfor %}
 }

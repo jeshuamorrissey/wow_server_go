@@ -1,0 +1,20 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "interfaces",
+    srcs = [
+        "game_object.go",
+        "guid.go",
+        "item.go",
+        "location.go",
+        "movement_info.go",
+        "unit.go",
+        "update_fields.go",
+    ],
+    importpath = "github.com/jeshuamorrissey/wow_server_go/worldserver/data/dynamic/interfaces",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//common",
+        "//worldserver/data/static",
+    ],
+)

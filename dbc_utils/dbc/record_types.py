@@ -67,6 +67,11 @@ class ChrStartingStats(dbc.Record):
                    foreign_key=(ChrClasses, 'name')),
             String(name='race', indexed=True, foreign_key=(ChrRaces, 'name')),
             Int(name='strength'),
+            Int(name='agility'),
+            Int(name='stamina'),
+            Int(name='intellect'),
+            Int(name='spirit'),
+            Int(name='base_health'),
         ]
 
 

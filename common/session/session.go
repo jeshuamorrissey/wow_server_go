@@ -6,23 +6,22 @@ import (
 	"io"
 
 	"github.com/jeshuamorrissey/wow_server_go/common"
-	c "github.com/jeshuamorrissey/wow_server_go/worldserver/data/dbc/constants"
-	"github.com/jeshuamorrissey/wow_server_go/worldserver/data/object"
-	"github.com/jinzhu/gorm"
+	"github.com/jeshuamorrissey/wow_server_go/worldserver/data/config"
+	"github.com/jeshuamorrissey/wow_server_go/worldserver/data/dynamic/interfaces"
+	"github.com/jeshuamorrissey/wow_server_go/worldserver/data/static"
 	"github.com/sirupsen/logrus"
 )
 
 // OpCode is an integer type which is used to distinguish which packets are which.
 type OpCode interface {
 	Int() int
-	String() string
 }
 
 // State is a generic interface which represents some data that needs to be stored
 // with the session. This state will vary depending on the server.
 type State interface {
-	// DB should return a reference to the DB to use in this handler.
-	DB() *gorm.DB
+	// Config should return a reference to the world config object.
+	Config() *config.Config
 
 	// Log returns a reference to the logger to use.
 	Log() *logrus.Entry
@@ -57,7 +56,7 @@ type Session struct {
 	output io.Writer
 
 	// Update object field cache.
-	updateFieldCache map[object.GUID]map[c.UpdateField]interface{}
+	updateFieldCache map[interfaces.GUID]map[static.UpdateField]interface{}
 
 	state State
 }
@@ -95,14 +94,14 @@ func (s *Session) readPacket(buffer io.Reader) (ClientPacket, error) {
 
 	builder, ok := s.opCodeToPacket[opCode]
 	if !ok {
-		s.log.Warnf("<-- %v [UNHANDLED]", opCode.String())
+		s.log.Warnf("<-- %v [UNHANDLED]", opCode)
 		return nil, nil
 	}
 
 	pkt := builder()
 	pkt.Read(bytes.NewReader(data))
 
-	s.log.Tracef("<-- %v", opCode.String())
+	s.log.Tracef("<-- %v", opCode)
 
 	return pkt, nil
 }
@@ -114,7 +113,7 @@ func (s *Session) AddLogField(key string, value interface{}) {
 
 // SendPacket will send a packet back to the given output.
 func (s *Session) SendPacket(pkt ServerPacket) error {
-	s.log.Tracef("--> %v", pkt.OpCode().String())
+	s.log.Tracef("--> %v", pkt.OpCode())
 
 	// Write the header.
 	pktData := pkt.Bytes(s.state)

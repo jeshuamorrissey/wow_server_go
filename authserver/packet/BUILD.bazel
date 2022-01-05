@@ -1,0 +1,33 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+load("//tools/bazel:gen_strings.bzl", "gen_strings")
+
+gen_strings(
+    name = "enum_strings",
+    srcs = glob(["*.go"]),
+    types = [
+        "LoginErrorCode",
+        "OpCode",
+    ],
+)
+
+go_library(
+    name = "packet",
+    srcs = [
+        "login_challenge.go",
+        "login_constants.go",
+        "login_proof.go",
+        "op_code.go",
+        "realmlist.go",
+        "state.go",
+        ":enum_strings",  # keep
+    ],
+    importpath = "github.com/jeshuamorrissey/wow_server_go/authserver/packet",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//authserver/srp",
+        "//common",
+        "//common/session",
+        "//worldserver/data/config",
+        "@com_github_sirupsen_logrus//:logrus",
+    ],
+)
