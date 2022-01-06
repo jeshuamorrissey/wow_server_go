@@ -3,10 +3,10 @@ load("//tools/bazel:gen_strings.bzl", "gen_strings")
 
 genrule(
     name = "dbc_data",
-    srcs = ["//dbc_utils/dbc_data"],
+    srcs = ["//tools/dbc_utils/dbc_data"],
     outs = ["dbc_data.go"],
-    cmd = "$(location //dbc_utils:golang_generator) --output_file=$@ $(locations //dbc_utils/dbc_data)",
-    tools = ["//dbc_utils:golang_generator"],
+    cmd = "$(location //tools/dbc_utils:golang_generator) --output_file=$@ $(locations //tools/dbc_utils/dbc_data)",
+    tools = ["//tools/dbc_utils:golang_generator"],
 )
 
 gen_strings(

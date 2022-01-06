@@ -3,7 +3,7 @@ load("@rules_python//python:defs.bzl", "py_binary")
 py_binary(
     name = "dbc_generator",
     srcs = ["dbc_generator.py"],
-    deps = ["//dbc_utils/dbc"],
+    deps = ["//tools/dbc_utils/dbc"],
 )
 
 py_binary(
@@ -12,6 +12,6 @@ py_binary(
     visibility = ["//visibility:public"],
     deps = [
         ":dbc_generator",
-        "//dbc_utils/dbc",
+        "//tools/dbc_utils/dbc",
     ],
 )
