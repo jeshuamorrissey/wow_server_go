@@ -1,0 +1,15 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "auth",
+    srcs = ["auth_server.go"],
+    importpath = "github.com/jeshuamorrissey/wow_server_go/server/auth",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//lib/config",
+        "//server/auth/data/static",
+        "//server/auth/packet",
+        "//server/auth/session",
+        "@com_github_sirupsen_logrus//:logrus",
+    ],
+)

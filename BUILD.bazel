@@ -22,22 +22,21 @@ genrule(
     tools = ["//tools/new_game"],
 )
 
-go_binary(
-    name = "project",
-    data = [":example_save"],
-    embed = [":wow_server_go_lib"],
-    visibility = ["//visibility:public"],
-)
-
 go_library(
     name = "wow_server_go_lib",
     srcs = ["mmo_server.go"],
     importpath = "github.com/jeshuamorrissey/wow_server_go",
     visibility = ["//visibility:private"],
     deps = [
-        "//authserver",
-        "//worldserver",
-        "//worldserver/data/config",
+        "//lib/config",
+        "//server/auth",
+        "//server/world",
         "@com_github_sirupsen_logrus//:logrus",
     ],
+)
+
+go_binary(
+    name = "wow_server_go",
+    embed = [":wow_server_go_lib"],
+    visibility = ["//visibility:public"],
 )

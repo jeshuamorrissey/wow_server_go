@@ -1,14 +1,16 @@
 load("@io_bazel_rules_go//go:def.bzl", "go_library")
 
 go_library(
-    name = "initial_data",
-    srcs = ["initial_data.go"],
-    importpath = "github.com/jeshuamorrissey/wow_server_go/tools/new_game/initial_data",
+    name = "world",
+    srcs = ["world_server.go"],
+    importpath = "github.com/jeshuamorrissey/wow_server_go/server/world",
     visibility = ["//visibility:public"],
     deps = [
         "//lib/config",
-        "//server/world/data/dynamic",
         "//server/world/data/dynamic/interfaces",
         "//server/world/data/static",
+        "//server/world/packet",
+        "//server/world/system",
+        "@com_github_sirupsen_logrus//:logrus",
     ],
 )

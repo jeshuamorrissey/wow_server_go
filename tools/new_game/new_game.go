@@ -6,9 +6,9 @@ import (
 	"fmt"
 	"log"
 
+	"github.com/jeshuamorrissey/wow_server_go/lib/config"
+	"github.com/jeshuamorrissey/wow_server_go/server/world/data/static"
 	"github.com/jeshuamorrissey/wow_server_go/tools/new_game/initial_data"
-	"github.com/jeshuamorrissey/wow_server_go/worldserver/data/config"
-	"github.com/jeshuamorrissey/wow_server_go/worldserver/data/static"
 )
 
 func main() {

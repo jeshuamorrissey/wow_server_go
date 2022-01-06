@@ -1,0 +1,22 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+load("//tools/bazel:gen_strings.bzl", "gen_strings")
+
+gen_strings(
+    name = "enum_strings",
+    srcs = glob(["*.go"]),
+    types = [
+        "LoginErrorCode",
+        "OpCode",
+    ],
+)
+
+go_library(
+    name = "static",
+    srcs = [
+        "login_constants.go",
+        "op_code.go",
+        ":enum_strings",  # keep
+    ],
+    importpath = "github.com/jeshuamorrissey/wow_server_go/server/auth/data/static",
+    visibility = ["//visibility:public"],
+)

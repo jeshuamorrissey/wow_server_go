@@ -1,0 +1,23 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "dynamic",
+    srcs = [
+        "container.go",
+        "game_object.go",
+        "item.go",
+        "object_manager.go",
+        "object_utils.go",
+        "player.go",
+        "player_game_logic.go",
+        "unit.go",
+        "unit_game_logic.go",
+    ],
+    importpath = "github.com/jeshuamorrissey/wow_server_go/server/world/data/dynamic",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//server/world/data/dynamic/interfaces",
+        "//server/world/data/static",
+        "@com_github_sirupsen_logrus//:logrus",
+    ],
+)

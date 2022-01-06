@@ -6,9 +6,9 @@ go_library(
     importpath = "github.com/jeshuamorrissey/wow_server_go/tools/new_game",
     visibility = ["//visibility:private"],
     deps = [
+        "//lib/config",
+        "//server/world/data/static",
         "//tools/new_game/initial_data",
-        "//worldserver/data/config",
-        "//worldserver/data/static",
     ],
 )
 

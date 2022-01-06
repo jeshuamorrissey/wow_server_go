@@ -1,2 +1,0 @@
-# Remove bazel-* symlinks.
-common --experimental_convenience_symlinks=ignore

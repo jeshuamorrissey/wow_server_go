@@ -1,10 +1,10 @@
 package initial_data
 
 import (
-	"github.com/jeshuamorrissey/wow_server_go/worldserver/data/config"
-	"github.com/jeshuamorrissey/wow_server_go/worldserver/data/dynamic"
-	"github.com/jeshuamorrissey/wow_server_go/worldserver/data/dynamic/interfaces"
-	"github.com/jeshuamorrissey/wow_server_go/worldserver/data/static"
+	"github.com/jeshuamorrissey/wow_server_go/lib/config"
+	"github.com/jeshuamorrissey/wow_server_go/server/world/data/dynamic"
+	"github.com/jeshuamorrissey/wow_server_go/server/world/data/dynamic/interfaces"
+	"github.com/jeshuamorrissey/wow_server_go/server/world/data/static"
 )
 
 // NewCharacter creates a new character entry in the database and

@@ -3,10 +3,11 @@ package main
 import (
 	"sync"
 
-	"github.com/jeshuamorrissey/wow_server_go/authserver"
-	"github.com/jeshuamorrissey/wow_server_go/worldserver"
-	"github.com/jeshuamorrissey/wow_server_go/worldserver/data/config"
 	"github.com/sirupsen/logrus"
+
+	"github.com/jeshuamorrissey/wow_server_go/lib/config"
+	"github.com/jeshuamorrissey/wow_server_go/server/auth"
+	"github.com/jeshuamorrissey/wow_server_go/server/world"
 )
 
 func main() {
@@ -21,12 +22,12 @@ func main() {
 	wg.Add(2)
 	go func() {
 		defer wg.Done()
-		authserver.RunAuthServer(5000, config)
+		auth.RunAuthServer(5000, config)
 	}()
 
 	go func() {
 		defer wg.Done()
-		worldserver.RunWorldServer("Sydney", 5001, config)
+		world.RunWorldServer("Sydney", 5001, config)
 	}()
 
 	wg.Wait()
