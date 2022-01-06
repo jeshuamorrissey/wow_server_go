@@ -3,10 +3,9 @@ package main
 import (
 	"sync"
 
+	"github.com/jeshuamorrissey/wow_server_go/authserver"
 	"github.com/jeshuamorrissey/wow_server_go/worldserver"
 	"github.com/jeshuamorrissey/wow_server_go/worldserver/data/config"
-
-	"github.com/jeshuamorrissey/wow_server_go/authserver"
 	"github.com/sirupsen/logrus"
 )
 
