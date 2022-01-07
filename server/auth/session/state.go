@@ -30,8 +30,14 @@ type State struct {
 }
 
 // NewState creates a new state based on the given DB connection.
-func NewState(config *config.Config, log *logrus.Entry) *State {
-	return &State{Config: config, log: log}
+func NewState(config *config.Config, log *logrus.Entry, opCodeToPacket map[static.OpCode]func() ClientPacket) *State {
+	return &State{
+		Config:           config,
+		log:              log,
+		opCodeToPacket:   opCodeToPacket,
+		PublicEphemeral:  new(big.Int),
+		PrivateEphemeral: new(big.Int),
+	}
 }
 
 // AddLogField will add a new field to the logger for this session.

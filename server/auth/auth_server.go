@@ -42,7 +42,7 @@ func RunAuthServer(port int, config *config.Config) {
 			logrus.WithFields(logrus.Fields{"server": serverName, "account": "???"}),
 			conn,
 			conn,
-			session.NewState(config, log),
+			session.NewState(config, log, opCodeToPacket),
 		).Run()
 	}
 }
