@@ -101,6 +101,7 @@ func RunWorldServer(realmName string, port int, config *config.Config) {
 			conn,
 			conn,
 			opCodeToPacket,
+			opCodeToHandler,
 			config,
 			logrus.WithFields(logrus.Fields{"server": "WORLD", "account": "???"}),
 			updater,

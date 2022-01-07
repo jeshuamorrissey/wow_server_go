@@ -21,15 +21,6 @@ func (pkt *ClientSetActiveMover) FromBytes(state *system.State, buffer io.Reader
 	return nil
 }
 
-// Handle will ensure that the given account exists.
-func (pkt *ClientSetActiveMover) Handle(state *system.State) ([]system.ServerPacket, error) {
-	if pkt.GUID != state.Character.GUID() {
-		state.Log.Errorf("Incorrect mover GUID: it is %v, but should be %v", pkt.GUID, state.Character.GUID())
-	}
-
-	return nil, nil
-}
-
 // OpCode gets the opcode of the packet.
 func (*ClientSetActiveMover) OpCode() static.OpCode {
 	return static.OpCodeClientSetActiveMover

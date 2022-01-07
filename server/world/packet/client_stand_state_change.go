@@ -19,16 +19,6 @@ func (pkt *ClientStandStateChange) FromBytes(state *system.State, buffer io.Read
 	return nil
 }
 
-// Handle will ensure that the given account exists.
-func (pkt *ClientStandStateChange) Handle(state *system.State) ([]system.ServerPacket, error) {
-	state.Character.StandState = pkt.State
-
-	response := new(ServerStandStateUpdate)
-	response.State = pkt.State
-
-	return []system.ServerPacket{response}, nil
-}
-
 // OpCode gets the opcode of the packet.
 func (*ClientStandStateChange) OpCode() static.OpCode {
 	return static.OpCodeClientStandstatechange

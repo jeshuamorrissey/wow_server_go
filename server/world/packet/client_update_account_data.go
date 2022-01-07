@@ -15,12 +15,6 @@ func (pkt *ClientUpdateAccountData) FromBytes(state *system.State, buffer io.Rea
 	return nil
 }
 
-// Handle will ensure that the given account exists.
-func (pkt *ClientUpdateAccountData) Handle(state *system.State) ([]system.ServerPacket, error) {
-	// Not implemented.
-	return nil, nil
-}
-
 // OpCode gets the opcode of the packet.
 func (*ClientUpdateAccountData) OpCode() static.OpCode {
 	return static.OpCodeClientUpdateAccountData

@@ -21,14 +21,6 @@ func (pkt *ClientPing) FromBytes(state *system.State, buffer io.Reader) error {
 	return nil
 }
 
-// Handle will ensure that the given account exists.
-func (pkt *ClientPing) Handle(state *system.State) ([]system.ServerPacket, error) {
-	response := new(ServerPong)
-	response.Pong = pkt.Ping
-
-	return []system.ServerPacket{response}, nil
-}
-
 // OpCode gets the opcode of the packet.
 func (*ClientPing) OpCode() static.OpCode {
 	return static.OpCodeClientPing

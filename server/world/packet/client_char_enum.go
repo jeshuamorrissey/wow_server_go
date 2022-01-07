@@ -15,13 +15,6 @@ func (pkt *ClientCharEnum) FromBytes(state *system.State, buffer io.Reader) erro
 	return nil
 }
 
-// Handle will ensure that the given account exists.
-func (pkt *ClientCharEnum) Handle(state *system.State) ([]system.ServerPacket, error) {
-	response := new(ServerCharEnum)
-	response.Characters = append(response.Characters, state.Account.Character)
-	return []system.ServerPacket{response}, nil
-}
-
 // OpCode returns the opcode for this packet.
 func (pkt *ClientCharEnum) OpCode() static.OpCode {
 	return static.OpCodeClientCharEnum

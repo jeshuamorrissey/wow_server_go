@@ -19,12 +19,6 @@ func (pkt *ClientTutorialFlag) FromBytes(state *system.State, buffer io.Reader) 
 	return nil
 }
 
-// Handle will ensure that the given account exists.
-func (pkt *ClientTutorialFlag) Handle(state *system.State) ([]system.ServerPacket, error) {
-	state.Character.Tutorials[pkt.Flag] = true
-	return nil, nil
-}
-
 // OpCode gets the opcode of the packet.
 func (*ClientTutorialFlag) OpCode() static.OpCode {
 	return static.OpCodeClientTutorialFlag

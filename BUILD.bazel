@@ -37,7 +37,7 @@ go_library(
 
 go_binary(
     name = "wow_server_go",
-    embed = [":wow_server_go_lib"],
     data = [":example_save"],
+    embed = [":wow_server_go_lib"],
     visibility = ["//visibility:public"],
 )

@@ -19,17 +19,6 @@ func (pkt *ClientNameQuery) FromBytes(state *system.State, buffer io.Reader) err
 	return binary.Read(buffer, binary.LittleEndian, &pkt.GUID)
 }
 
-// Handle will ensure that the given account exists.
-func (pkt *ClientNameQuery) Handle(state *system.State) ([]system.ServerPacket, error) {
-	if !state.OM.Exists(pkt.GUID) {
-		return nil, nil
-	}
-
-	response := new(ServerNameQueryResponse)
-	response.Character = state.Account.Character
-	return []system.ServerPacket{response}, nil
-}
-
 // OpCode gets the opcode of the packet.
 func (*ClientNameQuery) OpCode() static.OpCode {
 	return static.OpCodeClientNameQuery

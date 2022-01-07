@@ -32,4 +32,5 @@
     "go.buildOnSave": "off",
     "go.lintOnSave": "off",
     "go.vetOnSave": "off",
+    "python.formatting.provider": "yapf",
 }

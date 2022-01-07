@@ -26,8 +26,4 @@ type ClientPacket interface {
 
 	// FromBytes reads the packet from a generic reader.
 	FromBytes(*State, io.Reader) error
-
-	// Handle the packet and return a list of server packets to send back
-	// to the client.
-	Handle(*State) ([]ServerPacket, error)
 }

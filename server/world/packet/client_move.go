@@ -50,19 +50,6 @@ func (pkt *ClientMove) FromBytes(state *system.State, buffer io.Reader) error {
 	return nil
 }
 
-// Handle will ensure that the given account exists.
-func (pkt *ClientMove) Handle(state *system.State) ([]system.ServerPacket, error) {
-	state.Character.MovementInfo = pkt.MovementInfo
-
-	location := state.Character.GetLocation()
-	location.X = pkt.MovementInfo.Location.X
-	location.Y = pkt.MovementInfo.Location.Y
-	location.Z = pkt.MovementInfo.Location.Z
-	location.O = pkt.MovementInfo.Location.O
-
-	return nil, nil
-}
-
 // OpCode gets the opcode of the packet.
 func (pkt *ClientMove) OpCode() static.OpCode {
 	return pkt.MoveOpCode

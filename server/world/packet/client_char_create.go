@@ -10,7 +10,6 @@ import (
 	"github.com/jeshuamorrissey/wow_server_go/lib/util"
 	"github.com/jeshuamorrissey/wow_server_go/server/world/data/static"
 	"github.com/jeshuamorrissey/wow_server_go/server/world/system"
-	"github.com/jeshuamorrissey/wow_server_go/tools/new_game/initial_data"
 )
 
 func normalizeCharacterName(name string) string {
@@ -59,39 +58,6 @@ func (pkt *ClientCharCreate) FromBytes(state *system.State, bufferBase io.Reader
 	binary.Read(buffer, binary.LittleEndian, &pkt.Feature)
 	util.ReadBytes(buffer, 1) // OutfitID
 	return nil
-}
-
-// Handle will ensure that the given account exists.
-func (pkt *ClientCharCreate) Handle(state *system.State) ([]system.ServerPacket, error) {
-	response := new(ServerCharCreate)
-	response.Error = static.CharErrorCodeCreateSuccess
-
-	// Check for invalid names.
-	response.Error = validateCharacterName(pkt.Name)
-	if response.Error != static.CharErrorCodeCreateSuccess {
-		return []system.ServerPacket{response}, nil
-	}
-
-	// If the character already exists, fail.
-	if state.Account.Character != nil {
-		response.Error = static.CharErrorCodeCreateFailed
-		return []system.ServerPacket{response}, nil
-	}
-
-	// Make the character.
-	charObj, err := initial_data.NewCharacter(
-		state.Config,
-		pkt.Name,
-		pkt.Race, pkt.Class, pkt.Gender,
-		pkt.SkinColor, pkt.Face, pkt.HairStyle, pkt.HairColor, pkt.Feature)
-	if err != nil {
-		response.Error = static.CharErrorCodeCreateError
-		return []system.ServerPacket{response}, nil
-	}
-
-	state.Account.Character = charObj
-
-	return []system.ServerPacket{response}, nil
 }
 
 // OpCode returns the opcode for this packet.

@@ -1,5 +1,11 @@
 load("@io_bazel_rules_go//go:def.bzl", "go_library")
 
+filegroup(
+    name = "packet_srcs",
+    srcs = glob(["*.go"]),
+    visibility = ["//visibility:public"],
+)
+
 go_library(
     name = "packet",
     srcs = [
@@ -50,7 +56,6 @@ go_library(
         "//server/world/data/dynamic/interfaces",
         "//server/world/data/static",
         "//server/world/system",
-        "//tools/new_game/initial_data",
         "@com_github_sirupsen_logrus//:logrus",
     ],
 )

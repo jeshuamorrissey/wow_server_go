@@ -25,7 +25,8 @@ type Session struct {
 	output     io.Writer
 
 	// A mapping of opCode --> callback to create the client packet.
-	opCodeToPacket map[static.OpCode]func() ClientPacket
+	opCodeToPacket  map[static.OpCode]func() ClientPacket
+	opCodeToHandler map[static.OpCode]func(ClientPacket, *State) ([]ServerPacket, error)
 
 	// State that is to be passed to each handler.
 	state *State
@@ -39,6 +40,7 @@ func NewSession(
 	input io.Reader,
 	output io.Writer,
 	opCodeToPacket map[static.OpCode]func() ClientPacket,
+	opCodeToHandler map[static.OpCode]func(ClientPacket, *State) ([]ServerPacket, error),
 	config *config.Config,
 	log *logrus.Entry,
 	updater *Updater,
@@ -57,10 +59,11 @@ func NewSession(
 	}
 
 	session := &Session{
-		input:          input,
-		output:         output,
-		opCodeToPacket: opCodeToPacket,
-		state:          state,
+		input:           input,
+		output:          output,
+		opCodeToPacket:  opCodeToPacket,
+		opCodeToHandler: opCodeToHandler,
+		state:           state,
 	}
 
 	state.Session = session
@@ -120,7 +123,7 @@ func (s *Session) Send(pkt ServerPacket) error {
 // goroutine. The session will end when the user disconnects.
 func (s *Session) Run() {
 	for {
-		pkt, err := s.readPacket()
+		pkt, opCode, err := s.readPacket()
 		if err != nil {
 			s.state.Log.Warnf("Terminating connection: %v\n", err)
 			if s.state.Character != nil {
@@ -131,11 +134,20 @@ func (s *Session) Run() {
 
 		// If the packet is nil, we don't know how to read it yet.
 		if pkt == nil {
+			s.state.Log.Warnf("<-- %v [UNKNOWN STRUCTURE]", opCode)
+			continue
+		}
+
+		// If the handler doesn't exist, we don't know how to handle it.
+		handler, ok := s.opCodeToHandler[pkt.OpCode()]
+		if !ok {
+			s.state.Log.Warnf("<-- %v [NOT IMPLEMENTED]", pkt.OpCode())
 			continue
 		}
 
 		// Load and then handle the packet.
-		responses, err := pkt.Handle(s.state)
+		s.state.Log.Tracef("<-- %s", opCode)
+		responses, err := handler(pkt, s.state)
 		if err != nil {
 			s.state.Log.Warnf("Error while handling packet %s: %v", pkt.OpCode(), err)
 			continue
@@ -147,32 +159,29 @@ func (s *Session) Run() {
 	}
 }
 
-func (s *Session) readPacket() (ClientPacket, error) {
+func (s *Session) readPacket() (ClientPacket, static.OpCode, error) {
 	s.inputLock.Lock()
 	defer s.inputLock.Unlock()
 
 	opCode, length, err := s.readHeader()
 	if err != nil {
-		return nil, err
+		return nil, 0, err
 	}
 
 	data, err := util.ReadBytes(s.input, length)
 	if err != nil {
-		return nil, err
+		return nil, 0, err
 	}
 
 	builder, ok := s.opCodeToPacket[opCode]
 	if !ok {
-		s.state.Log.Warnf("<-- %v [UNHANDLED]", opCode)
-		return nil, nil
+		return nil, opCode, nil
 	}
 
 	pkt := builder()
 	pkt.FromBytes(s.state, bytes.NewReader(data))
 
-	s.state.Log.Tracef("<-- %s", opCode)
-
-	return pkt, nil
+	return pkt, opCode, nil
 }
 
 func (s *Session) readHeader() (static.OpCode, int, error) {

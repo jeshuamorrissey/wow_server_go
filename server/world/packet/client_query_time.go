@@ -15,11 +15,6 @@ func (pkt *ClientQueryTime) FromBytes(state *system.State, buffer io.Reader) err
 	return nil
 }
 
-// Handle will ensure that the given account exists.
-func (pkt *ClientQueryTime) Handle(state *system.State) ([]system.ServerPacket, error) {
-	return []system.ServerPacket{new(ServerQueryTimeResponse)}, nil
-}
-
 // OpCode gets the opcode of the packet.
 func (*ClientQueryTime) OpCode() static.OpCode {
 	return static.OpCodeClientQueryTime

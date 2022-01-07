@@ -1,0 +1,33 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "handlers",
+    srcs = [
+        "client_attack_swing.go",
+        "client_auth_session.go",
+        "client_char_create.go",
+        "client_char_delete.go",
+        "client_char_enum.go",
+        "client_creature_query.go",
+        "client_item_query_single.go",
+        "client_logout_request.go",
+        "client_move.go",
+        "client_name_query.go",
+        "client_ping.go",
+        "client_player_login.go",
+        "client_query_time.go",
+        "client_set_active_mover.go",
+        "client_stand_state_change.go",
+        "client_tutorial_flag.go",
+        "client_update_account_data.go",
+    ],
+    importpath = "github.com/jeshuamorrissey/wow_server_go/server/world/packet/handlers",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//server/world/data/dynamic/interfaces",
+        "//server/world/data/static",
+        "//server/world/packet",
+        "//server/world/system",
+        "//tools/new_game/initial_data",
+    ],
+)

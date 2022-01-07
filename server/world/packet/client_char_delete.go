@@ -21,13 +21,6 @@ func (pkt *ClientCharDelete) FromBytes(state *system.State, buffer io.Reader) er
 	return nil
 }
 
-// Handle will ensure that the given account exists.
-func (pkt *ClientCharDelete) Handle(state *system.State) ([]system.ServerPacket, error) {
-	response := new(ServerCharDelete)
-	response.Error = static.CharErrorCodeDeleteFailed
-	return []system.ServerPacket{response}, nil
-}
-
 // OpCode returns the opcode for this packet.
 func (pkt *ClientCharDelete) OpCode() static.OpCode {
 	return static.OpCodeClientCharDelete
