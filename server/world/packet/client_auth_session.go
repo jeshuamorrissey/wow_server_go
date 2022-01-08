@@ -5,7 +5,6 @@ import (
 	"io"
 
 	"github.com/jeshuamorrissey/wow_server_go/server/world/data/static"
-	"github.com/jeshuamorrissey/wow_server_go/server/world/system"
 )
 
 // ClientAuthSession is the initial message sent from the server
@@ -20,7 +19,7 @@ type ClientAuthSession struct {
 }
 
 // FromBytes reads a ClientAuthSession pcket from the byter buffer.
-func (pkt *ClientAuthSession) FromBytes(state *system.State, buffer io.Reader) error {
+func (pkt *ClientAuthSession) FromBytes(buffer io.Reader) error {
 	var unk uint32
 
 	binary.Read(buffer, binary.LittleEndian, &pkt.BuildNumber)

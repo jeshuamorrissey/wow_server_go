@@ -22,7 +22,9 @@ func HandleClientPlayerLogin(pkt *packet.ClientPlayerLogin, state *system.State)
 			Character: player,
 		},
 		&packet.ServerAccountDataTimes{},
-		&packet.ServerTutorialFlags{},
+		&packet.ServerTutorialFlags{
+			Player: player,
+		},
 		&packet.ServerInitWorldStates{
 			Map:  uint32(player.MapID),
 			Zone: uint32(player.ZoneID),

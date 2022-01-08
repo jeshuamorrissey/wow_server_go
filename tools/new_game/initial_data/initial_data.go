@@ -52,9 +52,8 @@ func NewCharacter(
 	charObj := &dynamic.Player{
 		Unit: dynamic.Unit{
 			GameObject: dynamic.GameObject{
-				Entry: 0,
-				// ScaleX: static.GetPlayerScale(race, gender),
-				ScaleX: 1.0,
+				Entry:  0,
+				ScaleX: static.GetPlayerScale(race, gender),
 			},
 
 			MovementInfo: interfaces.MovementInfo{

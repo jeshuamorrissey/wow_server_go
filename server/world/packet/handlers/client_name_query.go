@@ -12,6 +12,8 @@ func HandleClientNameQuery(pkt *packet.ClientNameQuery, state *system.State) ([]
 	}
 
 	response := new(packet.ServerNameQueryResponse)
+	response.RealmName = state.Config.Name
 	response.Character = state.Account.Character
+	response.Player = state.Character
 	return []system.ServerPacket{response}, nil
 }

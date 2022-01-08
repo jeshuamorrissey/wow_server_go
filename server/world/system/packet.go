@@ -17,7 +17,7 @@ type ServerPacket interface {
 	Packet
 
 	// ToBytes writes the packet out to an array of bytes.
-	ToBytes(*State) ([]byte, error)
+	ToBytes() ([]byte, error)
 }
 
 // ClientPacket is a packet sent from the client to this server.
@@ -25,5 +25,5 @@ type ClientPacket interface {
 	Packet
 
 	// FromBytes reads the packet from a generic reader.
-	FromBytes(*State, io.Reader) error
+	FromBytes(io.Reader) error
 }

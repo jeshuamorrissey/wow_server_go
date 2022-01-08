@@ -9,7 +9,6 @@ import (
 
 	"github.com/jeshuamorrissey/wow_server_go/lib/util"
 	"github.com/jeshuamorrissey/wow_server_go/server/world/data/static"
-	"github.com/jeshuamorrissey/wow_server_go/server/world/system"
 )
 
 func normalizeCharacterName(name string) string {
@@ -44,7 +43,7 @@ type ClientCharCreate struct {
 }
 
 // FromBytes loads the packet from the given data.
-func (pkt *ClientCharCreate) FromBytes(state *system.State, bufferBase io.Reader) error {
+func (pkt *ClientCharCreate) FromBytes(bufferBase io.Reader) error {
 	buffer := bufio.NewReader(bufferBase)
 	pkt.Name, _ = buffer.ReadString('\x00')
 	pkt.Name = normalizeCharacterName(pkt.Name)

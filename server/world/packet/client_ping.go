@@ -5,7 +5,6 @@ import (
 	"io"
 
 	"github.com/jeshuamorrissey/wow_server_go/server/world/data/static"
-	"github.com/jeshuamorrissey/wow_server_go/server/world/system"
 )
 
 // ClientPing is sent from the client periodically.
@@ -15,7 +14,7 @@ type ClientPing struct {
 }
 
 // FromBytes reads packet data from the given buffer.
-func (pkt *ClientPing) FromBytes(state *system.State, buffer io.Reader) error {
+func (pkt *ClientPing) FromBytes(buffer io.Reader) error {
 	binary.Read(buffer, binary.LittleEndian, &pkt.Ping)
 	binary.Read(buffer, binary.LittleEndian, &pkt.Latency)
 	return nil

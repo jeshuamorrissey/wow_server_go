@@ -6,7 +6,6 @@ import (
 
 	"github.com/jeshuamorrissey/wow_server_go/server/world/data/dynamic/interfaces"
 	"github.com/jeshuamorrissey/wow_server_go/server/world/data/static"
-	"github.com/jeshuamorrissey/wow_server_go/server/world/system"
 )
 
 // ServerAttackerStateUpdate is sent back in response to ClientPing.
@@ -26,7 +25,7 @@ type ServerAttackerStateUpdate struct {
 }
 
 // ToBytes writes out the packet to an array of bytes.
-func (pkt *ServerAttackerStateUpdate) ToBytes(state *system.State) ([]byte, error) {
+func (pkt *ServerAttackerStateUpdate) ToBytes() ([]byte, error) {
 	buffer := bytes.NewBufferString("")
 
 	binary.Write(buffer, binary.LittleEndian, uint32(pkt.HitInfo))

@@ -6,7 +6,6 @@ import (
 
 	"github.com/jeshuamorrissey/wow_server_go/server/world/data/dynamic"
 	"github.com/jeshuamorrissey/wow_server_go/server/world/data/static"
-	"github.com/jeshuamorrissey/wow_server_go/server/world/system"
 )
 
 // ServerLoginVerifyWorld is sent back in response to ClientPing.
@@ -15,7 +14,7 @@ type ServerLoginVerifyWorld struct {
 }
 
 // ToBytes writes out the packet to an array of bytes.
-func (pkt *ServerLoginVerifyWorld) ToBytes(state *system.State) ([]byte, error) {
+func (pkt *ServerLoginVerifyWorld) ToBytes() ([]byte, error) {
 	buffer := bytes.NewBufferString("")
 
 	binary.Write(buffer, binary.LittleEndian, uint32(pkt.Character.MapID))

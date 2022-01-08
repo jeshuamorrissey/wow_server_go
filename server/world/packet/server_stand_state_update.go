@@ -5,7 +5,6 @@ import (
 	"encoding/binary"
 
 	"github.com/jeshuamorrissey/wow_server_go/server/world/data/static"
-	"github.com/jeshuamorrissey/wow_server_go/server/world/system"
 )
 
 // ServerStandStateUpdate is sent back in response to ClientPing.
@@ -14,7 +13,7 @@ type ServerStandStateUpdate struct {
 }
 
 // ToBytes writes out the packet to an array of bytes.
-func (pkt *ServerStandStateUpdate) ToBytes(state *system.State) ([]byte, error) {
+func (pkt *ServerStandStateUpdate) ToBytes() ([]byte, error) {
 	buffer := bytes.NewBufferString("")
 
 	binary.Write(buffer, binary.LittleEndian, pkt.State)

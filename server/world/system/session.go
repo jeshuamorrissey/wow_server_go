@@ -76,7 +76,7 @@ func (s *Session) Send(pkt ServerPacket) error {
 	defer s.outputLock.Unlock()
 
 	opCode := pkt.OpCode()
-	pktData, err := pkt.ToBytes(s.state)
+	pktData, err := pkt.ToBytes()
 	if err != nil {
 		return err
 	}
@@ -179,7 +179,7 @@ func (s *Session) readPacket() (ClientPacket, static.OpCode, error) {
 	}
 
 	pkt := builder()
-	pkt.FromBytes(s.state, bytes.NewReader(data))
+	pkt.FromBytes(bytes.NewReader(data))
 
 	return pkt, opCode, nil
 }

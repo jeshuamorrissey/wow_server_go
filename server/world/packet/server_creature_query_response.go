@@ -5,7 +5,6 @@ import (
 	"encoding/binary"
 
 	"github.com/jeshuamorrissey/wow_server_go/server/world/data/static"
-	"github.com/jeshuamorrissey/wow_server_go/server/world/system"
 )
 
 // ServerCreatureQueryResponse is sent back in response to ClientPing.
@@ -15,7 +14,7 @@ type ServerCreatureQueryResponse struct {
 }
 
 // ToBytes writes out the packet to an array of bytes.
-func (pkt *ServerCreatureQueryResponse) ToBytes(state *system.State) ([]byte, error) {
+func (pkt *ServerCreatureQueryResponse) ToBytes() ([]byte, error) {
 	buffer := bytes.NewBufferString("")
 
 	if pkt.Unit == nil {

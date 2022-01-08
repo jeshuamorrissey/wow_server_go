@@ -4,18 +4,39 @@ import (
 	"bytes"
 	"encoding/binary"
 
+	"github.com/jeshuamorrissey/wow_server_go/server/world/data/dynamic/interfaces"
 	"github.com/jeshuamorrissey/wow_server_go/server/world/data/static"
-	"github.com/jeshuamorrissey/wow_server_go/server/world/system"
 )
+
+// OutOfRangeUpdate represents a list of GUIDs which are no longer in range.
+type OutOfRangeUpdate struct {
+	GUIDS []interfaces.GUID
+}
+
+// ObjectUpdate represents an update to an individual object.
+type ObjectUpdate struct {
+	GUID        interfaces.GUID
+	UpdateType  static.UpdateType
+	UpdateFlags static.UpdateFlags
+	IsSelf      bool
+	TypeID      static.TypeID
+
+	MovementUpdate  []byte
+	NumUpdateFields int
+	UpdateFields    interfaces.UpdateFieldsMap
+
+	VictimGUID interfaces.GUID
+	WorldTime  uint32
+}
 
 // ServerUpdateObject is the UPDATE_OBJECT packet.
 type ServerUpdateObject struct {
-	OutOfRangeUpdates system.OutOfRangeUpdate
-	ObjectUpdates     []system.ObjectUpdate
+	OutOfRangeUpdates OutOfRangeUpdate
+	ObjectUpdates     []ObjectUpdate
 }
 
 // ToBytes converts the packet into an array of bytes.
-func (pkt *ServerUpdateObject) ToBytes(state *system.State) ([]byte, error) {
+func (pkt *ServerUpdateObject) ToBytes() ([]byte, error) {
 	buffer := bytes.NewBufferString("")
 
 	nUpdates := len(pkt.ObjectUpdates)

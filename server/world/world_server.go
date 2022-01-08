@@ -5,7 +5,6 @@ import (
 	"strconv"
 
 	"github.com/jeshuamorrissey/wow_server_go/lib/config"
-	"github.com/jeshuamorrissey/wow_server_go/server/world/data/dynamic/interfaces"
 	"github.com/jeshuamorrissey/wow_server_go/server/world/data/static"
 	"github.com/jeshuamorrissey/wow_server_go/server/world/system"
 
@@ -51,24 +50,6 @@ func setupSession(sess *system.Session) {
 	sess.Send(&pkt)
 }
 
-func makeObjectUpdatePacket(outOfRangeUpdate system.OutOfRangeUpdate, objectUpdates []system.ObjectUpdate) system.ServerPacket {
-	return &packet.ServerUpdateObject{
-		OutOfRangeUpdates: outOfRangeUpdate,
-		ObjectUpdates:     objectUpdates,
-	}
-}
-
-func makeAttackerStateUpdatePacker(attacker interfaces.GUID, target interfaces.GUID, attackInfo interfaces.AttackInfo) system.ServerPacket {
-	return &packet.ServerAttackerStateUpdate{
-		HitInfo:      static.HitInfoNormalSwing,
-		Attacker:     attacker,
-		Target:       target,
-		Damage:       int32(attackInfo.Damage),
-		TargetState:  static.AttackTargetStateHit,
-		MeleeSpellID: 0,
-	}
-}
-
 // RunWorldServer takes as input a database and runs an world server referencing
 // it.
 func RunWorldServer(realmName string, port int, config *config.Config) {
@@ -76,7 +57,7 @@ func RunWorldServer(realmName string, port int, config *config.Config) {
 	log.Logger.SetLevel(logrus.TraceLevel)
 
 	// Start updater.
-	updater := system.NewUpdater(log, config.ObjectManager, makeObjectUpdatePacket, makeAttackerStateUpdatePacker)
+	updater := system.NewUpdater(log, config.ObjectManager)
 	go updater.Run()
 
 	// Start the combat manager.

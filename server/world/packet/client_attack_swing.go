@@ -6,7 +6,6 @@ import (
 
 	"github.com/jeshuamorrissey/wow_server_go/server/world/data/dynamic/interfaces"
 	"github.com/jeshuamorrissey/wow_server_go/server/world/data/static"
-	"github.com/jeshuamorrissey/wow_server_go/server/world/system"
 )
 
 // ClientAttackSwing is sent from the client periodically.
@@ -15,7 +14,7 @@ type ClientAttackSwing struct {
 }
 
 // FromBytes reads packet data from the given buffer.
-func (pkt *ClientAttackSwing) FromBytes(state *system.State, buffer io.Reader) error {
+func (pkt *ClientAttackSwing) FromBytes(buffer io.Reader) error {
 	binary.Read(buffer, binary.LittleEndian, &pkt.Target)
 	return nil
 }

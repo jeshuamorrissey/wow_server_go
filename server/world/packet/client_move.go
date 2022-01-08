@@ -6,7 +6,6 @@ import (
 
 	"github.com/jeshuamorrissey/wow_server_go/server/world/data/dynamic/interfaces"
 	"github.com/jeshuamorrissey/wow_server_go/server/world/data/static"
-	"github.com/jeshuamorrissey/wow_server_go/server/world/system"
 )
 
 // ClientMove is sent from the client periodically.
@@ -23,7 +22,7 @@ func NewClientMovePacket(opCode static.OpCode) *ClientMove {
 }
 
 // FromBytes reads packet data from the given buffer.
-func (pkt *ClientMove) FromBytes(state *system.State, buffer io.Reader) error {
+func (pkt *ClientMove) FromBytes(buffer io.Reader) error {
 	binary.Read(buffer, binary.LittleEndian, &pkt.MovementInfo.MoveFlags)
 	binary.Read(buffer, binary.LittleEndian, &pkt.MovementInfo.Time)
 	binary.Read(buffer, binary.LittleEndian, &pkt.MovementInfo.Location)

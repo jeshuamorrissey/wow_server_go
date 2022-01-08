@@ -10,6 +10,7 @@ import (
 	"github.com/jeshuamorrissey/wow_server_go/server/world/data/dynamic"
 	"github.com/jeshuamorrissey/wow_server_go/server/world/data/dynamic/interfaces"
 	"github.com/jeshuamorrissey/wow_server_go/server/world/data/static"
+	"github.com/jeshuamorrissey/wow_server_go/server/world/packet"
 )
 
 const (
@@ -20,38 +21,9 @@ const (
 	MaxObjectDistance = 500
 )
 
-// MakeUpdateObjectPacketFn is a function which takes as input some
-// update information and returns a ServerPacket that can be sent.
-type MakeUpdateObjectPacketFn func(OutOfRangeUpdate, []ObjectUpdate) ServerPacket
-
-// MakeAttackerStateUpdatePackerFn is a function which takes as input some
-// combat information and returns a ServerPacket that can be sent.
-type MakeAttackerStateUpdatePackerFn func(interfaces.GUID, interfaces.GUID, interfaces.AttackInfo) ServerPacket
-
 type updateCache struct {
 	UpdateFields   interfaces.UpdateFieldsMap
 	MovementUpdate []byte
-}
-
-// OutOfRangeUpdate represents a list of GUIDs which are no longer in range.
-type OutOfRangeUpdate struct {
-	GUIDS []interfaces.GUID
-}
-
-// ObjectUpdate represents an update to an individual object.
-type ObjectUpdate struct {
-	GUID        interfaces.GUID
-	UpdateType  static.UpdateType
-	UpdateFlags static.UpdateFlags
-	IsSelf      bool
-	TypeID      static.TypeID
-
-	MovementUpdate  []byte
-	NumUpdateFields int
-	UpdateFields    interfaces.UpdateFieldsMap
-
-	VictimGUID interfaces.GUID
-	WorldTime  uint32
 }
 
 type loginData struct {
@@ -69,22 +41,17 @@ type Updater struct {
 
 	toUpdateLock sync.Mutex
 	toUpdate     []interfaces.GUID
-
-	makeUpdateObjectPacketFn        MakeUpdateObjectPacketFn
-	makeAttackerStateUpdatePackerFn MakeAttackerStateUpdatePackerFn
 }
 
 // NewUpdater makes a new updater object.
-func NewUpdater(log *logrus.Entry, om *dynamic.ObjectManager, makeUpdateObjectPacketFn MakeUpdateObjectPacketFn, makeAttackerStateUpdatePacker MakeAttackerStateUpdatePackerFn) *Updater {
+func NewUpdater(log *logrus.Entry, om *dynamic.ObjectManager) *Updater {
 	u := &Updater{
 		log: log.WithFields(logrus.Fields{
 			"system": "Updater",
 		}),
-		om:                              om,
-		sessions:                        make(map[interfaces.GUID]*loginData),
-		toUpdate:                        make([]interfaces.GUID, 0),
-		makeUpdateObjectPacketFn:        makeUpdateObjectPacketFn,
-		makeAttackerStateUpdatePackerFn: makeAttackerStateUpdatePacker,
+		om:       om,
+		sessions: make(map[interfaces.GUID]*loginData),
+		toUpdate: make([]interfaces.GUID, 0),
 	}
 
 	return u
@@ -140,8 +107,8 @@ func (u *Updater) makeUpdates(
 	loginData *loginData,
 	player interfaces.Object,
 	objectToUpdate interfaces.Object,
-	outOfRangeUpdate *OutOfRangeUpdate,
-	objectUpdates *[]ObjectUpdate) {
+	outOfRangeUpdate *packet.OutOfRangeUpdate,
+	objectUpdates *[]packet.ObjectUpdate) {
 	if objectToUpdate.GetLocation() != nil {
 		var movementUpdate []byte = nil
 		switch objectToUpdateTyped := objectToUpdate.(type) {
@@ -151,7 +118,7 @@ func (u *Updater) makeUpdates(
 		}
 
 		if objectToUpdate.GetLocation().Distance(player.GetLocation()) < MaxObjectDistance {
-			update := ObjectUpdate{
+			update := packet.ObjectUpdate{
 				GUID:            objectToUpdate.GUID(),
 				UpdateFlags:     dynamic.UpdateFlags(objectToUpdate),
 				IsSelf:          objectToUpdate.GUID() == player.GUID(),
@@ -198,11 +165,11 @@ func (u *Updater) makeUpdates(
 }
 
 func (u *Updater) updatePlayer(guid interfaces.GUID, loginData *loginData) {
-	outOfRangeUpdate := OutOfRangeUpdate{
+	outOfRangeUpdate := packet.OutOfRangeUpdate{
 		GUIDS: make([]interfaces.GUID, 0),
 	}
 
-	objectUpdates := make([]ObjectUpdate, 0)
+	objectUpdates := make([]packet.ObjectUpdate, 0)
 
 	// Find all objects that are close to this player and make sure they
 	// have been updated.
@@ -239,7 +206,7 @@ func (u *Updater) updatePlayer(guid interfaces.GUID, loginData *loginData) {
 		u.makeUpdates(loginData, playerObj, player, &outOfRangeUpdate, &objectUpdates)
 	}
 
-	pkt := u.makeUpdateObjectPacketFn(outOfRangeUpdate, objectUpdates)
+	pkt := u.makeUpdateObjectPacket(outOfRangeUpdate, objectUpdates)
 	loginData.Session.Send(pkt)
 }
 
@@ -249,16 +216,23 @@ func (u *Updater) updateOtherPlayers(guid interfaces.GUID) {
 			continue
 		}
 
-		outOfRangeUpdate := OutOfRangeUpdate{
+		outOfRangeUpdate := packet.OutOfRangeUpdate{
 			GUIDS: make([]interfaces.GUID, 0),
 		}
 
-		objectUpdates := make([]ObjectUpdate, 0)
+		objectUpdates := make([]packet.ObjectUpdate, 0)
 
 		player := u.om.Get(playerGUID)
 		obj := u.om.Get(guid)
 		u.makeUpdates(loginData, player, obj, &outOfRangeUpdate, &objectUpdates)
-		loginData.Session.Send(u.makeUpdateObjectPacketFn(outOfRangeUpdate, objectUpdates))
+		loginData.Session.Send(u.makeUpdateObjectPacket(outOfRangeUpdate, objectUpdates))
+	}
+}
+
+func (u *Updater) makeUpdateObjectPacket(outOfRangeUpdate packet.OutOfRangeUpdate, objectUpdates []packet.ObjectUpdate) ServerPacket {
+	return &packet.ServerUpdateObject{
+		OutOfRangeUpdates: outOfRangeUpdate,
+		ObjectUpdates:     objectUpdates,
 	}
 }
 
@@ -295,7 +269,14 @@ func (u *Updater) SendCombatUpdate(attacker interfaces.Unit, target interfaces.U
 		}
 
 		if attacker.GetLocation().Distance(player.GetLocation()) < MaxObjectDistance || target.GetLocation().Distance(player.GetLocation()) < MaxObjectDistance {
-			loginData.Session.Send(u.makeAttackerStateUpdatePackerFn(attacker.GUID(), target.GUID(), attackInfo))
+			loginData.Session.Send(&packet.ServerAttackerStateUpdate{
+				HitInfo:      static.HitInfoNormalSwing,
+				Attacker:     attacker.GUID(),
+				Target:       target.GUID(),
+				Damage:       int32(attackInfo.Damage),
+				TargetState:  static.AttackTargetStateHit,
+				MeleeSpellID: 0,
+			})
 		}
 	}
 }

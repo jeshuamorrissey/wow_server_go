@@ -7,29 +7,30 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"github.com/jeshuamorrissey/wow_server_go/lib/config"
+	"github.com/jeshuamorrissey/wow_server_go/server/world/data/dynamic"
 	"github.com/jeshuamorrissey/wow_server_go/server/world/data/static"
-	"github.com/jeshuamorrissey/wow_server_go/server/world/system"
 )
 
 // ServerCharEnum is sent back in response to ClientPing.
 type ServerCharEnum struct {
-	Characters []*config.Character
+	Characters    []*config.Character
+	ObjectManager *dynamic.ObjectManager
 }
 
 // ToBytes writes out the packet to an array of bytes.
-func (pkt *ServerCharEnum) ToBytes(state *system.State) ([]byte, error) {
+func (pkt *ServerCharEnum) ToBytes() ([]byte, error) {
 	buffer := bytes.NewBufferString("")
 
 	buffer.WriteByte(uint8(len(pkt.Characters))) // number of characters
 
 	for _, char := range pkt.Characters {
 
-		if !state.OM.Exists(char.GUID) {
-			state.Log.Errorf("GameObject doesn't exist for character %v!", char.Name)
+		if !pkt.ObjectManager.Exists(char.GUID) {
+			logrus.Errorf("GameObject doesn't exist for character %v!", char.Name)
 			continue
 		}
 
-		charObj := state.OM.GetPlayer(char.GUID)
+		charObj := pkt.ObjectManager.GetPlayer(char.GUID)
 		binary.Write(buffer, binary.LittleEndian, charObj.GUID().Low())
 		binary.Write(buffer, binary.LittleEndian, charObj.GUID().High())
 		buffer.WriteString(char.Name)
@@ -65,8 +66,8 @@ func (pkt *ServerCharEnum) ToBytes(state *system.State) ([]byte, error) {
 
 		for slot := static.EquipmentSlotHead; slot <= static.EquipmentSlotTabard; slot++ {
 			if itemGUID, ok := charObj.Equipment[slot]; ok {
-				if !state.OM.Exists(itemGUID) {
-					state.Log.WithFields(logrus.Fields{
+				if !pkt.ObjectManager.Exists(itemGUID) {
+					logrus.WithFields(logrus.Fields{
 						"player":    charObj.GUID(),
 						"slot":      slot,
 						"item_guid": itemGUID,
@@ -74,7 +75,7 @@ func (pkt *ServerCharEnum) ToBytes(state *system.State) ([]byte, error) {
 					continue
 				}
 
-				item := state.OM.GetItem(itemGUID)
+				item := pkt.ObjectManager.GetItem(itemGUID)
 				binary.Write(buffer, binary.LittleEndian, uint32(item.GetTemplate().DisplayID))
 				binary.Write(buffer, binary.LittleEndian, uint8(item.GetTemplate().InventoryType))
 			} else {

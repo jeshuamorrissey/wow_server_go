@@ -6,7 +6,6 @@ import (
 
 	"github.com/jeshuamorrissey/wow_server_go/server/world/data/dynamic/interfaces"
 	"github.com/jeshuamorrissey/wow_server_go/server/world/data/static"
-	"github.com/jeshuamorrissey/wow_server_go/server/world/system"
 )
 
 // ClientItemQuerySingle is sent from the client periodically.
@@ -16,7 +15,7 @@ type ClientItemQuerySingle struct {
 }
 
 // FromBytes reads packet data from the given buffer.
-func (pkt *ClientItemQuerySingle) FromBytes(state *system.State, buffer io.Reader) error {
+func (pkt *ClientItemQuerySingle) FromBytes(buffer io.Reader) error {
 	binary.Read(buffer, binary.LittleEndian, &pkt.Entry)
 	binary.Read(buffer, binary.LittleEndian, &pkt.GUID)
 	return nil

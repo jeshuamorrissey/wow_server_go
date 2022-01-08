@@ -4,7 +4,6 @@ import (
 	"bytes"
 
 	"github.com/jeshuamorrissey/wow_server_go/server/world/data/static"
-	"github.com/jeshuamorrissey/wow_server_go/server/world/system"
 )
 
 // ServerCharCreate is sent from the client when making a character.
@@ -13,7 +12,7 @@ type ServerCharCreate struct {
 }
 
 // ToBytes writes out the packet to an array of bytes.
-func (pkt *ServerCharCreate) ToBytes(state *system.State) ([]byte, error) {
+func (pkt *ServerCharCreate) ToBytes() ([]byte, error) {
 	buffer := bytes.NewBufferString("")
 
 	buffer.WriteByte(uint8(pkt.Error))

@@ -5,7 +5,6 @@ import (
 	"encoding/binary"
 
 	"github.com/jeshuamorrissey/wow_server_go/server/world/data/static"
-	"github.com/jeshuamorrissey/wow_server_go/server/world/system"
 )
 
 // ServerAuthResponse is the initial message sent from the server
@@ -15,7 +14,7 @@ type ServerAuthResponse struct {
 }
 
 // ToBytes writes out the packet to an array of bytes.
-func (pkt *ServerAuthResponse) ToBytes(state *system.State) ([]byte, error) {
+func (pkt *ServerAuthResponse) ToBytes() ([]byte, error) {
 	buffer := bytes.NewBufferString("")
 
 	binary.Write(buffer, binary.LittleEndian, pkt.Error)
