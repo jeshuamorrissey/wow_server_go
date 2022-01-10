@@ -12,6 +12,10 @@ type Unit interface {
 	Object
 
 	/// Game logic.
+	// Initialize should start any long-running operations (such as timers) which are relevant to
+	// the unit (e.g. a timer to restore mana, or to check nearby for threats).
+	Initialize()
+
 	// MeleeMainHandAttackRate should return the time between attacks with the main-hand weapon.
 	MeleeMainHandAttackRate() time.Duration
 

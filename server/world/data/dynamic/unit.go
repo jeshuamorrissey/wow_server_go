@@ -69,6 +69,9 @@ type Unit struct {
 	CreatedBy  interfaces.GUID
 	Target     interfaces.GUID
 	Persuaded  interfaces.GUID
+
+	// Implementation details.
+	IsActive bool
 }
 
 // Object interface methods.

@@ -59,6 +59,15 @@ func (wc *Config) LoadFromJSON(jsonFilepath string) error {
 		return err
 	}
 
+	// Initialize all units and players.
+	for _, player := range wc.ObjectManager.Players {
+		player.Initialize()
+	}
+
+	for _, unit := range wc.ObjectManager.Units {
+		unit.Initialize()
+	}
+
 	return nil
 }
 

@@ -1,9 +1,6 @@
 package dynamic
 
 import (
-	"encoding/json"
-	"io/ioutil"
-	"os"
 	"sync"
 
 	"github.com/sirupsen/logrus"
@@ -19,6 +16,9 @@ var instance *ObjectManager
 type ObjectManager struct {
 	log         *logrus.Entry
 	objectsLock sync.Mutex
+
+	// Function which will trigger updates for the given object.
+	triggerUpdateFor func(interfaces.Object)
 
 	// Mappings from GUID --> Object.
 	Containers  map[interfaces.GUID]*Container
@@ -113,12 +113,14 @@ func (m *ObjectManager) Add(object interfaces.Object) {
 		}
 
 		m.Players[objectTyped.GUID()] = objectTyped
+		objectTyped.Initialize()
 	case *Unit:
 		if objectTyped.GUID() == 0 {
 			objectTyped.SetGUID(m.getNextID(static.HighGUIDUnit))
 		}
 
 		m.Units[objectTyped.GUID()] = objectTyped
+		objectTyped.Initialize()
 	default:
 		panic("unknown object type")
 	}
@@ -211,44 +213,14 @@ func (m *ObjectManager) Exists(guid interfaces.GUID) bool {
 	return false
 }
 
-// LoadFromJSON will load data to populate the Object Manager from a JSON file.
-func (m *ObjectManager) LoadFromJSON(jsonFilepath string) error {
-	file, err := os.OpenFile(jsonFilepath, os.O_RDONLY, 0555)
-	if err != nil {
-		return err
+// TriggerUpdateFor triggers an update for the given object (if that callback has been registered).
+func (m *ObjectManager) TriggerUpdateFor(obj interfaces.Object) {
+	if m.triggerUpdateFor != nil {
+		m.triggerUpdateFor(obj)
 	}
-
-	data, err := ioutil.ReadAll(file)
-	if err != nil {
-		return err
-	}
-
-	err = json.Unmarshal(data, m)
-	if err != nil {
-		return err
-	}
-
-	return nil
 }
 
-// SaveToJSON exports the data within the object manager to a JSON file.
-func (m *ObjectManager) SaveToJSON(filepath string) error {
-	data, err := json.Marshal(m)
-	if err != nil {
-		return err
-	}
-
-	file, err := os.OpenFile(filepath, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0555)
-	if err != nil {
-		return err
-	}
-
-	defer file.Close()
-
-	_, err = file.Write(data)
-	if err != nil {
-		return err
-	}
-
-	return nil
+// SetTriggerUpdateFor updates the triggerUpdateFor callback function.
+func (m *ObjectManager) SetTriggerUpdateFor(triggerUpdateFor func(interfaces.Object)) {
+	m.triggerUpdateFor = triggerUpdateFor
 }

@@ -9,6 +9,13 @@ import (
 )
 
 // Unit interface methods (game-logic).
+func (p *Player) Initialize() {
+	p.Unit.Initialize()
+
+	// Players always start at logged out when initialized.
+	p.Unit.IsActive = false
+}
+
 func (p *Player) MeleeMainHandAttackRate() time.Duration {
 	return p.meleeAttackRate(static.EquipmentSlotMainHand)
 }

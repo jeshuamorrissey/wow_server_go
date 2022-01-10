@@ -72,8 +72,8 @@ func NewCharacter(
 			SpeedSwimBackward: 2.5,
 			SpeedTurn:         3.14159,
 
-			HealthPercent: 1.0,
-			PowerPercent:  1.0,
+			HealthPercent: 0.5,
+			PowerPercent:  0.5,
 
 			BaseHealth: startingStats.BaseHealth,
 			Strength:   startingStats.Strength,

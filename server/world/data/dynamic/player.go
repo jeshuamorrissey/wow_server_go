@@ -81,7 +81,7 @@ func (p *Player) UpdateFields() interfaces.UpdateFieldsMap {
 		static.UpdateFieldUnitChannelObjectLow:                                  uint32(0), // TODO
 		static.UpdateFieldUnitChannelObjectHigh:                                 uint32(0), // TODO
 		static.UpdateFieldUnitHealth:                                            uint32(float32(p.maxHealth()) * p.HealthPercent),
-		static.UpdateFieldUnitPowerStart + static.UpdateField(p.powerType()):    uint32(float32(p.maxPower()) * 0.5),
+		static.UpdateFieldUnitPowerStart + static.UpdateField(p.powerType()):    uint32(float32(p.maxPower()) * p.PowerPercent),
 		static.UpdateFieldUnitMaxHealth:                                         uint32(p.maxHealth()),
 		static.UpdateFieldUnitMaxPowerStart + static.UpdateField(p.powerType()): uint32(p.maxPower()),
 		static.UpdateFieldUnitLevel:                                             uint32(p.Level),

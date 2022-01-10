@@ -1,6 +1,7 @@
 package dynamic
 
 import (
+	"math"
 	"time"
 
 	"github.com/jeshuamorrissey/wow_server_go/server/world/data/dynamic/interfaces"
@@ -11,9 +12,19 @@ import (
 const (
 	HealthPerStamina = 10
 	ManaPerIntellect = 20
+
+	ManaRegenPercentBasePerSecond      float32 = 0.05         // 5% mana regen per second (20 seconds to fully recover mana)
+	ManaRegenPercentPerSpiritPerSecond float32 = 0.05 / 100.0 // 5% mana regen per 100 spirit (~100 at level 60)
+	RegenTimeoutMS                             = 1000         // timeout (in ms) between regen events.
 )
 
 // Unit interface methods (game-logic).
+func (u *Unit) Initialize() {
+	u.IsActive = true
+
+	go u.restoreHealthPower()
+}
+
 func (u *Unit) MeleeMainHandAttackRate() time.Duration {
 	return time.Duration(1000)
 }
@@ -29,6 +40,17 @@ func (u *Unit) ResolveMeleeAttack(target interfaces.Unit) *interfaces.AttackInfo
 }
 
 // Utility methods.
+func (u *Unit) restoreHealthPower() {
+	for range time.Tick(time.Millisecond * RegenTimeoutMS) {
+		if u.IsActive {
+			secondsInTimeout := float32(RegenTimeoutMS / 1000.0)
+			manaPercentToRestore := ManaRegenPercentBasePerSecond*secondsInTimeout + ManaRegenPercentPerSpiritPerSecond*secondsInTimeout*float32(u.Spirit)
+			u.PowerPercent = float32(math.Min(float64(u.PowerPercent)+float64(manaPercentToRestore), 1.0))
+			GetObjectManager().TriggerUpdateFor(u)
+		}
+	}
+}
+
 func (u *Unit) powerType() static.Power {
 	return static.PowerMana
 	// return u.Class.PowerType

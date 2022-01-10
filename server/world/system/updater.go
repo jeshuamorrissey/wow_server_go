@@ -54,6 +54,10 @@ func NewUpdater(log *logrus.Entry, om *dynamic.ObjectManager) *Updater {
 		toUpdate: make([]interfaces.GUID, 0),
 	}
 
+	om.SetTriggerUpdateFor(func(obj interfaces.Object) {
+		u.TriggerUpdateFor(obj)
+	})
+
 	return u
 }
 
@@ -79,6 +83,7 @@ func (u *Updater) Login(playerGUID interfaces.GUID, session *Session) error {
 
 	// Mark the player as logged in.
 	u.om.GetPlayer(playerGUID).IsLoggedIn = true
+	u.om.GetPlayer(playerGUID).Unit.IsActive = true
 
 	u.toUpdateLock.Lock()
 	defer u.toUpdateLock.Unlock()
@@ -98,6 +103,7 @@ func (u *Updater) Logout(playerGUID interfaces.GUID) error {
 
 	// Mark the player as logged in.
 	u.om.GetPlayer(playerGUID).IsLoggedIn = false
+	u.om.GetPlayer(playerGUID).Unit.IsActive = false
 
 	delete(u.sessions, playerGUID)
 	return nil
@@ -153,7 +159,9 @@ func (u *Updater) makeUpdates(
 				}
 			}
 
-			*objectUpdates = append(*objectUpdates, update)
+			if len(update.UpdateFields) != 0 {
+				*objectUpdates = append(*objectUpdates, update)
+			}
 		} else {
 			// If the object was in range, but no longer is, delete it.
 			if _, ok := loginData.UpdateCache[objectToUpdate.GUID()]; ok {
@@ -206,7 +214,12 @@ func (u *Updater) updatePlayer(guid interfaces.GUID, loginData *loginData) {
 		u.makeUpdates(loginData, playerObj, player, &outOfRangeUpdate, &objectUpdates)
 	}
 
+	if len(outOfRangeUpdate.GUIDS) == 0 && len(objectUpdates) == 0 {
+		return
+	}
+
 	pkt := u.makeUpdateObjectPacket(outOfRangeUpdate, objectUpdates)
+	fmt.Printf("%v\n", pkt)
 	loginData.Session.Send(pkt)
 }
 
@@ -225,6 +238,11 @@ func (u *Updater) updateOtherPlayers(guid interfaces.GUID) {
 		player := u.om.Get(playerGUID)
 		obj := u.om.Get(guid)
 		u.makeUpdates(loginData, player, obj, &outOfRangeUpdate, &objectUpdates)
+
+		if len(outOfRangeUpdate.GUIDS) == 0 && len(objectUpdates) == 0 {
+			return
+		}
+
 		loginData.Session.Send(u.makeUpdateObjectPacket(outOfRangeUpdate, objectUpdates))
 	}
 }
@@ -239,8 +257,7 @@ func (u *Updater) makeUpdateObjectPacket(outOfRangeUpdate packet.OutOfRangeUpdat
 // Run starts the updater, which will constantly scan for object updates.
 // Should be run as a goroutine.
 func (u *Updater) Run() {
-	for {
-		time.Sleep(time.Millisecond * 30)
+	for range time.Tick(time.Millisecond * 30) {
 		u.toUpdateLock.Lock()
 
 		// There are some object to update!
@@ -252,7 +269,7 @@ func (u *Updater) Run() {
 			}
 
 			// Second, we need to notify other players of this update.
-			u.updateOtherPlayers(guid)
+			// u.updateOtherPlayers(guid)
 		}
 
 		u.toUpdate = make([]interfaces.GUID, 0)
@@ -279,4 +296,10 @@ func (u *Updater) SendCombatUpdate(attacker interfaces.Unit, target interfaces.U
 			})
 		}
 	}
+}
+
+func (u *Updater) TriggerUpdateFor(obj interfaces.Object) {
+	u.toUpdateLock.Lock()
+	defer u.toUpdateLock.Unlock()
+	u.toUpdate = append(u.toUpdate, obj.GUID())
 }
