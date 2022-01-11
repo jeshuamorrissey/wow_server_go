@@ -19,11 +19,18 @@ type Unit interface {
 	// MeleeMainHandAttackRate should return the time between attacks with the main-hand weapon.
 	MeleeMainHandAttackRate() time.Duration
 
+	// ResolveMainHandAttack should simulate an attack from this unit to another unit and return a
+	// structure describing the result of the interaction.
+	ResolveMainHandAttack(Unit) *AttackInfo
+
 	// MeleeOffHandAttackRate should return the time between attacks with the off-hand weapon. A value
 	// of nil represents no weapon being equipped in the off-hand slot.
 	MeleeOffHandAttackRate() time.Duration
 
-	// ResolveMeleeAttack should simulate an attack from this unit to another unit and return a
+	// ResolveOffHandAttack should simulate an attack from this unit to another unit and return a
 	// structure describing the result of the interaction.
-	ResolveMeleeAttack(Unit) *AttackInfo
+	ResolveOffHandAttack(Unit) *AttackInfo
+
+	// SetInCombat can be used to specify that the given unit is in combat.
+	SetInCombat(bool)
 }

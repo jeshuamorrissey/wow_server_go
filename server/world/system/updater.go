@@ -269,7 +269,7 @@ func (u *Updater) Run() {
 	}
 }
 
-func (u *Updater) SendCombatUpdate(attacker interfaces.Unit, target interfaces.Unit, attackInfo interfaces.AttackInfo) {
+func (u *Updater) SendCombatUpdate(attacker interfaces.Unit, target interfaces.Unit, attackInfo *interfaces.AttackInfo) {
 	// Find all players in range of either the attacker or target.
 	for playerGUID, loginData := range u.sessions {
 		player := u.om.Get(playerGUID)

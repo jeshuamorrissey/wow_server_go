@@ -3,6 +3,7 @@ load("@io_bazel_rules_go//go:def.bzl", "go_library")
 go_library(
     name = "handlers",
     srcs = [
+        "client_attack_stop.go",
         "client_attack_swing.go",
         "client_auth_session.go",
         "client_char_create.go",

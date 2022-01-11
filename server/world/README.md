@@ -15,6 +15,8 @@
 - `system`: this contains the various in-game systems. These are often long-running processes that
   are updated at regular intervals.
 
+- `game`: this contains in-game logic (such as resolving combat between two different units).
+
 ### `data/dynamic`
 
 This contains all information about in-game objects. There are a number of types:

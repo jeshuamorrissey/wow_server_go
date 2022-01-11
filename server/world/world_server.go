@@ -30,6 +30,7 @@ var opCodeToPacket = map[static.OpCode]func() system.ClientPacket{
 	static.OpCodeClientTutorialFlag:      func() system.ClientPacket { return new(packet.ClientTutorialFlag) },
 	static.OpCodeClientUpdateAccountData: func() system.ClientPacket { return new(packet.ClientUpdateAccountData) },
 	static.OpCodeClientAttackswing:       func() system.ClientPacket { return new(packet.ClientAttackSwing) },
+	static.OpCodeClientAttackstop:        func() system.ClientPacket { return new(packet.ClientAttackStop) },
 
 	// Movement packets have the same receiver.
 	static.OpCodeClientMoveHeartbeat:        func() system.ClientPacket { return packet.NewClientMovePacket(static.OpCodeClientMoveHeartbeat) },

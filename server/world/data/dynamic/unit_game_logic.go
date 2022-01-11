@@ -13,8 +13,8 @@ const (
 	HealthPerStamina = 10
 	ManaPerIntellect = 20
 
-	ManaRegenPercentBasePerSecond      float32 = 0.05         // 5% mana regen per second (20 seconds to fully recover mana)
-	ManaRegenPercentPerSpiritPerSecond float32 = 0.05 / 100.0 // 5% mana regen per 100 spirit (~100 at level 60)
+	ManaRegenPercentBasePerSecond      float64 = 0.05         // 5% mana regen per second (20 seconds to fully recover mana)
+	ManaRegenPercentPerSpiritPerSecond float64 = 0.05 / 100.0 // 5% mana regen per 100 spirit (~100 at level 60)
 	RegenTimeoutMS                             = 1000         // timeout (in ms) between regen events.
 )
 
@@ -33,19 +33,36 @@ func (u *Unit) MeleeOffHandAttackRate() time.Duration {
 	return time.Duration(0)
 }
 
-func (u *Unit) ResolveMeleeAttack(target interfaces.Unit) *interfaces.AttackInfo {
+func (u *Unit) ResolveMainHandAttack(target interfaces.Unit) *interfaces.AttackInfo {
 	return &interfaces.AttackInfo{
 		Damage: 100,
 	}
+}
+
+func (u *Unit) ResolveOffHandAttack(target interfaces.Unit) *interfaces.AttackInfo {
+	return &interfaces.AttackInfo{
+		Damage: 100,
+	}
+}
+
+func (u *Unit) SetInCombat(inCombat bool) {
+	u.InCombat = true
 }
 
 // Utility methods.
 func (u *Unit) restoreHealthPower() {
 	for range time.Tick(time.Millisecond * RegenTimeoutMS) {
 		if u.IsActive {
-			secondsInTimeout := float32(RegenTimeoutMS / 1000.0)
-			manaPercentToRestore := ManaRegenPercentBasePerSecond*secondsInTimeout + ManaRegenPercentPerSpiritPerSecond*secondsInTimeout*float32(u.Spirit)
-			u.PowerPercent = float32(math.Min(float64(u.PowerPercent)+float64(manaPercentToRestore), 1.0))
+			secondsInTimeout := RegenTimeoutMS / 1000.0
+			manaPercentToRestore := ManaRegenPercentBasePerSecond*secondsInTimeout + ManaRegenPercentPerSpiritPerSecond*secondsInTimeout*float64(u.Spirit)
+
+			// If we are in combat, penalize regen.
+			combatMultiplier := 1.0
+			if u.InCombat {
+				combatMultiplier = 0.1
+			}
+
+			u.PowerPercent = float32(math.Min(float64(u.PowerPercent)+manaPercentToRestore*combatMultiplier, 1.0))
 			GetObjectManager().TriggerUpdateFor(u)
 		}
 	}

@@ -24,24 +24,38 @@ func (p *Player) MeleeOffHandAttackRate() time.Duration {
 	return p.meleeAttackRate(static.EquipmentSlotOffHand)
 }
 
-func (p *Player) ResolveMeleeAttack(target interfaces.Unit) *interfaces.AttackInfo {
-	weapon := GetObjectManager().GetItem(p.Equipment[static.EquipmentSlotMainHand])
-	if weapon == nil {
-		return &interfaces.AttackInfo{
-			Damage: 0,
-		}
-	}
-
-	minDamage := int(weapon.GetTemplate().Damages[static.SpellSchoolPhysical].Min)
-	maxDamage := int(weapon.GetTemplate().Damages[static.SpellSchoolPhysical].Max)
-	finalDamage := minDamage + rand.Intn(maxDamage-minDamage+1)
-
+func (p *Player) ResolveMainHandAttack(target interfaces.Unit) *interfaces.AttackInfo {
+	minDamage, maxDamage := p.getWeaponDamageRange(GetObjectManager().GetItem(p.Equipment[static.EquipmentSlotMainHand]))
 	return &interfaces.AttackInfo{
-		Damage: finalDamage,
+		Damage: minDamage + rand.Intn(maxDamage-minDamage+1),
 	}
 }
 
+func (p *Player) ResolveOffHandAttack(target interfaces.Unit) *interfaces.AttackInfo {
+	minDamage, maxDamage := p.getWeaponDamageRange(GetObjectManager().GetItem(p.Equipment[static.EquipmentSlotMainHand]))
+	if minDamage == 0 && maxDamage == 0 {
+		return nil
+	}
+
+	return &interfaces.AttackInfo{
+		Damage: minDamage + rand.Intn(maxDamage-minDamage+1),
+	}
+}
+
+func (p *Player) SetInCombat(inCombat bool) {
+	p.Unit.InCombat = true
+}
+
 // Utility methods.
+// getWeaponRamageRange returns a pair of numbers: (min, max) for the given weapon.
+func (p *Player) getWeaponDamageRange(weapon *Item) (int, int) {
+	if weapon == nil {
+		return 0, 0
+	}
+
+	return int(weapon.GetTemplate().Damages[static.SpellSchoolPhysical].Min), int(weapon.GetTemplate().Damages[static.SpellSchoolPhysical].Max)
+}
+
 // meleeAttackRate calculates the attack rate for a given equipment slot.
 func (p *Player) meleeAttackRate(slot static.EquipmentSlot) time.Duration {
 	weapon := GetObjectManager().GetItem(p.Equipment[slot])

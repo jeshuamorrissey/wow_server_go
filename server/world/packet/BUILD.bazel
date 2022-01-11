@@ -9,6 +9,7 @@ filegroup(
 go_library(
     name = "packet",
     srcs = [
+        "client_attack_stop.go",
         "client_attack_swing.go",
         "client_auth_session.go",
         "client_char_create.go",
@@ -28,6 +29,7 @@ go_library(
         "client_update_account_data.go",
         "server_account_data_times.go",
         "server_attack_start.go",
+        "server_attack_stop.go",
         "server_attacker_state_update.go",
         "server_auth_challenge.go",
         "server_auth_response.go",
