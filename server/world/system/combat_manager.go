@@ -131,6 +131,13 @@ func (cm *CombatManager) resolveMeleeAttack(autoAttackTimer *autoAttackTimer, co
 		select {
 		case <-autoAttackTimer.ticker.C:
 			attackInfo := resolveAttack()
+			switch typedUnit := combatInfo.target.(type) {
+			case *dynamic.Unit:
+				typedUnit.TakeDamage(attackInfo.Damage)
+			case *dynamic.Player:
+				typedUnit.TakeDamage(attackInfo.Damage)
+			}
+			cm.updater.TriggerUpdateFor(combatInfo.target)
 			cm.updater.SendCombatUpdate(combatInfo.attacker, combatInfo.target, attackInfo)
 		case <-autoAttackTimer.done:
 			autoAttackTimer.ticker.Stop()

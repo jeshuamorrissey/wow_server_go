@@ -73,6 +73,11 @@ func (u *Unit) powerType() static.Power {
 	// return u.Class.PowerType
 }
 
+func (u *Unit) TakeDamage(damage int) {
+	percentOfMaxChange := float64(damage) / float64(u.maxHealth())
+	u.HealthPercent = float32(math.Max(0, float64(u.HealthPercent)-percentOfMaxChange))
+}
+
 func (u *Unit) maxHealth() int {
 	return u.BaseHealth + HealthPerStamina*u.Stamina
 }
