@@ -1,7 +1,5 @@
 package static
 
-import "fmt"
-
 // Unit represents a template within the world.
 type Unit struct {
 	// Basic information.
@@ -294,7 +292,6 @@ func (u *Unit) CreatureTypeFlags() int {
 // GetPlayerModelInfo gets the ModelInfo structure for player races.
 // Taken from ChrRaces.dbc
 func GetPlayerModelInfo(race *Race, gender Gender) ModelInfo {
-	fmt.Printf("%v %v\n", race.ID, RaceHuman.ID)
 	if gender == GenderMale {
 		switch race.ID {
 		case RaceHuman.ID:

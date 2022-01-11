@@ -1,6 +1,7 @@
 package system
 
 import (
+	"bytes"
 	"fmt"
 	"sync"
 	"time"
@@ -29,6 +30,27 @@ type updateCache struct {
 type loginData struct {
 	Session     *Session
 	UpdateCache map[interfaces.GUID]*updateCache
+}
+
+func (ld *loginData) updateCache(obj interfaces.Object, update *packet.ObjectUpdate) {
+	if _, ok := ld.UpdateCache[obj.GUID()]; !ok {
+		ld.UpdateCache[obj.GUID()] = &updateCache{
+			UpdateFields:   interfaces.UpdateFieldsMap{},
+			MovementUpdate: []byte{},
+		}
+	}
+
+	cache := ld.UpdateCache[obj.GUID()]
+
+	// First, copy over any fields which are in the new update.
+	for k, v := range update.UpdateFields {
+		cache.UpdateFields[k] = v
+	}
+
+	// Second, replace the movement update (if it has changed).
+	if bytes.Compare(cache.MovementUpdate, update.MovementUpdate) != 0 {
+		cache.MovementUpdate = update.MovementUpdate[:]
+	}
 }
 
 // Updater manages sending object updates to sessions based on when objects have been changed.
@@ -119,6 +141,7 @@ func (u *Updater) makeUpdates(
 		var movementUpdate []byte = nil
 		switch objectToUpdateTyped := objectToUpdate.(type) {
 		case *dynamic.Unit:
+			movementUpdate = objectToUpdateTyped.MovementUpdate()
 		case *dynamic.Player:
 			movementUpdate = objectToUpdateTyped.MovementUpdate()
 		}
@@ -146,6 +169,8 @@ func (u *Updater) makeUpdates(
 						delete(update.UpdateFields, k)
 					}
 				}
+
+				loginData.updateCache(objectToUpdate, &update)
 			} else {
 				if update.MovementUpdate != nil {
 					update.UpdateType = static.UpdateTypeCreateObject2
@@ -153,10 +178,7 @@ func (u *Updater) makeUpdates(
 					update.UpdateType = static.UpdateTypeCreateObject
 				}
 
-				loginData.UpdateCache[objectToUpdate.GUID()] = &updateCache{
-					UpdateFields:   update.UpdateFields,
-					MovementUpdate: update.MovementUpdate,
-				}
+				loginData.updateCache(objectToUpdate, &update)
 			}
 
 			if len(update.UpdateFields) != 0 {
@@ -179,39 +201,10 @@ func (u *Updater) updatePlayer(guid interfaces.GUID, loginData *loginData) {
 
 	objectUpdates := make([]packet.ObjectUpdate, 0)
 
-	// Find all objects that are close to this player and make sure they
-	// have been updated.
+	// Find all objects that are close to this player and make sure they have been updated.
 	playerObj := u.om.Get(guid)
-	for _, player := range u.om.Players {
-		if !player.IsLoggedIn {
-			continue
-		}
-
-		for _, itemGUID := range player.Inventory {
-			if u.om.Exists(itemGUID) {
-				u.makeUpdates(loginData, playerObj, u.om.GetItem(itemGUID), &outOfRangeUpdate, &objectUpdates)
-			}
-		}
-
-		for _, itemGUID := range player.Equipment {
-			if u.om.Exists(itemGUID) {
-				u.makeUpdates(loginData, playerObj, u.om.GetItem(itemGUID), &outOfRangeUpdate, &objectUpdates)
-			}
-		}
-
-		for _, bagGUID := range player.Bags {
-			if u.om.Exists(bagGUID) {
-				bag := u.om.GetContainer(bagGUID)
-				u.makeUpdates(loginData, playerObj, bag, &outOfRangeUpdate, &objectUpdates)
-				for _, itemGUID := range bag.Items {
-					if u.om.Exists(itemGUID) {
-						u.makeUpdates(loginData, playerObj, u.om.GetItem(itemGUID), &outOfRangeUpdate, &objectUpdates)
-					}
-				}
-			}
-		}
-
-		u.makeUpdates(loginData, playerObj, player, &outOfRangeUpdate, &objectUpdates)
+	for guid := range u.om.ActiveIDs {
+		u.makeUpdates(loginData, playerObj, u.om.Get(guid), &outOfRangeUpdate, &objectUpdates)
 	}
 
 	if len(outOfRangeUpdate.GUIDS) == 0 && len(objectUpdates) == 0 {
@@ -219,7 +212,6 @@ func (u *Updater) updatePlayer(guid interfaces.GUID, loginData *loginData) {
 	}
 
 	pkt := u.makeUpdateObjectPacket(outOfRangeUpdate, objectUpdates)
-	fmt.Printf("%v\n", pkt)
 	loginData.Session.Send(pkt)
 }
 

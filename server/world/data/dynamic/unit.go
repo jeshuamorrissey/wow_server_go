@@ -140,46 +140,46 @@ func (u *Unit) UpdateFields() interfaces.UpdateFieldsMap {
 		static.UpdateFieldUnitModCastSpeed:                                      uint32(0), // TODO
 		static.UpdateFieldUnitCreatedBySpell:                                    uint32(0), // TODO
 		static.UpdateFieldUnitNpcFlags:                                          uint32(tmpl.Flags()),
-		static.UpdateFieldUnitNpcEmotestate:                                     uint32(0),  // TODO
-		static.UpdateFieldUnitTrainingPoints:                                    uint32(0),  // TODO
-		static.UpdateFieldUnitStrength:                                          uint32(0),  // TODO
-		static.UpdateFieldUnitAgility:                                           uint32(0),  // TODO
-		static.UpdateFieldUnitStamina:                                           uint32(0),  // TODO
-		static.UpdateFieldUnitIntellect:                                         uint32(0),  // TODO
-		static.UpdateFieldUnitSpirit:                                            uint32(0),  // TODO
-		static.UpdateFieldUnitArmor:                                             uint32(0),  // TODO
-		static.UpdateFieldUnitHolyResist:                                        uint32(0),  // TODO
-		static.UpdateFieldUnitFireResist:                                        uint32(0),  // TODO
-		static.UpdateFieldUnitNatureResist:                                      uint32(0),  // TODO
-		static.UpdateFieldUnitFrostResist:                                       uint32(0),  // TODO
-		static.UpdateFieldUnitShadowResist:                                      uint32(0),  // TODO
-		static.UpdateFieldUnitArcaneResist:                                      uint32(0),  // TODO
-		static.UpdateFieldUnitBaseMana:                                          uint32(0),  // TODO
-		static.UpdateFieldUnitBaseHealth:                                        uint32(0),  // TODO
-		static.UpdateFieldUnitBytes2:                                            uint32(0),  // TODO
-		static.UpdateFieldUnitAttackPower:                                       uint32(0),  // TODO
-		static.UpdateFieldUnitAttackPowerMods:                                   uint32(0),  // TODO
-		static.UpdateFieldUnitAttackPowerMultiplier:                             uint32(0),  // TODO
-		static.UpdateFieldUnitRangedAttackPower:                                 uint32(0),  // TODO
-		static.UpdateFieldUnitRangedAttackPowerMods:                             uint32(0),  // TODO
-		static.UpdateFieldUnitRangedAttackPowerMultiplier:                       uint32(0),  // TODO
-		static.UpdateFieldUnitMinrangeddamage:                                   uint32(0),  // TODO
-		static.UpdateFieldUnitMaxrangeddamage:                                   uint32(0),  // TODO
-		static.UpdateFieldUnitPowerCostModifier:                                 uint32(0),  // TODO
-		static.UpdateFieldUnitPowerCostModifier01:                               uint32(0),  // TODO
-		static.UpdateFieldUnitPowerCostModifier02:                               uint32(0),  // TODO
-		static.UpdateFieldUnitPowerCostModifier03:                               uint32(0),  // TODO
-		static.UpdateFieldUnitPowerCostModifier04:                               uint32(0),  // TODO
-		static.UpdateFieldUnitPowerCostModifier05:                               uint32(0),  // TODO
-		static.UpdateFieldUnitPowerCostModifier06:                               uint32(0),  // TODO
-		static.UpdateFieldUnitPowerCostMultiplier:                               uint32(0),  // TODO
-		static.UpdateFieldUnitPowerCostMultiplier01:                             uint32(0),  // TODO
-		static.UpdateFieldUnitPowerCostMultiplier02:                             uint32(0),  // TODO
-		static.UpdateFieldUnitPowerCostMultiplier03:                             uint32(0),  // TODO
-		static.UpdateFieldUnitPowerCostMultiplier04:                             uint32(0),  // TODO
-		static.UpdateFieldUnitPowerCostMultiplier05:                             uint32(0),  // TODO
-		static.UpdateFieldUnitPowerCostMultiplier06:                             uint32(0),  // TODO
-		static.UpdateFieldUnitFactiontemplate:                                   uint32(17), // TODO
+		static.UpdateFieldUnitNpcEmotestate:                                     uint32(0), // TODO
+		static.UpdateFieldUnitTrainingPoints:                                    uint32(0), // TODO
+		static.UpdateFieldUnitStrength:                                          uint32(0), // TODO
+		static.UpdateFieldUnitAgility:                                           uint32(0), // TODO
+		static.UpdateFieldUnitStamina:                                           uint32(0), // TODO
+		static.UpdateFieldUnitIntellect:                                         uint32(0), // TODO
+		static.UpdateFieldUnitSpirit:                                            uint32(0), // TODO
+		static.UpdateFieldUnitArmor:                                             uint32(0), // TODO
+		static.UpdateFieldUnitHolyResist:                                        uint32(0), // TODO
+		static.UpdateFieldUnitFireResist:                                        uint32(0), // TODO
+		static.UpdateFieldUnitNatureResist:                                      uint32(0), // TODO
+		static.UpdateFieldUnitFrostResist:                                       uint32(0), // TODO
+		static.UpdateFieldUnitShadowResist:                                      uint32(0), // TODO
+		static.UpdateFieldUnitArcaneResist:                                      uint32(0), // TODO
+		static.UpdateFieldUnitBaseMana:                                          uint32(0), // TODO
+		static.UpdateFieldUnitBaseHealth:                                        uint32(0), // TODO
+		static.UpdateFieldUnitBytes2:                                            uint32(0), // TODO
+		static.UpdateFieldUnitAttackPower:                                       uint32(0), // TODO
+		static.UpdateFieldUnitAttackPowerMods:                                   uint32(0), // TODO
+		static.UpdateFieldUnitAttackPowerMultiplier:                             uint32(0), // TODO
+		static.UpdateFieldUnitRangedAttackPower:                                 uint32(0), // TODO
+		static.UpdateFieldUnitRangedAttackPowerMods:                             uint32(0), // TODO
+		static.UpdateFieldUnitRangedAttackPowerMultiplier:                       uint32(0), // TODO
+		static.UpdateFieldUnitMinrangeddamage:                                   uint32(0), // TODO
+		static.UpdateFieldUnitMaxrangeddamage:                                   uint32(0), // TODO
+		static.UpdateFieldUnitPowerCostModifier:                                 uint32(0), // TODO
+		static.UpdateFieldUnitPowerCostModifier01:                               uint32(0), // TODO
+		static.UpdateFieldUnitPowerCostModifier02:                               uint32(0), // TODO
+		static.UpdateFieldUnitPowerCostModifier03:                               uint32(0), // TODO
+		static.UpdateFieldUnitPowerCostModifier04:                               uint32(0), // TODO
+		static.UpdateFieldUnitPowerCostModifier05:                               uint32(0), // TODO
+		static.UpdateFieldUnitPowerCostModifier06:                               uint32(0), // TODO
+		static.UpdateFieldUnitPowerCostMultiplier:                               uint32(0), // TODO
+		static.UpdateFieldUnitPowerCostMultiplier01:                             uint32(0), // TODO
+		static.UpdateFieldUnitPowerCostMultiplier02:                             uint32(0), // TODO
+		static.UpdateFieldUnitPowerCostMultiplier03:                             uint32(0), // TODO
+		static.UpdateFieldUnitPowerCostMultiplier04:                             uint32(0), // TODO
+		static.UpdateFieldUnitPowerCostMultiplier05:                             uint32(0), // TODO
+		static.UpdateFieldUnitPowerCostMultiplier06:                             uint32(0), // TODO
+		static.UpdateFieldUnitFactiontemplate:                                   uint32(4), // TODO
 	}
 
 	mergedFields := u.GameObject.UpdateFields()
@@ -205,16 +205,16 @@ func (u *Unit) MovementUpdate() []byte {
 	binary.Write(buffer, binary.LittleEndian, float32(u.GetLocation().Z))
 	binary.Write(buffer, binary.LittleEndian, float32(u.GetLocation().O))
 
-	// if GetObjectManager().Exists(u.Transport) {
 	// TODO(jeshua): transport.
-	// transportObj := GetObjectManager().GetTransport(u.Transport)
-	// binary.Write(buffer, binary.LittleEndian, uint64(u.Transport))
-	// binary.Write(buffer, binary.LittleEndian, float32(transportObj.GetLocation().X))
-	// binary.Write(buffer, binary.LittleEndian, float32(transportObj.GetLocation().Y))
-	// binary.Write(buffer, binary.LittleEndian, float32(transportObj.GetLocation().Z))
-	// binary.Write(buffer, binary.LittleEndian, float32(transportObj.GetLocation().O))
-	// binary.Write(buffer, binary.LittleEndian, uint32(0)) // Time
-	// }
+	if GetObjectManager().Exists(u.Transport) {
+		// transportObj := GetObjectManager().GetTransport(u.Transport)
+		// binary.Write(buffer, binary.LittleEndian, uint64(u.Transport))
+		// binary.Write(buffer, binary.LittleEndian, float32(transportObj.GetLocation().X))
+		// binary.Write(buffer, binary.LittleEndian, float32(transportObj.GetLocation().Y))
+		// binary.Write(buffer, binary.LittleEndian, float32(transportObj.GetLocation().Z))
+		// binary.Write(buffer, binary.LittleEndian, float32(transportObj.GetLocation().O))
+		// binary.Write(buffer, binary.LittleEndian, uint32(0)) // Time
+	}
 
 	if u.IsSwimming {
 		binary.Write(buffer, binary.LittleEndian, float32(u.MovementInfo.Pitch))
