@@ -1,6 +1,8 @@
 package initial_data
 
 import (
+	"time"
+
 	"github.com/jeshuamorrissey/wow_server_go/lib/config"
 	"github.com/jeshuamorrissey/wow_server_go/server/world/data/dynamic"
 	"github.com/jeshuamorrissey/wow_server_go/server/world/data/dynamic/interfaces"
@@ -49,7 +51,7 @@ func NewCharacter(
 	startingLocation := static.StartingLocationsByIndex[race]
 	startingStats := static.StartingStatsByIndex[class][race]
 
-	charObj := &dynamic.Player{
+	charObj := dynamic.InitializePlayer(&dynamic.Player{
 		Unit: dynamic.Unit{
 			GameObject: dynamic.GameObject{
 				Entry:  0,
@@ -71,9 +73,6 @@ func NewCharacter(
 			SpeedSwim:         4.72,
 			SpeedSwimBackward: 2.5,
 			SpeedTurn:         3.14159,
-
-			HealthPercent: 0.5,
-			PowerPercent:  0.5,
 
 			BaseHealth: startingStats.BaseHealth,
 			Strength:   startingStats.Strength,
@@ -101,7 +100,7 @@ func NewCharacter(
 
 		Equipment: equipment,
 		Inventory: inventory,
-	}
+	})
 
 	cfg.ObjectManager.Add(charObj)
 	for _, guid := range equipment {
@@ -125,7 +124,7 @@ func NewCharacter(
 }
 
 func PopulateWorld(cfg *config.Config) error {
-	cfg.ObjectManager.Add(&dynamic.Unit{
+	cfg.ObjectManager.Add(dynamic.InitializeUnit(&dynamic.Unit{
 		GameObject: dynamic.GameObject{
 			Entry:  uint32(static.UnitsByName["The Man"].Entry),
 			ScaleX: 1.0,
@@ -135,9 +134,6 @@ func PopulateWorld(cfg *config.Config) error {
 		Race:   static.RaceHuman,
 		Class:  static.ClassRogue,
 		Gender: static.GenderMale,
-
-		HealthPercent: 1.0,
-		PowerPercent:  1.0,
 
 		MovementInfo: interfaces.MovementInfo{
 			Location: interfaces.Location{
@@ -147,9 +143,11 @@ func PopulateWorld(cfg *config.Config) error {
 				O: 180.0,
 			},
 		},
-	})
 
-	cfg.ObjectManager.Add(&dynamic.Unit{
+		RespawnTimeMS: 1000 * time.Millisecond,
+	}))
+
+	cfg.ObjectManager.Add(dynamic.InitializeUnit(&dynamic.Unit{
 		GameObject: dynamic.GameObject{
 			Entry:  uint32(static.UnitsByName["The Man"].Entry),
 			ScaleX: 1.0,
@@ -160,9 +158,6 @@ func PopulateWorld(cfg *config.Config) error {
 		Class:  static.ClassRogue,
 		Gender: static.GenderMale,
 
-		HealthPercent: 1.0,
-		PowerPercent:  1.0,
-
 		MovementInfo: interfaces.MovementInfo{
 			Location: interfaces.Location{
 				X: -8942.95,
@@ -171,7 +166,7 @@ func PopulateWorld(cfg *config.Config) error {
 				O: 180.0,
 			},
 		},
-	})
+	}))
 
 	return nil
 }

@@ -5,6 +5,7 @@ import (
 
 	"github.com/jeshuamorrissey/wow_server_go/server/world/data/dynamic/interfaces"
 	"github.com/jeshuamorrissey/wow_server_go/server/world/data/static"
+	"github.com/jeshuamorrissey/wow_server_go/server/world/game"
 )
 
 // Player represents an instance of an in-game player.
@@ -54,6 +55,13 @@ type Player struct {
 	HideReleaseSpirit          bool
 }
 
+func InitializePlayer(player *Player) *Player {
+	player.CurrentHealth = player.maxHealth()
+	player.CurrentPower = player.maxPower()
+
+	return player
+}
+
 // Object interface methods.
 func (p *Player) GUID() interfaces.GUID             { return p.Unit.GUID() }
 func (p *Player) SetGUID(guid interfaces.GUID)      { p.Unit.SetGUID(guid) }
@@ -80,9 +88,9 @@ func (p *Player) UpdateFields() interfaces.UpdateFieldsMap {
 		static.UpdateFieldUnitPersuadedHigh:                                     uint32(p.Persuaded.High()),
 		static.UpdateFieldUnitChannelObjectLow:                                  uint32(0), // TODO
 		static.UpdateFieldUnitChannelObjectHigh:                                 uint32(0), // TODO
-		static.UpdateFieldUnitHealth:                                            uint32(float32(p.maxHealth()) * p.HealthPercent),
-		static.UpdateFieldUnitPowerStart + static.UpdateField(p.powerType()):    uint32(float32(p.maxPower()) * p.PowerPercent),
-		static.UpdateFieldUnitMaxHealth:                                         uint32(p.maxHealth()),
+		static.UpdateFieldUnitHealth:                                            uint32(p.CurrentHealth),
+		static.UpdateFieldUnitPowerStart + static.UpdateField(p.powerType()):    uint32(p.CurrentPower),
+		static.UpdateFieldUnitMaxHealth:                                         uint32(p.BaseHealth + game.HealthFromStamina(p.Stamina)),
 		static.UpdateFieldUnitMaxPowerStart + static.UpdateField(p.powerType()): uint32(p.maxPower()),
 		static.UpdateFieldUnitLevel:                                             uint32(p.Level),
 		static.UpdateFieldUnitFactiontemplate:                                   uint32(4),

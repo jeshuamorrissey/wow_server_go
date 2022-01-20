@@ -1,11 +1,11 @@
 package dynamic
 
 import (
-	"math"
 	"time"
 
 	"github.com/jeshuamorrissey/wow_server_go/server/world/data/dynamic/interfaces"
 	"github.com/jeshuamorrissey/wow_server_go/server/world/data/static"
+	"github.com/jeshuamorrissey/wow_server_go/server/world/game"
 )
 
 // Constants related to unit logic.
@@ -13,16 +13,12 @@ const (
 	HealthPerStamina = 10
 	ManaPerIntellect = 20
 
-	ManaRegenPercentBasePerSecond      float64 = 0.05         // 5% mana regen per second (20 seconds to fully recover mana)
-	ManaRegenPercentPerSpiritPerSecond float64 = 0.05 / 100.0 // 5% mana regen per 100 spirit (~100 at level 60)
-	RegenTimeoutMS                             = 1000         // timeout (in ms) between regen events.
+	RegenTimeoutMS = 1000 // timeout (in ms) between regen events.
 )
 
 // Unit interface methods (game-logic).
 func (u *Unit) Initialize() {
-	u.IsActive = true
-
-	go u.restoreHealthPower()
+	go u.regenHealthAndPower()
 }
 
 func (u *Unit) MeleeMainHandAttackRate() time.Duration {
@@ -46,25 +42,27 @@ func (u *Unit) ResolveOffHandAttack(target interfaces.Unit) *interfaces.AttackIn
 }
 
 func (u *Unit) SetInCombat(inCombat bool) {
-	u.InCombat = true
+	u.InCombat = inCombat
 }
 
 // Utility methods.
-func (u *Unit) restoreHealthPower() {
+func (u *Unit) regenHealthAndPower() {
 	for range time.Tick(time.Millisecond * RegenTimeoutMS) {
-		if u.IsActive {
-			secondsInTimeout := RegenTimeoutMS / 1000.0
-			manaPercentToRestore := ManaRegenPercentBasePerSecond*secondsInTimeout + ManaRegenPercentPerSpiritPerSecond*secondsInTimeout*float64(u.Spirit)
+		secondsInTimeout := RegenTimeoutMS / 1000.0
 
-			// If we are in combat, penalize regen.
-			combatMultiplier := 1.0
-			if u.InCombat {
-				combatMultiplier = 0.1
-			}
-
-			u.PowerPercent = float32(math.Min(float64(u.PowerPercent)+manaPercentToRestore*combatMultiplier, 1.0))
-			GetObjectManager().TriggerUpdateFor(u)
+		u.CurrentHealth += game.UnitRegenPerSecond(u.maxHealth(), u.InCombat) * int(secondsInTimeout)
+		if u.CurrentHealth >= u.maxHealth() {
+			u.CurrentHealth = u.maxHealth()
 		}
+
+		u.CurrentPower += game.UnitRegenPerSecond(u.maxPower(), u.InCombat) * int(secondsInTimeout)
+		if u.CurrentPower >= u.maxPower() {
+			u.CurrentPower = u.maxPower()
+		}
+
+		// fmt.Printf("Regening unit %v %v\n", u.ID.Low(), u.InCombat)
+
+		GetObjectManager().TriggerUpdateFor(u)
 	}
 }
 
@@ -74,26 +72,26 @@ func (u *Unit) powerType() static.Power {
 }
 
 func (u *Unit) TakeDamage(damage int) {
-	percentOfMaxChange := float64(damage) / float64(u.maxHealth())
-	u.HealthPercent = float32(math.Max(0, float64(u.HealthPercent)-percentOfMaxChange))
+	u.CurrentHealth = u.CurrentHealth - damage
+	if u.CurrentHealth < 0 {
+		u.CurrentHealth = 0
+
+		// Trigger a respawn timer for this unit, if appropriate.
+		if u.RespawnTimeMS != 0 {
+			time.AfterFunc(u.RespawnTimeMS, func() {
+				u.CurrentHealth = u.maxHealth()
+				GetObjectManager().triggerUpdateFor(u)
+			})
+		}
+	}
 }
 
 func (u *Unit) maxHealth() int {
-	return u.BaseHealth + HealthPerStamina*u.Stamina
+	return u.Template().MaxHealth
 }
 
 func (u *Unit) maxPower() int {
-	switch u.powerType() {
-	case static.PowerMana:
-		return u.Intellect * ManaPerIntellect
-	case static.PowerRage:
-	case static.PowerFocus:
-	case static.PowerEnergy:
-	case static.PowerHappiness:
-		return 100
-	}
-
-	return 0
+	return u.Template().MaxPower
 }
 
 func (u *Unit) meleeAttackPower() int {

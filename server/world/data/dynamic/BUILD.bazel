@@ -18,6 +18,7 @@ go_library(
     deps = [
         "//server/world/data/dynamic/interfaces",
         "//server/world/data/static",
+        "//server/world/game",
         "@com_github_sirupsen_logrus//:logrus",
     ],
 )

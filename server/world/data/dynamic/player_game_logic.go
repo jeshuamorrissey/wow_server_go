@@ -6,14 +6,12 @@ import (
 
 	"github.com/jeshuamorrissey/wow_server_go/server/world/data/dynamic/interfaces"
 	"github.com/jeshuamorrissey/wow_server_go/server/world/data/static"
+	"github.com/jeshuamorrissey/wow_server_go/server/world/game"
 )
 
 // Unit interface methods (game-logic).
 func (p *Player) Initialize() {
-	p.Unit.Initialize()
-
-	// Players always start at logged out when initialized.
-	p.Unit.IsActive = false
+	go p.restoreHealthPower()
 }
 
 func (p *Player) MeleeMainHandAttackRate() time.Duration {
@@ -48,6 +46,28 @@ func (p *Player) SetInCombat(inCombat bool) {
 
 // Utility methods.
 // getWeaponRamageRange returns a pair of numbers: (min, max) for the given weapon.
+func (p *Player) restoreHealthPower() {
+	for range time.Tick(time.Millisecond * RegenTimeoutMS) {
+		if p.IsLoggedIn {
+			secondsInTimeout := RegenTimeoutMS / 1000.0
+
+			p.CurrentHealth += game.PlayerRegenPerSecond(p.maxHealth(), p.Spirit, p.InCombat) * int(secondsInTimeout)
+			if p.CurrentHealth >= p.maxHealth() {
+				p.CurrentHealth = p.maxHealth()
+			}
+
+			p.CurrentPower += game.PlayerRegenPerSecond(p.maxPower(), p.Spirit, p.InCombat) * int(secondsInTimeout)
+			if p.CurrentPower >= p.maxPower() {
+				p.CurrentPower = p.maxPower()
+			}
+
+			// fmt.Printf("Regening player %v %v\n", p.ID.Low(), p.InCombat)
+
+			GetObjectManager().TriggerUpdateFor(p)
+		}
+	}
+}
+
 func (p *Player) getWeaponDamageRange(weapon *Item) (int, int) {
 	if weapon == nil {
 		return 0, 0
@@ -130,4 +150,22 @@ func (p *Player) damageModPercentage() float32 {
 	// TODO(jeshua): account for active spell effects
 	// TODO(jeshua): account for items
 	return 1.0
+}
+
+func (p *Player) maxHealth() int {
+	return p.BaseHealth + HealthPerStamina*p.Stamina
+}
+
+func (p *Player) maxPower() int {
+	switch p.powerType() {
+	case static.PowerMana:
+		return p.Intellect * ManaPerIntellect
+	case static.PowerRage:
+	case static.PowerFocus:
+	case static.PowerEnergy:
+	case static.PowerHappiness:
+		return 100
+	}
+
+	return 0
 }

@@ -3,6 +3,7 @@ package dynamic
 import (
 	"bytes"
 	"encoding/binary"
+	"time"
 
 	"github.com/jeshuamorrissey/wow_server_go/server/world/data/dynamic/interfaces"
 	"github.com/jeshuamorrissey/wow_server_go/server/world/data/static"
@@ -35,9 +36,9 @@ type Unit struct {
 
 	// Stats.
 	BaseHealth    int
-	HealthPercent float32
+	CurrentHealth int
 	BasePower     int
-	PowerPercent  float32
+	CurrentPower  int
 
 	Strength  int
 	Agility   int
@@ -73,6 +74,16 @@ type Unit struct {
 	// Implementation details.
 	IsActive bool
 	InCombat bool
+
+	// Various timers.
+	RespawnTimeMS time.Duration // Time until the unit respawns. time.Duration(0) if it doesn't respawn.
+}
+
+func InitializeUnit(unit *Unit) *Unit {
+	unit.CurrentHealth = unit.maxHealth()
+	unit.CurrentPower = unit.maxPower()
+
+	return unit
 }
 
 // Object interface methods.
@@ -99,9 +110,9 @@ func (u *Unit) UpdateFields() interfaces.UpdateFieldsMap {
 		static.UpdateFieldUnitPersuadedHigh:                                     uint32(u.Persuaded.High()),
 		static.UpdateFieldUnitChannelObjectLow:                                  uint32(0), // TODO
 		static.UpdateFieldUnitChannelObjectHigh:                                 uint32(0), // TODO
-		static.UpdateFieldUnitHealth:                                            uint32(float32(tmpl.MaxHealth) * u.HealthPercent),
-		static.UpdateFieldUnitPowerStart + static.UpdateField(u.powerType()):    uint32(float32(tmpl.MaxPower) * u.PowerPercent),
-		static.UpdateFieldUnitMaxHealth:                                         uint32(tmpl.MaxHealth),
+		static.UpdateFieldUnitHealth:                                            uint32(u.CurrentHealth),
+		static.UpdateFieldUnitPowerStart + static.UpdateField(u.powerType()):    uint32(u.CurrentPower),
+		static.UpdateFieldUnitMaxHealth:                                         uint32(u.maxHealth()),
 		static.UpdateFieldUnitMaxPowerStart + static.UpdateField(u.powerType()): uint32(tmpl.MaxPower),
 		static.UpdateFieldUnitLevel:                                             uint32(u.Level),
 		static.UpdateFieldUnitBytes0:                                            uint32(u.Race.ID) | uint32(u.Class.ID)<<8 | uint32(u.Gender)<<16,

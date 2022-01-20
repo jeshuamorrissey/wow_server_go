@@ -246,6 +246,17 @@ func (u *Updater) makeUpdateObjectPacket(outOfRangeUpdate packet.OutOfRangeUpdat
 	}
 }
 
+func (u *Updater) doUpdate(guid interfaces.GUID) {
+	// First, check to see if this is a player. If it is, then we
+	// have to update the _player_ with all objects around them.
+	if loginData, ok := u.sessions[guid]; ok {
+		u.updatePlayer(guid, loginData)
+	}
+
+	// Second, we need to notify other players of this update.
+	u.updateOtherPlayers(guid)
+}
+
 // Run starts the updater, which will constantly scan for object updates.
 // Should be run as a goroutine.
 func (u *Updater) Run() {
@@ -254,14 +265,7 @@ func (u *Updater) Run() {
 
 		// There are some object to update!
 		for _, guid := range u.toUpdate {
-			// First, check to see if this is a player. If it is, then we
-			// have to update the _player_ with all objects around them.
-			if loginData, ok := u.sessions[guid]; ok {
-				u.updatePlayer(guid, loginData)
-			}
-
-			// Second, we need to notify other players of this update.
-			// u.updateOtherPlayers(guid)
+			u.doUpdate(guid)
 		}
 
 		u.toUpdate = make([]interfaces.GUID, 0)
@@ -291,7 +295,5 @@ func (u *Updater) SendCombatUpdate(attacker interfaces.Unit, target interfaces.U
 }
 
 func (u *Updater) TriggerUpdateFor(obj interfaces.Object) {
-	u.toUpdateLock.Lock()
-	defer u.toUpdateLock.Unlock()
-	u.toUpdate = append(u.toUpdate, obj.GUID())
+	u.doUpdate(obj.GUID())
 }

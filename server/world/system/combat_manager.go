@@ -51,7 +51,7 @@ func NewCombatManager(log *logrus.Entry, om *dynamic.ObjectManager, updater *Upd
 }
 
 func (cm *CombatManager) engageTarget(attacker interfaces.Unit, target interfaces.Unit) *combatInfo {
-	cm.disengageTarget(attacker.GUID())
+	cm.disengageTarget(attacker)
 
 	cm.lock.Lock()
 	defer cm.lock.Unlock()
@@ -76,15 +76,18 @@ func (cm *CombatManager) engageTarget(attacker interfaces.Unit, target interface
 	return cm.attackerToTarget[attacker.GUID()]
 }
 
-func (cm *CombatManager) disengageTarget(attacker interfaces.GUID) {
+func (cm *CombatManager) disengageTarget(attacker interfaces.Unit) {
 	cm.lock.Lock()
 	defer cm.lock.Unlock()
 
-	if combatInfo, ok := cm.attackerToTarget[attacker]; ok {
+	if combatInfo, ok := cm.attackerToTarget[attacker.GUID()]; ok {
 		// Remove the attacker from the reverse mapping.
 		if attackers, ok := cm.targetToAttackers[combatInfo.target.GUID()]; ok {
-			delete(attackers, attacker)
+			delete(attackers, attacker.GUID())
 		}
+
+		// The target might also not be in combat anymore, so stop.
+		combatInfo.target.SetInCombat(cm.IsInCombat(combatInfo.target))
 
 		// Stop any timers.
 		for _, timer := range combatInfo.autoAttackTimers {
@@ -92,8 +95,10 @@ func (cm *CombatManager) disengageTarget(attacker interfaces.GUID) {
 		}
 
 		// Forget about this combat.
-		delete(cm.attackerToTarget, attacker)
+		delete(cm.attackerToTarget, attacker.GUID())
 	}
+
+	attacker.SetInCombat(cm.IsInCombat(attacker))
 }
 
 func (cm *CombatManager) StartMeleeAttack(attacker interfaces.Unit, target interfaces.Unit) {
@@ -123,22 +128,26 @@ func (cm *CombatManager) StartMeleeAttack(attacker interfaces.Unit, target inter
 }
 
 func (cm *CombatManager) StopAttack(attacker interfaces.Unit) {
-	cm.disengageTarget(attacker.GUID())
+	cm.disengageTarget(attacker)
+}
+
+func (cm *CombatManager) resolveMeleeAttackSingle(attackInfo *interfaces.AttackInfo, combatInfo *combatInfo) {
+	switch typedUnit := combatInfo.target.(type) {
+	case *dynamic.Unit:
+		typedUnit.TakeDamage(attackInfo.Damage)
+	case *dynamic.Player:
+		typedUnit.TakeDamage(attackInfo.Damage)
+	}
+	cm.updater.TriggerUpdateFor(combatInfo.target)
+	cm.updater.SendCombatUpdate(combatInfo.attacker, combatInfo.target, attackInfo)
 }
 
 func (cm *CombatManager) resolveMeleeAttack(autoAttackTimer *autoAttackTimer, combatInfo *combatInfo, resolveAttack func() *interfaces.AttackInfo) {
+	cm.resolveMeleeAttackSingle(resolveAttack(), combatInfo)
 	for {
 		select {
 		case <-autoAttackTimer.ticker.C:
-			attackInfo := resolveAttack()
-			switch typedUnit := combatInfo.target.(type) {
-			case *dynamic.Unit:
-				typedUnit.TakeDamage(attackInfo.Damage)
-			case *dynamic.Player:
-				typedUnit.TakeDamage(attackInfo.Damage)
-			}
-			cm.updater.TriggerUpdateFor(combatInfo.target)
-			cm.updater.SendCombatUpdate(combatInfo.attacker, combatInfo.target, attackInfo)
+			cm.resolveMeleeAttackSingle(resolveAttack(), combatInfo)
 		case <-autoAttackTimer.done:
 			autoAttackTimer.ticker.Stop()
 			return
