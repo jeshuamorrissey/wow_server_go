@@ -14,4 +14,7 @@ type Object interface {
 
 	// UpdateFields should return the update fields for the object.
 	UpdateFields() UpdateFieldsMap
+
+	StartUpdateLoop()
+	SendUpdates([]interface{})
 }

@@ -1,6 +1,7 @@
 package dynamic
 
 import (
+	"github.com/jeshuamorrissey/wow_server_go/server/world/channels"
 	"github.com/jeshuamorrissey/wow_server_go/server/world/data/dynamic/interfaces"
 	"github.com/jeshuamorrissey/wow_server_go/server/world/data/static"
 )
@@ -37,6 +38,25 @@ func (cn *Container) UpdateFields() interfaces.UpdateFieldsMap {
 	mergedFields[static.UpdateFieldType] = uint32(TypeMask(cn))
 
 	return mergedFields
+}
+
+func (cn *Container) StartUpdateLoop() {
+	if cn.UpdateChannel() != nil {
+		return
+	}
+
+	cn.CreateUpdateChannel()
+	go func() {
+		for {
+			for _, update := range <-cn.UpdateChannel() {
+				switch update.(type) {
+				default:
+				}
+			}
+
+			channels.ObjectUpdates <- cn.GUID()
+		}
+	}()
 }
 
 // Item interface methods.

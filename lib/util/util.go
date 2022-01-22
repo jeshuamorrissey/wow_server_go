@@ -49,3 +49,15 @@ func ReadBytes(buffer io.Reader, length int) ([]byte, error) {
 
 	return data, nil
 }
+
+// Clamp takes a min, max and value and will return the value unless it is out of bounds,
+// in which case it will return the bound.
+func Clamp(min, value, max int) int {
+	if value < min {
+		return min
+	} else if value > max {
+		return max
+	}
+
+	return value
+}

@@ -88,6 +88,8 @@ func (m *ObjectManager) Add(object interfaces.Object) {
 	m.objectsLock.Lock()
 	defer m.objectsLock.Unlock()
 
+	object.StartUpdateLoop()
+
 	switch objectTyped := object.(type) {
 	case *Container:
 		if objectTyped.GUID() == 0 {
@@ -211,16 +213,4 @@ func (m *ObjectManager) Exists(guid interfaces.GUID) bool {
 	}
 
 	return false
-}
-
-// TriggerUpdateFor triggers an update for the given object (if that callback has been registered).
-func (m *ObjectManager) TriggerUpdateFor(obj interfaces.Object) {
-	if m.triggerUpdateFor != nil {
-		m.triggerUpdateFor(obj)
-	}
-}
-
-// SetTriggerUpdateFor updates the triggerUpdateFor callback function.
-func (m *ObjectManager) SetTriggerUpdateFor(triggerUpdateFor func(interfaces.Object)) {
-	m.triggerUpdateFor = triggerUpdateFor
 }

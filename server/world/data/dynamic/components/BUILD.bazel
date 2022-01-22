@@ -1,0 +1,23 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "components",
+    srcs = [
+        "combat.go",
+        "health_power.go",
+        "movement_info.go",
+        "player.go",
+        "player_features.go",
+        "stats.go",
+        "unit.go",
+    ],
+    importpath = "github.com/jeshuamorrissey/wow_server_go/server/world/data/dynamic/components",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//lib/util",
+        "//server/world/channels",
+        "//server/world/data/dynamic/interfaces",
+        "//server/world/data/dynamic/messages",
+        "//server/world/data/static",
+    ],
+)

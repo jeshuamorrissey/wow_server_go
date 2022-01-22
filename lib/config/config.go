@@ -59,6 +59,11 @@ func (wc *Config) LoadFromJSON(jsonFilepath string) error {
 		return err
 	}
 
+	// Start the update loop on all objects.
+	for guid := range wc.ObjectManager.ActiveIDs {
+		wc.ObjectManager.Get(guid).StartUpdateLoop()
+	}
+
 	// Initialize all units and players.
 	for _, player := range wc.ObjectManager.Players {
 		player.Initialize()

@@ -1,0 +1,9 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "channels",
+    srcs = ["channels.go"],
+    importpath = "github.com/jeshuamorrissey/wow_server_go/server/world/channels",
+    visibility = ["//visibility:public"],
+    deps = ["//server/world/data/dynamic/interfaces"],
+)

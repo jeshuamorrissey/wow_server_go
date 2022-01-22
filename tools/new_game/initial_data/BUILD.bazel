@@ -8,6 +8,7 @@ go_library(
     deps = [
         "//lib/config",
         "//server/world/data/dynamic",
+        "//server/world/data/dynamic/components",
         "//server/world/data/dynamic/interfaces",
         "//server/world/data/static",
     ],

@@ -5,6 +5,7 @@ import (
 
 	"github.com/jeshuamorrissey/wow_server_go/lib/config"
 	"github.com/jeshuamorrissey/wow_server_go/server/world/data/dynamic"
+	"github.com/jeshuamorrissey/wow_server_go/server/world/data/dynamic/components"
 	"github.com/jeshuamorrissey/wow_server_go/server/world/data/dynamic/interfaces"
 	"github.com/jeshuamorrissey/wow_server_go/server/world/data/static"
 )
@@ -52,12 +53,12 @@ func NewCharacter(
 	startingStats := static.StartingStatsByIndex[class][race]
 
 	charObj := dynamic.InitializePlayer(&dynamic.Player{
-		Unit: dynamic.Unit{
-			GameObject: dynamic.GameObject{
-				Entry:  0,
-				ScaleX: static.GetPlayerScale(race, gender),
-			},
+		GameObject: dynamic.GameObject{
+			Entry:  0,
+			ScaleX: static.GetPlayerScale(race, gender),
+		},
 
+		Movement: components.Movement{
 			MovementInfo: interfaces.MovementInfo{
 				Location: interfaces.Location{
 					X: startingLocation.X,
@@ -73,27 +74,34 @@ func NewCharacter(
 			SpeedSwim:         4.72,
 			SpeedSwimBackward: 2.5,
 			SpeedTurn:         3.14159,
+		},
 
-			BaseHealth: startingStats.BaseHealth,
-			Strength:   startingStats.Strength,
-			Agility:    startingStats.Agility,
-			Stamina:    startingStats.Stamina,
-			Intellect:  startingStats.Intellect,
-			Spirit:     startingStats.Spirit,
-
+		Unit: components.Unit{
 			Level:  1,
 			Race:   race,
 			Class:  class,
 			Gender: gender,
 		},
 
-		SkinColor: skinColor,
-		Face:      face,
-		HairStyle: hairStyle,
-		HairColor: hairColor,
-		Feature:   feature,
+		BasicStats: components.BasicStats{
+			Strength:  startingStats.Strength,
+			Agility:   startingStats.Agility,
+			Stamina:   startingStats.Stamina,
+			Intellect: startingStats.Intellect,
+			Spirit:    startingStats.Spirit,
+		},
 
-		Money: 10000,
+		PlayerFeatures: components.PlayerFeatures{
+			SkinColor: int(skinColor),
+			Face:      int(face),
+			HairStyle: int(hairStyle),
+			HairColor: int(hairColor),
+			Feature:   int(feature),
+		},
+
+		Player: components.Player{
+			Money: 10000,
+		},
 
 		ZoneID: startingLocation.Zone,
 		MapID:  startingLocation.Map,
@@ -130,43 +138,65 @@ func PopulateWorld(cfg *config.Config) error {
 			ScaleX: 1.0,
 		},
 
-		Level:  1,
-		Race:   static.RaceHuman,
-		Class:  static.ClassRogue,
-		Gender: static.GenderMale,
+		Unit: components.Unit{
+			Level:  1,
+			Race:   static.RaceHuman,
+			Class:  static.ClassRogue,
+			Gender: static.GenderMale,
+		},
 
-		MovementInfo: interfaces.MovementInfo{
-			Location: interfaces.Location{
-				X: -8945.95,
-				Y: -132.493,
-				Z: 83.5312,
-				O: 180.0,
+		Movement: components.Movement{
+			MovementInfo: interfaces.MovementInfo{
+				Location: interfaces.Location{
+					X: -8945.95,
+					Y: -132.493,
+					Z: 83.5312,
+					O: 180.0,
+				},
 			},
+
+			SpeedWalk:         2.5,
+			SpeedRun:          7.0,
+			SpeedRunBackward:  4.5,
+			SpeedSwim:         4.72,
+			SpeedSwimBackward: 2.5,
+			SpeedTurn:         3.14159,
 		},
 
 		RespawnTimeMS: 1000 * time.Millisecond,
 	}))
 
-	cfg.ObjectManager.Add(dynamic.InitializeUnit(&dynamic.Unit{
-		GameObject: dynamic.GameObject{
-			Entry:  uint32(static.UnitsByName["The Man"].Entry),
-			ScaleX: 1.0,
-		},
+	// cfg.ObjectManager.Add(dynamic.InitializeUnit(&dynamic.Unit{
+	// 	GameObject: dynamic.GameObject{
+	// 		Entry:  uint32(static.UnitsByName["The Man"].Entry),
+	// 		ScaleX: 1.0,
+	// 	},
 
-		Level:  1,
-		Race:   static.RaceHuman,
-		Class:  static.ClassRogue,
-		Gender: static.GenderMale,
+	// 	Unit: components.Unit{
+	// 		Level:  1,
+	// 		Race:   static.RaceHuman,
+	// 		Class:  static.ClassRogue,
+	// 		Gender: static.GenderMale,
+	// 	},
 
-		MovementInfo: interfaces.MovementInfo{
-			Location: interfaces.Location{
-				X: -8942.95,
-				Y: -132.493,
-				Z: 83.5312,
-				O: 180.0,
-			},
-		},
-	}))
+	// 	Movement: components.Movement{
+	// 		MovementInfo: interfaces.MovementInfo{
+	// 			Location: interfaces.Location{
+	// 				X: -8942.95,
+	// 				Y: -132.493,
+	// 				Z: 83.5312,
+	// 				O: 180.0,
+	// 			},
+	// 		},
+
+	// 		SpeedWalk:         2.5,
+	// 		SpeedRun:          7.0,
+	// 		SpeedRunBackward:  4.5,
+	// 		SpeedSwim:         4.72,
+	// 		SpeedSwimBackward: 2.5,
+	// 		SpeedTurn:         3.14159,
+	// 	},
+	// }))
 
 	return nil
 }

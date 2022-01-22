@@ -14,10 +14,9 @@ type State struct {
 
 	Log *logrus.Entry
 
-	Config        *config.Config
-	OM            *dynamic.ObjectManager
-	Updater       *Updater
-	CombatManager *CombatManager
+	Config  *config.Config
+	OM      *dynamic.ObjectManager
+	Updater *Updater
 
 	Account   *config.Account
 	Character *dynamic.Player

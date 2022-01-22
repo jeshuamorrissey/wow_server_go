@@ -44,15 +44,13 @@ func NewSession(
 	config *config.Config,
 	log *logrus.Entry,
 	updater *Updater,
-	combatManager *CombatManager,
 ) *Session {
 	state := &State{
 		Log: log,
 
-		Config:        config,
-		OM:            config.ObjectManager,
-		CombatManager: combatManager,
-		Updater:       updater,
+		Config:  config,
+		OM:      config.ObjectManager,
+		Updater: updater,
 
 		Account:   nil,
 		Character: nil,

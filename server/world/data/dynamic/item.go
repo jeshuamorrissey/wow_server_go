@@ -1,8 +1,10 @@
 package dynamic
 
 import (
+	"math/rand"
 	"time"
 
+	"github.com/jeshuamorrissey/wow_server_go/server/world/channels"
 	"github.com/jeshuamorrissey/wow_server_go/server/world/data/dynamic/interfaces"
 	"github.com/jeshuamorrissey/wow_server_go/server/world/data/static"
 )
@@ -40,6 +42,25 @@ func (i *Item) GetLocation() *interfaces.Location {
 	}
 
 	return nil
+}
+
+func (i *Item) StartUpdateLoop() {
+	if i.UpdateChannel() != nil {
+		return
+	}
+
+	i.CreateUpdateChannel()
+	go func() {
+		for {
+			for _, update := range <-i.UpdateChannel() {
+				switch update.(type) {
+				default:
+				}
+			}
+
+			channels.ObjectUpdates <- i.GUID()
+		}
+	}()
 }
 
 func (i *Item) UpdateFields() interfaces.UpdateFieldsMap {
@@ -86,6 +107,17 @@ func (i *Item) GetTemplate() *static.Item     { return static.Items[int(i.Entry)
 func (i *Item) GetContainer() interfaces.GUID { return i.Container }
 
 // Utility methods.
+// CalculateDamage determines the damage this item will do and returns a map. This includes
+// some randomness if the item has a damage range.
+func (i *Item) CalculateDamage() map[static.SpellSchool]int {
+	damage := make(map[static.SpellSchool]int)
+	for school, damages := range i.GetTemplate().Damages {
+		damage[school] = damages.Min + rand.Intn(damages.Min+damages.Max+1)
+	}
+
+	return damage
+}
+
 func (i *Item) flags() int {
 	var flags int
 	if i.IsBound {

@@ -1,12 +1,10 @@
 package dynamic
 
 import (
-	"math/rand"
 	"time"
 
-	"github.com/jeshuamorrissey/wow_server_go/server/world/data/dynamic/interfaces"
+	"github.com/jeshuamorrissey/wow_server_go/server/world/data/dynamic/messages"
 	"github.com/jeshuamorrissey/wow_server_go/server/world/data/static"
-	"github.com/jeshuamorrissey/wow_server_go/server/world/game"
 )
 
 // Unit interface methods (game-logic).
@@ -14,66 +12,16 @@ func (p *Player) Initialize() {
 	go p.restoreHealthPower()
 }
 
-func (p *Player) MeleeMainHandAttackRate() time.Duration {
-	return p.meleeAttackRate(static.EquipmentSlotMainHand)
-}
-
-func (p *Player) MeleeOffHandAttackRate() time.Duration {
-	return p.meleeAttackRate(static.EquipmentSlotOffHand)
-}
-
-func (p *Player) ResolveMainHandAttack(target interfaces.Unit) *interfaces.AttackInfo {
-	minDamage, maxDamage := p.getWeaponDamageRange(GetObjectManager().GetItem(p.Equipment[static.EquipmentSlotMainHand]))
-	return &interfaces.AttackInfo{
-		Damage: minDamage + rand.Intn(maxDamage-minDamage+1),
-	}
-}
-
-func (p *Player) ResolveOffHandAttack(target interfaces.Unit) *interfaces.AttackInfo {
-	minDamage, maxDamage := p.getWeaponDamageRange(GetObjectManager().GetItem(p.Equipment[static.EquipmentSlotMainHand]))
-	if minDamage == 0 && maxDamage == 0 {
-		return nil
-	}
-
-	return &interfaces.AttackInfo{
-		Damage: minDamage + rand.Intn(maxDamage-minDamage+1),
-	}
-}
-
-func (p *Player) SetInCombat(inCombat bool) {
-	p.Unit.InCombat = true
-}
-
 // Utility methods.
-// getWeaponRamageRange returns a pair of numbers: (min, max) for the given weapon.
 func (p *Player) restoreHealthPower() {
-	for range time.Tick(time.Millisecond * RegenTimeoutMS) {
+	for range time.Tick(static.RegenTimeout) {
 		if p.IsLoggedIn {
-			secondsInTimeout := RegenTimeoutMS / 1000.0
-
-			p.CurrentHealth += game.PlayerRegenPerSecond(p.maxHealth(), p.Spirit, p.InCombat) * int(secondsInTimeout)
-			if p.CurrentHealth >= p.maxHealth() {
-				p.CurrentHealth = p.maxHealth()
-			}
-
-			p.CurrentPower += game.PlayerRegenPerSecond(p.maxPower(), p.Spirit, p.InCombat) * int(secondsInTimeout)
-			if p.CurrentPower >= p.maxPower() {
-				p.CurrentPower = p.maxPower()
-			}
-
-			// fmt.Printf("Regening player %v %v\n", p.ID.Low(), p.InCombat)
-
-			GetObjectManager().TriggerUpdateFor(p)
+			p.SendUpdates([]interface{}{
+				messages.UnitModHealth{Amount: p.HealthRegen(static.RegenTimeout, p.IsInCombat())},
+				messages.UnitModPower{Amount: p.PowerRegen(static.RegenTimeout, p.IsInCombat())},
+			})
 		}
 	}
-}
-
-func (p *Player) getWeaponDamageRange(weapon *Item) (int, int) {
-	if weapon == nil {
-		return 0, 0
-	}
-
-	return int(weapon.GetTemplate().Damages[static.SpellSchoolPhysical].Min), int(weapon.GetTemplate().Damages[static.SpellSchoolPhysical].Max)
 }
 
 // meleeAttackRate calculates the attack rate for a given equipment slot.
@@ -90,9 +38,7 @@ func (p *Player) meleeAttackRate(slot static.EquipmentSlot) time.Duration {
 	return weapon.GetTemplate().AttackRate
 }
 
-// Resistances returns the final resitances for the player, after
-// all modifications.
-func (p *Player) Resistances() map[static.SpellSchool]int {
+func (p *Player) resistances() map[static.SpellSchool]int {
 	resistances := map[static.SpellSchool]int{
 		static.SpellSchoolPhysical: 0,
 		static.SpellSchoolHoly:     0,
@@ -126,46 +72,4 @@ func (p *Player) Resistances() map[static.SpellSchool]int {
 	resistances[static.SpellSchoolArcane] += spiritBonus
 
 	return resistances
-}
-
-func (p *Player) meleeAttackPower() int {
-	return p.Unit.meleeAttackPower() + p.meleeAttackPowerMods()
-}
-
-func (p *Player) meleeAttackPowerMods() int {
-	// TODO(jeshua): account for items
-	return 0
-}
-
-func (p *Player) rangedAttackPower() int {
-	return p.Unit.rangedAttackPower() + p.rangedAttackPowerMods()
-}
-
-func (p *Player) rangedAttackPowerMods() int {
-	// TODO(jeshua): account for items
-	return 0
-}
-
-func (p *Player) damageModPercentage() float32 {
-	// TODO(jeshua): account for active spell effects
-	// TODO(jeshua): account for items
-	return 1.0
-}
-
-func (p *Player) maxHealth() int {
-	return p.BaseHealth + HealthPerStamina*p.Stamina
-}
-
-func (p *Player) maxPower() int {
-	switch p.powerType() {
-	case static.PowerMana:
-		return p.Intellect * ManaPerIntellect
-	case static.PowerRage:
-	case static.PowerFocus:
-	case static.PowerEnergy:
-	case static.PowerHappiness:
-		return 100
-	}
-
-	return 0
 }

@@ -4,10 +4,10 @@ import (
 	"bytes"
 	"fmt"
 	"sync"
-	"time"
 
 	"github.com/sirupsen/logrus"
 
+	"github.com/jeshuamorrissey/wow_server_go/server/world/channels"
 	"github.com/jeshuamorrissey/wow_server_go/server/world/data/dynamic"
 	"github.com/jeshuamorrissey/wow_server_go/server/world/data/dynamic/interfaces"
 	"github.com/jeshuamorrissey/wow_server_go/server/world/data/static"
@@ -60,9 +60,6 @@ type Updater struct {
 
 	sessionsLock sync.Mutex
 	sessions     map[interfaces.GUID]*loginData // logged in character --> Session
-
-	toUpdateLock sync.Mutex
-	toUpdate     []interfaces.GUID
 }
 
 // NewUpdater makes a new updater object.
@@ -73,12 +70,7 @@ func NewUpdater(log *logrus.Entry, om *dynamic.ObjectManager) *Updater {
 		}),
 		om:       om,
 		sessions: make(map[interfaces.GUID]*loginData),
-		toUpdate: make([]interfaces.GUID, 0),
 	}
-
-	om.SetTriggerUpdateFor(func(obj interfaces.Object) {
-		u.TriggerUpdateFor(obj)
-	})
 
 	return u
 }
@@ -105,11 +97,7 @@ func (u *Updater) Login(playerGUID interfaces.GUID, session *Session) error {
 
 	// Mark the player as logged in.
 	u.om.GetPlayer(playerGUID).IsLoggedIn = true
-	u.om.GetPlayer(playerGUID).Unit.IsActive = true
-
-	u.toUpdateLock.Lock()
-	defer u.toUpdateLock.Unlock()
-	u.toUpdate = append(u.toUpdate, playerGUID)
+	channels.ObjectUpdates <- playerGUID
 
 	return nil
 }
@@ -125,7 +113,6 @@ func (u *Updater) Logout(playerGUID interfaces.GUID) error {
 
 	// Mark the player as logged in.
 	u.om.GetPlayer(playerGUID).IsLoggedIn = false
-	u.om.GetPlayer(playerGUID).Unit.IsActive = false
 
 	delete(u.sessions, playerGUID)
 	return nil
@@ -257,23 +244,7 @@ func (u *Updater) doUpdate(guid interfaces.GUID) {
 	u.updateOtherPlayers(guid)
 }
 
-// Run starts the updater, which will constantly scan for object updates.
-// Should be run as a goroutine.
-func (u *Updater) Run() {
-	for range time.Tick(time.Millisecond * 30) {
-		u.toUpdateLock.Lock()
-
-		// There are some object to update!
-		for _, guid := range u.toUpdate {
-			u.doUpdate(guid)
-		}
-
-		u.toUpdate = make([]interfaces.GUID, 0)
-		u.toUpdateLock.Unlock()
-	}
-}
-
-func (u *Updater) SendCombatUpdate(attacker interfaces.Unit, target interfaces.Unit, attackInfo *interfaces.AttackInfo) {
+func (u *Updater) doCombatUpdate(attacker interfaces.Object, target interfaces.Object, attackInfo *interfaces.AttackInfo) {
 	// Find all players in range of either the attacker or target.
 	for playerGUID, loginData := range u.sessions {
 		player := u.om.Get(playerGUID)
@@ -294,6 +265,17 @@ func (u *Updater) SendCombatUpdate(attacker interfaces.Unit, target interfaces.U
 	}
 }
 
-func (u *Updater) TriggerUpdateFor(obj interfaces.Object) {
-	u.doUpdate(obj.GUID())
+// Run starts the updater, which will constantly scan for object updates.
+// Should be run as a goroutine.
+func (u *Updater) Run() {
+	go func() {
+		for {
+			select {
+			case combatUpdate := <-channels.CombatUpdates:
+				u.doCombatUpdate(combatUpdate.Attacker, combatUpdate.Target, combatUpdate.AttackInfo)
+			case objectToUpdate := <-channels.ObjectUpdates:
+				u.doUpdate(objectToUpdate)
+			}
+		}
+	}()
 }

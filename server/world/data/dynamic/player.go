@@ -3,20 +3,24 @@ package dynamic
 import (
 	"github.com/sirupsen/logrus"
 
+	"github.com/jeshuamorrissey/wow_server_go/server/world/channels"
+	"github.com/jeshuamorrissey/wow_server_go/server/world/data/dynamic/components"
 	"github.com/jeshuamorrissey/wow_server_go/server/world/data/dynamic/interfaces"
+	"github.com/jeshuamorrissey/wow_server_go/server/world/data/dynamic/messages"
 	"github.com/jeshuamorrissey/wow_server_go/server/world/data/static"
-	"github.com/jeshuamorrissey/wow_server_go/server/world/game"
 )
 
 // Player represents an instance of an in-game player.
 type Player struct {
-	Unit
+	GameObject
 
-	SkinColor uint8
-	Face      uint8
-	HairStyle uint8
-	HairColor uint8
-	Feature   uint8
+	components.BasicStats
+	components.Combat
+	components.HealthPower
+	components.Movement
+	components.Player
+	components.PlayerFeatures
+	components.Unit
 
 	ZoneID int
 	MapID  int
@@ -24,12 +28,6 @@ type Player struct {
 	Equipment map[static.EquipmentSlot]interfaces.GUID
 	Inventory map[int]interfaces.GUID
 	Bags      map[int]interfaces.GUID
-
-	DrunkValue int
-	XP         int
-	Money      int
-
-	Tutorials [256]bool
 
 	// Flags.
 	IsGroupLeader     bool
@@ -55,120 +53,170 @@ type Player struct {
 	HideReleaseSpirit          bool
 }
 
+func (p *Player) StartUpdateLoop() {
+	if p.UpdateChannel() != nil {
+		return
+	}
+
+	p.CreateUpdateChannel()
+	go func() {
+		for {
+			for _, update := range <-p.UpdateChannel() {
+				switch updateTyped := update.(type) {
+				case *messages.UnitModHealth:
+					p.ModHealth(updateTyped.Amount, p.MaxHealth())
+				case *messages.UnitModPower:
+					p.ModPower(updateTyped.Amount, p.MaxPower())
+				case *messages.UnitAttack:
+					// TODO(jeshua): if out of melee range, trigger ranged attack.
+					target := GetObjectManager().Get(updateTyped.Target)
+					target.SendUpdates([]interface{}{
+						&messages.UnitRegisterAttack{Attacker: p.GUID()},
+					})
+
+					p.Attack(p, target, p.meleeAttackRate(static.EquipmentSlotMainHand), func() *components.Damage {
+						return &components.Damage{
+							Base: GetObjectManager().GetItem(p.Equipment[static.EquipmentSlotMainHand]).CalculateDamage(),
+						}
+					})
+
+					if p.meleeAttackRate(static.EquipmentSlotOffHand) != 0 {
+						p.Attack(p, target, p.meleeAttackRate(static.EquipmentSlotOffHand), func() *components.Damage {
+							return &components.Damage{
+								Base: GetObjectManager().GetItem(p.Equipment[static.EquipmentSlotOffHand]).CalculateDamage(),
+							}
+						})
+					}
+				case *messages.UnitRegisterAttack:
+					p.RegisterAttacker(updateTyped.Attacker)
+				case *messages.UnitStopAttack:
+					GetObjectManager().Get(p.Target).SendUpdates([]interface{}{
+						&messages.UnitDeregisterAttacker{Attacker: p.GUID()},
+					})
+
+					p.StopAttack()
+				}
+			}
+
+			channels.ObjectUpdates <- p.GUID()
+		}
+	}()
+}
+
 func InitializePlayer(player *Player) *Player {
-	player.CurrentHealth = player.maxHealth()
-	player.CurrentPower = player.maxPower()
+	player.CurrentHealth = player.MaxHealth()
+	player.CurrentPower = player.MaxPower()
 
 	return player
 }
 
 // Object interface methods.
-func (p *Player) GUID() interfaces.GUID             { return p.Unit.GUID() }
-func (p *Player) SetGUID(guid interfaces.GUID)      { p.Unit.SetGUID(guid) }
-func (p *Player) GetLocation() *interfaces.Location { return p.Unit.GetLocation() }
+func (p *Player) GUID() interfaces.GUID             { return p.GameObject.GUID() }
+func (p *Player) SetGUID(guid interfaces.GUID)      { p.GameObject.SetGUID(guid) }
+func (p *Player) GetLocation() *interfaces.Location { return &p.MovementInfo.Location }
 
 func (p *Player) UpdateFields() interfaces.UpdateFieldsMap {
 	modelInfo := static.GetPlayerModelInfo(p.Race, p.Gender)
-	resistances := p.Resistances()
+	resistances := p.resistances()
 
 	fields := interfaces.UpdateFieldsMap{
-		static.UpdateFieldUnitCharmLow:                                          uint32(p.Charm.Low()),
-		static.UpdateFieldUnitCharmHigh:                                         uint32(p.Charm.High()),
-		static.UpdateFieldUnitSummonLow:                                         uint32(p.Summon.Low()),
-		static.UpdateFieldUnitSummonHigh:                                        uint32(p.Summon.High()),
-		static.UpdateFieldUnitCharmedbyLow:                                      uint32(p.CharmedBy.Low()),
-		static.UpdateFieldUnitCharmedbyHigh:                                     uint32(p.CharmedBy.High()),
-		static.UpdateFieldUnitSummonedbyLow:                                     uint32(p.SummonedBy.Low()),
-		static.UpdateFieldUnitSummonedbyHigh:                                    uint32(p.SummonedBy.High()),
-		static.UpdateFieldUnitCreatedbyLow:                                      uint32(p.CreatedBy.Low()),
-		static.UpdateFieldUnitCreatedbyHigh:                                     uint32(p.CreatedBy.High()),
-		static.UpdateFieldUnitTargetLow:                                         uint32(p.Target.Low()),
-		static.UpdateFieldUnitTargetHigh:                                        uint32(p.Target.High()),
-		static.UpdateFieldUnitPersuadedLow:                                      uint32(p.Persuaded.Low()),
-		static.UpdateFieldUnitPersuadedHigh:                                     uint32(p.Persuaded.High()),
-		static.UpdateFieldUnitChannelObjectLow:                                  uint32(0), // TODO
-		static.UpdateFieldUnitChannelObjectHigh:                                 uint32(0), // TODO
-		static.UpdateFieldUnitHealth:                                            uint32(p.CurrentHealth),
-		static.UpdateFieldUnitPowerStart + static.UpdateField(p.powerType()):    uint32(p.CurrentPower),
-		static.UpdateFieldUnitMaxHealth:                                         uint32(p.BaseHealth + game.HealthFromStamina(p.Stamina)),
-		static.UpdateFieldUnitMaxPowerStart + static.UpdateField(p.powerType()): uint32(p.maxPower()),
-		static.UpdateFieldUnitLevel:                                             uint32(p.Level),
-		static.UpdateFieldUnitFactiontemplate:                                   uint32(4),
-		static.UpdateFieldUnitBytes0:                                            uint32(uint32(p.Race.ID) | uint32(p.Class.ID)<<8 | uint32(p.Gender)<<16),
-		static.UpdateFieldUnitFlags:                                             uint32(0),
-		static.UpdateFieldUnitAura:                                              uint32(0), // TODO
-		static.UpdateFieldUnitAuraLast:                                          uint32(0), // TODO
-		static.UpdateFieldUnitAuraflags:                                         uint32(0), // TODO
-		static.UpdateFieldUnitAuraflags01:                                       uint32(0), // TODO
-		static.UpdateFieldUnitAuraflags02:                                       uint32(0), // TODO
-		static.UpdateFieldUnitAuraflags03:                                       uint32(0), // TODO
-		static.UpdateFieldUnitAuraflags04:                                       uint32(0), // TODO
-		static.UpdateFieldUnitAuraflags05:                                       uint32(0), // TODO
-		static.UpdateFieldUnitAuralevels:                                        uint32(0), // TODO
-		static.UpdateFieldUnitAuralevelsLast:                                    uint32(0), // TODO
-		static.UpdateFieldUnitAuraapplications:                                  uint32(0), // TODO
-		static.UpdateFieldUnitAuraapplicationsLast:                              uint32(0), // TODO
-		static.UpdateFieldUnitAurastate:                                         uint32(0), // TODO
-		static.UpdateFieldUnitBaseattacktime:                                    uint32(1000),
-		static.UpdateFieldUnitBoundingradius:                                    float32(modelInfo.BoundingRadius),
-		static.UpdateFieldUnitCombatreach:                                       float32(modelInfo.CombatReach),
-		static.UpdateFieldUnitDisplayid:                                         uint32(modelInfo.ID),
-		static.UpdateFieldUnitNativedisplayid:                                   uint32(modelInfo.ID),
-		static.UpdateFieldUnitMountdisplayid:                                    uint32(0), // TODO
-		static.UpdateFieldUnitBytes1:                                            uint32(p.Byte1Flags)<<24 | uint32(p.FreeTalentPoints)<<16 | uint32(p.StandState),
-		static.UpdateFieldUnitPetnumber:                                         uint32(0), // TODO
-		static.UpdateFieldUnitPetNameTimestamp:                                  uint32(0), // TODO
-		static.UpdateFieldUnitPetexperience:                                     uint32(0), // TODO
-		static.UpdateFieldUnitPetnextlevelexp:                                   uint32(0), // TODO
-		static.UpdateFieldUnitDynamicFlags:                                      uint32(0), // TODO
-		static.UpdateFieldUnitChannelSpell:                                      uint32(0), // TODO
-		static.UpdateFieldUnitModCastSpeed:                                      float32(1.0),
-		static.UpdateFieldUnitCreatedBySpell:                                    uint32(0), // TODO
-		static.UpdateFieldUnitNpcFlags:                                          uint32(0), // TODO
-		static.UpdateFieldUnitNpcEmotestate:                                     uint32(p.EmoteState),
-		static.UpdateFieldUnitTrainingPoints:                                    uint32(p.TrainingPoints),
-		static.UpdateFieldUnitStrength:                                          uint32(p.Strength),
-		static.UpdateFieldUnitAgility:                                           uint32(p.Agility),
-		static.UpdateFieldUnitStamina:                                           uint32(p.Stamina),
-		static.UpdateFieldUnitIntellect:                                         uint32(p.Intellect),
-		static.UpdateFieldUnitSpirit:                                            uint32(p.Spirit),
-		static.UpdateFieldUnitArmor:                                             uint32(resistances[static.SpellSchoolPhysical]),
-		static.UpdateFieldUnitHolyResist:                                        uint32(resistances[static.SpellSchoolHoly]),
-		static.UpdateFieldUnitFireResist:                                        uint32(resistances[static.SpellSchoolFire]),
-		static.UpdateFieldUnitNatureResist:                                      uint32(resistances[static.SpellSchoolNature]),
-		static.UpdateFieldUnitFrostResist:                                       uint32(resistances[static.SpellSchoolFrost]),
-		static.UpdateFieldUnitShadowResist:                                      uint32(resistances[static.SpellSchoolShadow]),
-		static.UpdateFieldUnitArcaneResist:                                      uint32(resistances[static.SpellSchoolArcane]),
-		static.UpdateFieldUnitBaseMana:                                          uint32(p.BasePower),
-		static.UpdateFieldUnitBaseHealth:                                        uint32(p.BaseHealth),
-		static.UpdateFieldUnitBytes2:                                            uint32(0), // TODO
-		static.UpdateFieldUnitAttackPower:                                       uint32(p.meleeAttackPower()),
-		static.UpdateFieldUnitAttackPowerMods:                                   uint32(p.meleeAttackPowerMods()),
-		static.UpdateFieldUnitAttackPowerMultiplier:                             uint32(0), // TODO
-		static.UpdateFieldUnitRangedAttackPower:                                 uint32(p.rangedAttackPower()),
-		static.UpdateFieldUnitRangedAttackPowerMods:                             uint32(p.rangedAttackPowerMods()),
-		static.UpdateFieldUnitRangedAttackPowerMultiplier:                       uint32(0), // TODO
-		static.UpdateFieldUnitPowerCostModifier:                                 uint32(0), // TODO
-		static.UpdateFieldUnitPowerCostModifier01:                               uint32(0), // TODO
-		static.UpdateFieldUnitPowerCostModifier02:                               uint32(0), // TODO
-		static.UpdateFieldUnitPowerCostModifier03:                               uint32(0), // TODO
-		static.UpdateFieldUnitPowerCostModifier04:                               uint32(0), // TODO
-		static.UpdateFieldUnitPowerCostModifier05:                               uint32(0), // TODO
-		static.UpdateFieldUnitPowerCostModifier06:                               uint32(0), // TODO
-		static.UpdateFieldUnitPowerCostMultiplier:                               uint32(0), // TODO
-		static.UpdateFieldUnitPowerCostMultiplier01:                             uint32(0), // TODO
-		static.UpdateFieldUnitPowerCostMultiplier02:                             uint32(0), // TODO
-		static.UpdateFieldUnitPowerCostMultiplier03:                             uint32(0), // TODO
-		static.UpdateFieldUnitPowerCostMultiplier04:                             uint32(0), // TODO
-		static.UpdateFieldUnitPowerCostMultiplier05:                             uint32(0), // TODO
-		static.UpdateFieldUnitPowerCostMultiplier06:                             uint32(0), // TODO
+		static.UpdateFieldUnitCharmLow:                                             uint32(0),
+		static.UpdateFieldUnitCharmHigh:                                            uint32(0),
+		static.UpdateFieldUnitSummonLow:                                            uint32(0),
+		static.UpdateFieldUnitSummonHigh:                                           uint32(0),
+		static.UpdateFieldUnitCharmedbyLow:                                         uint32(0),
+		static.UpdateFieldUnitCharmedbyHigh:                                        uint32(0),
+		static.UpdateFieldUnitSummonedbyLow:                                        uint32(0),
+		static.UpdateFieldUnitSummonedbyHigh:                                       uint32(0),
+		static.UpdateFieldUnitCreatedbyLow:                                         uint32(0),
+		static.UpdateFieldUnitCreatedbyHigh:                                        uint32(0),
+		static.UpdateFieldUnitTargetLow:                                            uint32(p.Target.Low()),
+		static.UpdateFieldUnitTargetHigh:                                           uint32(p.Target.High()),
+		static.UpdateFieldUnitPersuadedLow:                                         uint32(0),
+		static.UpdateFieldUnitPersuadedHigh:                                        uint32(0),
+		static.UpdateFieldUnitChannelObjectLow:                                     uint32(0), // TODO
+		static.UpdateFieldUnitChannelObjectHigh:                                    uint32(0), // TODO
+		static.UpdateFieldUnitHealth:                                               uint32(p.CurrentHealth),
+		static.UpdateFieldUnitPowerStart + static.UpdateField(static.PowerMana):    uint32(p.CurrentPower),
+		static.UpdateFieldUnitMaxHealth:                                            uint32(p.MaxHealth()),
+		static.UpdateFieldUnitMaxPowerStart + static.UpdateField(static.PowerMana): uint32(p.MaxPower()),
+		static.UpdateFieldUnitLevel:                                                uint32(p.Level),
+		static.UpdateFieldUnitFactiontemplate:                                      uint32(4),
+		static.UpdateFieldUnitBytes0:                                               uint32(uint32(p.Race.ID) | uint32(p.Class.ID)<<8 | uint32(p.Gender)<<16),
+		static.UpdateFieldUnitFlags:                                                uint32(0),
+		static.UpdateFieldUnitAura:                                                 uint32(0), // TODO
+		static.UpdateFieldUnitAuraLast:                                             uint32(0), // TODO
+		static.UpdateFieldUnitAuraflags:                                            uint32(0), // TODO
+		static.UpdateFieldUnitAuraflags01:                                          uint32(0), // TODO
+		static.UpdateFieldUnitAuraflags02:                                          uint32(0), // TODO
+		static.UpdateFieldUnitAuraflags03:                                          uint32(0), // TODO
+		static.UpdateFieldUnitAuraflags04:                                          uint32(0), // TODO
+		static.UpdateFieldUnitAuraflags05:                                          uint32(0), // TODO
+		static.UpdateFieldUnitAuralevels:                                           uint32(0), // TODO
+		static.UpdateFieldUnitAuralevelsLast:                                       uint32(0), // TODO
+		static.UpdateFieldUnitAuraapplications:                                     uint32(0), // TODO
+		static.UpdateFieldUnitAuraapplicationsLast:                                 uint32(0), // TODO
+		static.UpdateFieldUnitAurastate:                                            uint32(0), // TODO
+		static.UpdateFieldUnitBaseattacktime:                                       uint32(1000),
+		static.UpdateFieldUnitBoundingradius:                                       float32(modelInfo.BoundingRadius),
+		static.UpdateFieldUnitCombatreach:                                          float32(modelInfo.CombatReach),
+		static.UpdateFieldUnitDisplayid:                                            uint32(modelInfo.ID),
+		static.UpdateFieldUnitNativedisplayid:                                      uint32(modelInfo.ID),
+		static.UpdateFieldUnitMountdisplayid:                                       uint32(0), // TODO
+		static.UpdateFieldUnitBytes1:                                               uint32(p.FreeTalentPoints)<<16 | uint32(p.StandState),
+		static.UpdateFieldUnitPetnumber:                                            uint32(0), // TODO
+		static.UpdateFieldUnitPetNameTimestamp:                                     uint32(0), // TODO
+		static.UpdateFieldUnitPetexperience:                                        uint32(0), // TODO
+		static.UpdateFieldUnitPetnextlevelexp:                                      uint32(0), // TODO
+		static.UpdateFieldUnitDynamicFlags:                                         uint32(0), // TODO
+		static.UpdateFieldUnitChannelSpell:                                         uint32(0), // TODO
+		static.UpdateFieldUnitModCastSpeed:                                         float32(1.0),
+		static.UpdateFieldUnitCreatedBySpell:                                       uint32(0), // TODO
+		static.UpdateFieldUnitNpcFlags:                                             uint32(0), // TODO
+		static.UpdateFieldUnitNpcEmotestate:                                        uint32(0),
+		static.UpdateFieldUnitTrainingPoints:                                       uint32(0),
+		static.UpdateFieldUnitStrength:                                             uint32(p.Strength),
+		static.UpdateFieldUnitAgility:                                              uint32(p.Agility),
+		static.UpdateFieldUnitStamina:                                              uint32(p.Stamina),
+		static.UpdateFieldUnitIntellect:                                            uint32(p.Intellect),
+		static.UpdateFieldUnitSpirit:                                               uint32(p.Spirit),
+		static.UpdateFieldUnitArmor:                                                uint32(resistances[static.SpellSchoolPhysical]),
+		static.UpdateFieldUnitHolyResist:                                           uint32(resistances[static.SpellSchoolHoly]),
+		static.UpdateFieldUnitFireResist:                                           uint32(resistances[static.SpellSchoolFire]),
+		static.UpdateFieldUnitNatureResist:                                         uint32(resistances[static.SpellSchoolNature]),
+		static.UpdateFieldUnitFrostResist:                                          uint32(resistances[static.SpellSchoolFrost]),
+		static.UpdateFieldUnitShadowResist:                                         uint32(resistances[static.SpellSchoolShadow]),
+		static.UpdateFieldUnitArcaneResist:                                         uint32(resistances[static.SpellSchoolArcane]),
+		static.UpdateFieldUnitBaseMana:                                             uint32(0),
+		static.UpdateFieldUnitBaseHealth:                                           uint32(0),
+		static.UpdateFieldUnitBytes2:                                               uint32(0), // TODO
+		static.UpdateFieldUnitAttackPower:                                          uint32(p.MeleeAttackPower(p.Class)),
+		static.UpdateFieldUnitAttackPowerMods:                                      uint32(0),
+		static.UpdateFieldUnitAttackPowerMultiplier:                                uint32(0), // TODO
+		static.UpdateFieldUnitRangedAttackPower:                                    uint32(p.RangedAttackPower(p.Class)),
+		static.UpdateFieldUnitRangedAttackPowerMods:                                uint32(0),
+		static.UpdateFieldUnitRangedAttackPowerMultiplier:                          uint32(0), // TODO
+		static.UpdateFieldUnitPowerCostModifier:                                    uint32(0), // TODO
+		static.UpdateFieldUnitPowerCostModifier01:                                  uint32(0), // TODO
+		static.UpdateFieldUnitPowerCostModifier02:                                  uint32(0), // TODO
+		static.UpdateFieldUnitPowerCostModifier03:                                  uint32(0), // TODO
+		static.UpdateFieldUnitPowerCostModifier04:                                  uint32(0), // TODO
+		static.UpdateFieldUnitPowerCostModifier05:                                  uint32(0), // TODO
+		static.UpdateFieldUnitPowerCostModifier06:                                  uint32(0), // TODO
+		static.UpdateFieldUnitPowerCostMultiplier:                                  uint32(0), // TODO
+		static.UpdateFieldUnitPowerCostMultiplier01:                                uint32(0), // TODO
+		static.UpdateFieldUnitPowerCostMultiplier02:                                uint32(0), // TODO
+		static.UpdateFieldUnitPowerCostMultiplier03:                                uint32(0), // TODO
+		static.UpdateFieldUnitPowerCostMultiplier04:                                uint32(0), // TODO
+		static.UpdateFieldUnitPowerCostMultiplier05:                                uint32(0), // TODO
+		static.UpdateFieldUnitPowerCostMultiplier06:                                uint32(0), // TODO
 
 		static.UpdateFieldPlayerDuelArbiter:                uint32(0), // TODO
 		static.UpdateFieldPlayerFlags:                      uint32(p.flags()),
 		static.UpdateFieldPlayerGuildid:                    uint32(0), // TODO
 		static.UpdateFieldPlayerGuildrank:                  uint32(0), // TODO
-		static.UpdateFieldPlayerBytes:                      uint32(p.SkinColor) | uint32(p.Face)<<8 | uint32(p.HairStyle)<<16 | uint32(p.HairColor)<<24,
-		static.UpdateFieldPlayerBytes2:                     uint32(p.Feature),
+		static.UpdateFieldPlayerBytes:                      p.Bytes(),
+		static.UpdateFieldPlayerBytes2:                     p.Bytes2(),
 		static.UpdateFieldPlayerBytes3:                     uint32(p.Gender) | uint32(p.DrunkValue)&0xFFFE,
 		static.UpdateFieldPlayerDuelTeam:                   uint32(0), // TODO
 		static.UpdateFieldPlayerGuildTimestamp:             uint32(0), // TODO
@@ -212,7 +260,7 @@ func (p *Player) UpdateFields() interfaces.UpdateFieldsMap {
 		static.UpdateFieldPlayerResistancebuffmodsnegative: uint32(0), // TODO
 		static.UpdateFieldPlayerModDamageDonePos:           uint32(0), // TODO
 		static.UpdateFieldPlayerModDamageDoneNeg:           uint32(0), // TODO
-		static.UpdateFieldPlayerModDamageDonePct:           float32(p.damageModPercentage()),
+		static.UpdateFieldPlayerModDamageDonePct:           float32(1.0),
 		static.UpdateFieldPlayerFieldBytes:                 uint32(0), // TODO
 		static.UpdateFieldPlayerAmmoID:                     uint32(0), // TODO
 		static.UpdateFieldPlayerSelfResSpell:               uint32(0), // TODO

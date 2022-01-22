@@ -16,7 +16,10 @@ go_library(
     importpath = "github.com/jeshuamorrissey/wow_server_go/server/world/data/dynamic",
     visibility = ["//visibility:public"],
     deps = [
+        "//server/world/channels",
+        "//server/world/data/dynamic/components",
         "//server/world/data/dynamic/interfaces",
+        "//server/world/data/dynamic/messages",
         "//server/world/data/static",
         "//server/world/game",
         "@com_github_sirupsen_logrus//:logrus",

@@ -25,7 +25,7 @@ go_library(
     importpath = "github.com/jeshuamorrissey/wow_server_go/server/world/packet/handlers",
     visibility = ["//visibility:public"],
     deps = [
-        "//server/world/data/dynamic/interfaces",
+        "//server/world/data/dynamic/messages",
         "//server/world/data/static",
         "//server/world/packet",
         "//server/world/system",

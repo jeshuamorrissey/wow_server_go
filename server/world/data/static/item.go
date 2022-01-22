@@ -6,8 +6,8 @@ import (
 
 // ItemDamage represents the damage an item can do, as a min/max pair.
 type ItemDamage struct {
-	Min float32
-	Max float32
+	Min int
+	Max int
 }
 
 // Item represents an item template within the world. This does not represent

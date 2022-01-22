@@ -61,9 +61,6 @@ func RunWorldServer(realmName string, port int, config *config.Config) {
 	updater := system.NewUpdater(log, config.ObjectManager)
 	go updater.Run()
 
-	// Start the combat manager.
-	combatManager := system.NewCombatManager(log, config.ObjectManager, updater)
-
 	// Start session handler.
 	listener, err := net.Listen("tcp", "127.0.0.1:"+strconv.Itoa(port))
 	if err != nil {
@@ -87,7 +84,6 @@ func RunWorldServer(realmName string, port int, config *config.Config) {
 			config,
 			logrus.WithFields(logrus.Fields{"server": "WORLD", "account": "???"}),
 			updater,
-			combatManager,
 		)
 		setupSession(sess)
 		go sess.Run()
