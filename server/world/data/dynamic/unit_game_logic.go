@@ -25,8 +25,8 @@ func (u *Unit) regenHealthAndPower() {
 		powerMod := game.UnitRegenPerSecond(u.maxPower(), u.IsInCombat()) * int(secondsInTimeout)
 
 		u.UpdateChannel() <- []interface{}{
-			&messages.UnitModHealth{Amount: healthMod},
-			&messages.UnitModPower{Amount: powerMod},
+			&messages.ModHealth{Amount: healthMod},
+			&messages.ModPower{Amount: powerMod},
 		}
 	}
 }

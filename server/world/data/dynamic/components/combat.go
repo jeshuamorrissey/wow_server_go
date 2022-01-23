@@ -77,7 +77,7 @@ func (c *Combat) resolveSingleAttack(attacker interfaces.Object, target interfac
 	}
 
 	target.SendUpdates([]interface{}{
-		&messages.UnitModHealth{Amount: -finalDamage},
+		&messages.ModHealth{Amount: -finalDamage},
 	})
 }
 

@@ -10,6 +10,7 @@ go_library(
         "object_utils.go",
         "player.go",
         "player_game_logic.go",
+        "player_handlers.go",
         "unit.go",
         "unit_ai.go",
         "unit_game_logic.go",

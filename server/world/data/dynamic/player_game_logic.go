@@ -17,8 +17,8 @@ func (p *Player) restoreHealthPower() {
 	for range time.Tick(static.RegenTimeout) {
 		if p.IsLoggedIn {
 			p.SendUpdates([]interface{}{
-				&messages.UnitModHealth{Amount: p.HealthRegen(static.RegenTimeout, p.IsInCombat())},
-				&messages.UnitModPower{Amount: p.PowerRegen(static.RegenTimeout, p.IsInCombat())},
+				&messages.ModHealth{Amount: p.HealthRegen(static.RegenTimeout, p.IsInCombat())},
+				&messages.ModPower{Amount: p.PowerRegen(static.RegenTimeout, p.IsInCombat())},
 			})
 		}
 	}
@@ -72,4 +72,18 @@ func (p *Player) resistances() map[static.SpellSchool]int {
 	resistances[static.SpellSchoolArcane] += spiritBonus
 
 	return resistances
+}
+
+func (p *Player) weapons() []*Item {
+	weapons := make([]*Item, 0)
+	for _, slot := range []static.EquipmentSlot{static.EquipmentSlotMainHand, static.EquipmentSlotOffHand, static.EquipmentSlotRanged} {
+		weaponGUID, ok := p.Equipment[slot]
+		if ok {
+			if weapon := GetObjectManager().GetItem(weaponGUID); weapon != nil {
+				weapons = append(weapons, weapon)
+			}
+		}
+	}
+
+	return weapons
 }

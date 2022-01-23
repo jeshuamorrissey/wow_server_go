@@ -34,7 +34,7 @@ func (u *Unit) StartUpdateLoop() {
 		for {
 			for _, update := range <-u.UpdateChannel() {
 				switch updateTyped := update.(type) {
-				case *messages.UnitModHealth:
+				case *messages.ModHealth:
 					u.ModHealth(updateTyped.Amount, u.maxHealth())
 					if u.CurrentHealth == 0 {
 						u.SendUpdates([]interface{}{
@@ -44,11 +44,11 @@ func (u *Unit) StartUpdateLoop() {
 						for attacker := range u.Attackers {
 							GetObjectManager().Get(attacker).SendUpdates([]interface{}{
 								&messages.UnitDeregisterAttacker{Attacker: u.GUID()},
-								&messages.UnitDied{DeadUnit: u.GUID()},
+								&messages.UnitStopAttack{},
 							})
 						}
 					}
-				case *messages.UnitModPower:
+				case *messages.ModPower:
 					u.ModPower(updateTyped.Amount, u.maxPower())
 				case *messages.UnitRegisterAttack:
 					if !u.IsInCombat() {

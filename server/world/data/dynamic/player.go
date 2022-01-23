@@ -61,52 +61,22 @@ func (p *Player) StartUpdateLoop() {
 	p.CreateUpdateChannel()
 	go func() {
 		for {
-			for _, update := range <-p.UpdateChannel() {
-				switch updateTyped := update.(type) {
-				case *messages.UnitModHealth:
-					p.ModHealth(updateTyped.Amount, p.MaxHealth())
-				case *messages.UnitModPower:
-					p.ModPower(updateTyped.Amount, p.MaxPower())
+			for _, msgRaw := range <-p.UpdateChannel() {
+				switch msg := msgRaw.(type) {
 				case *messages.UnitAttack:
-					// TODO(jeshua): if out of melee range, trigger ranged attack.
-					target := GetObjectManager().Get(updateTyped.Target)
-					target.SendUpdates([]interface{}{
-						&messages.UnitRegisterAttack{Attacker: p.GUID()},
-					})
-
-					p.Attack(p, target, p.meleeAttackRate(static.EquipmentSlotMainHand), func() *components.Damage {
-						return &components.Damage{
-							Base: GetObjectManager().GetItem(p.Equipment[static.EquipmentSlotMainHand]).CalculateDamage(),
-						}
-					})
-
-					if p.meleeAttackRate(static.EquipmentSlotOffHand) != 0 {
-						p.Attack(p, target, p.meleeAttackRate(static.EquipmentSlotOffHand), func() *components.Damage {
-							return &components.Damage{
-								Base: GetObjectManager().GetItem(p.Equipment[static.EquipmentSlotOffHand]).CalculateDamage(),
-							}
-						})
-					}
-				case *messages.UnitRegisterAttack:
-					p.RegisterAttacker(updateTyped.Attacker)
+					p.HandleAttack(msg)
 				case *messages.UnitDeregisterAttacker:
-					p.DeregisterAttacker(updateTyped.Attacker)
+					p.HandleDeregisterAttacker(msg)
+				case *messages.ModHealth:
+					p.HandleModHealth(msg)
+				case *messages.ModPower:
+					p.HandleModPower(msg)
+				case *messages.UnitRegisterAttack:
+					p.HandleRegisterAttacker(msg)
 				case *messages.UnitStopAttack:
-					if p.Target != 0 {
-						GetObjectManager().Get(p.Target).SendUpdates([]interface{}{
-							&messages.UnitDeregisterAttacker{Attacker: p.GUID()},
-						})
-					}
-
-					p.StopAttack()
-
-				case *messages.UnitDied:
-					p.SendUpdates([]interface{}{
-						&messages.UnitStopAttack{},
-					})
+					p.HandleAttackStop(msg)
 				}
 			}
-
 			channels.ObjectUpdates <- p.GUID()
 		}
 	}()
