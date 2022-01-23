@@ -56,10 +56,12 @@ func (p *Player) HandleDeregisterAttacker(msg *messages.UnitDeregisterAttacker) 
 
 func (p *Player) HandleAttackStop(msg *messages.UnitStopAttack) {
 	// First, if we have a target, tell them we aren't attacking them.
-	if target := GetObjectManager().Get(p.Target); target != nil {
-		target.SendUpdates([]interface{}{
-			&messages.UnitDeregisterAttacker{Attacker: p.GUID()},
-		})
+	if p.Target > 0 {
+		if target := GetObjectManager().Get(p.Target); target != nil {
+			target.SendUpdates([]interface{}{
+				&messages.UnitDeregisterAttacker{Attacker: p.GUID()},
+			})
+		}
 	}
 
 	// Now, we can stop attacking and clean up our attack timers.

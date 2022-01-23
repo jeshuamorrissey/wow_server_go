@@ -229,8 +229,8 @@ func init() {
 		AttackRate: makeDuration("1.9s"),
 		Damages: map[SpellSchool]ItemDamage{
 			SpellSchoolPhysical: {
-				Min: 10,
-				Max: 15,
+				Min: 1,
+				Max: 3,
 			},
 		},
 		MaxDurability: 20,

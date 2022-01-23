@@ -80,7 +80,9 @@ func (p *Player) weapons() []*Item {
 		weaponGUID, ok := p.Equipment[slot]
 		if ok {
 			if weapon := GetObjectManager().GetItem(weaponGUID); weapon != nil {
-				weapons = append(weapons, weapon)
+				if weapon.GetTemplate().AttackRate > 0 {
+					weapons = append(weapons, weapon)
+				}
 			}
 		}
 	}

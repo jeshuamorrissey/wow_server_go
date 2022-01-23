@@ -7,7 +7,7 @@ const (
 	MinPlayerNameLength = 2
 	MaxPlayerNameLength = 12
 	NumBagSlots         = 4
-	RegenTimeout        = 1000 * time.Millisecond
+	RegenTimeout        = 500 * time.Millisecond
 )
 
 // Coins represents the coinage type within the game.
