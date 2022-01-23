@@ -7,6 +7,7 @@ import (
 	"github.com/jeshuamorrissey/wow_server_go/server/world/data/dynamic/interfaces"
 	"github.com/jeshuamorrissey/wow_server_go/server/world/data/dynamic/messages"
 	"github.com/jeshuamorrissey/wow_server_go/server/world/data/static"
+	"github.com/jeshuamorrissey/wow_server_go/server/world/packet"
 )
 
 type Damage struct {
@@ -41,6 +42,7 @@ func (c *Combat) StopAttack() {
 	}
 
 	c.autoAttackTimers = make([]*autoAttackTimer, 0)
+	c.Target = 0
 }
 
 // RegisterAttacker will note that the given object is attacking us.
@@ -82,6 +84,16 @@ func (c *Combat) resolveSingleAttack(attacker interfaces.Object, target interfac
 // Attack will start a goroutine which will manage attacking.
 func (c *Combat) Attack(attacker interfaces.Object, target interfaces.Object, attackRate time.Duration, calculateBaseDamage func() *Damage) {
 	c.Target = target.GUID()
+
+	// Send a packet saying who is attacking who.
+	channels.PacketUpdates <- &channels.PacketUpdate{
+		Packet: &packet.ServerAttackStart{
+			Attacker: attacker.GUID(),
+			Target:   target.GUID(),
+		},
+
+		Location: attacker.GetLocation(),
+	}
 
 	if c.autoAttackTimers == nil {
 		c.autoAttackTimers = make([]*autoAttackTimer, 0)

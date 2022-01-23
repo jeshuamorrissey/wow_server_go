@@ -8,6 +8,7 @@ go_library(
         "item.go",
         "location.go",
         "movement_info.go",
+        "packet.go",
         "unit.go",
         "update_fields.go",
     ],

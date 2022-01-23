@@ -89,12 +89,21 @@ func (p *Player) StartUpdateLoop() {
 					}
 				case *messages.UnitRegisterAttack:
 					p.RegisterAttacker(updateTyped.Attacker)
+				case *messages.UnitDeregisterAttacker:
+					p.DeregisterAttacker(updateTyped.Attacker)
 				case *messages.UnitStopAttack:
-					GetObjectManager().Get(p.Target).SendUpdates([]interface{}{
-						&messages.UnitDeregisterAttacker{Attacker: p.GUID()},
-					})
+					if p.Target != 0 {
+						GetObjectManager().Get(p.Target).SendUpdates([]interface{}{
+							&messages.UnitDeregisterAttacker{Attacker: p.GUID()},
+						})
+					}
 
 					p.StopAttack()
+
+				case *messages.UnitDied:
+					p.SendUpdates([]interface{}{
+						&messages.UnitStopAttack{},
+					})
 				}
 			}
 

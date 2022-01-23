@@ -18,6 +18,7 @@ go_library(
     visibility = ["//visibility:public"],
     deps = [
         "//lib/config",
+        "//server/world/data/dynamic/interfaces",
         "//server/world/data/static",
         "//server/world/packet",
         "//server/world/packet/handlers",  # keep

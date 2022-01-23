@@ -24,4 +24,8 @@ type (
 	UnitDeregisterAttacker struct {
 		Attacker interfaces.GUID
 	}
+
+	UnitDied struct {
+		DeadUnit interfaces.GUID
+	}
 )

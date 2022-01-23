@@ -17,8 +17,8 @@ func (p *Player) restoreHealthPower() {
 	for range time.Tick(static.RegenTimeout) {
 		if p.IsLoggedIn {
 			p.SendUpdates([]interface{}{
-				messages.UnitModHealth{Amount: p.HealthRegen(static.RegenTimeout, p.IsInCombat())},
-				messages.UnitModPower{Amount: p.PowerRegen(static.RegenTimeout, p.IsInCombat())},
+				&messages.UnitModHealth{Amount: p.HealthRegen(static.RegenTimeout, p.IsInCombat())},
+				&messages.UnitModPower{Amount: p.PowerRegen(static.RegenTimeout, p.IsInCombat())},
 			})
 		}
 	}

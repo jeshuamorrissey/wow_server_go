@@ -40,7 +40,7 @@ func (o *GameObject) SendUpdates(updates []interface{}) {
 
 func (o *GameObject) CreateUpdateChannel() {
 	if o.update == nil {
-		o.update = make(chan []interface{})
+		o.update = make(chan []interface{}, 100)
 	}
 }
 

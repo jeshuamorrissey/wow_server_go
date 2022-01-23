@@ -19,5 +19,6 @@ go_library(
         "//server/world/data/dynamic/interfaces",
         "//server/world/data/dynamic/messages",
         "//server/world/data/static",
+        "//server/world/packet",
     ],
 )

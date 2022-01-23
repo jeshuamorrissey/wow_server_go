@@ -11,19 +11,20 @@ GOLANG_FILE_TEMPLATE = '''
 package world
 
 import (
+    "github.com/jeshuamorrissey/wow_server_go/server/world/data/dynamic/interfaces"
     "github.com/jeshuamorrissey/wow_server_go/server/world/data/static"
+    "github.com/jeshuamorrissey/wow_server_go/server/world/packet"
     "github.com/jeshuamorrissey/wow_server_go/server/world/packet/handlers"
     "github.com/jeshuamorrissey/wow_server_go/server/world/system"
-    "github.com/jeshuamorrissey/wow_server_go/server/world/packet"
 )
 
 
-var opCodeToHandler = map[static.OpCode]func(system.ClientPacket, *system.State) ([]system.ServerPacket, error){
+var opCodeToHandler = map[static.OpCode]func(interfaces.ClientPacket, *system.State) ([]interfaces.ServerPacket, error){
 %(generated_functions)s
 }
 '''
 
-GOLANG_GENERATED_FUNCTION_TEMPLATE = '''    static.%(op_code)s: func(pkt system.ClientPacket, state *system.State) ([]system.ServerPacket, error) {
+GOLANG_GENERATED_FUNCTION_TEMPLATE = '''    static.%(op_code)s: func(pkt interfaces.ClientPacket, state *system.State) ([]interfaces.ServerPacket, error) {
         return handlers.Handle%(packet_name)s(pkt.(*packet.%(packet_name)s), state)
     },'''
 

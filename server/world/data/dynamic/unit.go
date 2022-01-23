@@ -36,12 +36,43 @@ func (u *Unit) StartUpdateLoop() {
 				switch updateTyped := update.(type) {
 				case *messages.UnitModHealth:
 					u.ModHealth(updateTyped.Amount, u.maxHealth())
+					if u.CurrentHealth == 0 {
+						u.SendUpdates([]interface{}{
+							&messages.UnitStopAttack{},
+						})
+
+						for attacker := range u.Attackers {
+							GetObjectManager().Get(attacker).SendUpdates([]interface{}{
+								&messages.UnitDeregisterAttacker{Attacker: u.GUID()},
+								&messages.UnitDied{DeadUnit: u.GUID()},
+							})
+						}
+					}
 				case *messages.UnitModPower:
 					u.ModPower(updateTyped.Amount, u.maxPower())
 				case *messages.UnitRegisterAttack:
+					if !u.IsInCombat() {
+						u.HandleAttack(updateTyped.Attacker)
+					}
 					u.RegisterAttacker(updateTyped.Attacker)
 				case *messages.UnitDeregisterAttacker:
 					u.DeregisterAttacker(updateTyped.Attacker)
+				case *messages.UnitAttack:
+					target := GetObjectManager().Get(updateTyped.Target)
+					target.SendUpdates([]interface{}{
+						&messages.UnitRegisterAttack{Attacker: u.GUID()},
+					})
+
+					u.Attack(u, target, 1600*time.Millisecond, func() *components.Damage {
+						return &components.Damage{
+							Base: map[static.SpellSchool]int{
+								static.SpellSchoolPhysical: 5,
+							},
+						}
+					})
+
+				case *messages.UnitStopAttack:
+					u.StopAttack()
 				}
 			}
 

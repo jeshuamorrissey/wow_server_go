@@ -13,6 +13,7 @@ import (
 
 	"github.com/jeshuamorrissey/wow_server_go/lib/config"
 	"github.com/jeshuamorrissey/wow_server_go/lib/util"
+	"github.com/jeshuamorrissey/wow_server_go/server/world/data/dynamic/interfaces"
 	"github.com/jeshuamorrissey/wow_server_go/server/world/data/static"
 )
 
@@ -25,8 +26,8 @@ type Session struct {
 	output     io.Writer
 
 	// A mapping of opCode --> callback to create the client packet.
-	opCodeToPacket  map[static.OpCode]func() ClientPacket
-	opCodeToHandler map[static.OpCode]func(ClientPacket, *State) ([]ServerPacket, error)
+	opCodeToPacket  map[static.OpCode]func() interfaces.ClientPacket
+	opCodeToHandler map[static.OpCode]func(interfaces.ClientPacket, *State) ([]interfaces.ServerPacket, error)
 
 	// State that is to be passed to each handler.
 	state *State
@@ -39,8 +40,8 @@ type Session struct {
 func NewSession(
 	input io.Reader,
 	output io.Writer,
-	opCodeToPacket map[static.OpCode]func() ClientPacket,
-	opCodeToHandler map[static.OpCode]func(ClientPacket, *State) ([]ServerPacket, error),
+	opCodeToPacket map[static.OpCode]func() interfaces.ClientPacket,
+	opCodeToHandler map[static.OpCode]func(interfaces.ClientPacket, *State) ([]interfaces.ServerPacket, error),
 	config *config.Config,
 	log *logrus.Entry,
 	updater *Updater,
@@ -69,7 +70,7 @@ func NewSession(
 }
 
 // Send sends a single packet to this session's client.
-func (s *Session) Send(pkt ServerPacket) error {
+func (s *Session) Send(pkt interfaces.ServerPacket) error {
 	s.outputLock.Lock()
 	defer s.outputLock.Unlock()
 
@@ -157,7 +158,7 @@ func (s *Session) Run() {
 	}
 }
 
-func (s *Session) readPacket() (ClientPacket, static.OpCode, error) {
+func (s *Session) readPacket() (interfaces.ClientPacket, static.OpCode, error) {
 	s.inputLock.Lock()
 	defer s.inputLock.Unlock()
 

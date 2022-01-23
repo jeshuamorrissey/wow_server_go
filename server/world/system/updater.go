@@ -226,7 +226,7 @@ func (u *Updater) updateOtherPlayers(guid interfaces.GUID) {
 	}
 }
 
-func (u *Updater) makeUpdateObjectPacket(outOfRangeUpdate packet.OutOfRangeUpdate, objectUpdates []packet.ObjectUpdate) ServerPacket {
+func (u *Updater) makeUpdateObjectPacket(outOfRangeUpdate packet.OutOfRangeUpdate, objectUpdates []packet.ObjectUpdate) interfaces.ServerPacket {
 	return &packet.ServerUpdateObject{
 		OutOfRangeUpdates: outOfRangeUpdate,
 		ObjectUpdates:     objectUpdates,
@@ -265,6 +265,16 @@ func (u *Updater) doCombatUpdate(attacker interfaces.Object, target interfaces.O
 	}
 }
 
+func (u *Updater) doSendPacket(recipient interfaces.GUID, packet interfaces.ServerPacket, location *interfaces.Location) {
+	for playerGUID, loginData := range u.sessions {
+		if recipient == 0 || playerGUID == recipient {
+			if location == nil || location.Distance(&loginData.Session.state.Character.Location) < MaxObjectDistance {
+				loginData.Session.Send(packet)
+			}
+		}
+	}
+}
+
 // Run starts the updater, which will constantly scan for object updates.
 // Should be run as a goroutine.
 func (u *Updater) Run() {
@@ -275,6 +285,8 @@ func (u *Updater) Run() {
 				u.doCombatUpdate(combatUpdate.Attacker, combatUpdate.Target, combatUpdate.AttackInfo)
 			case objectToUpdate := <-channels.ObjectUpdates:
 				u.doUpdate(objectToUpdate)
+			case packetUpdate := <-channels.PacketUpdates:
+				u.doSendPacket(packetUpdate.SendTo, packetUpdate.Packet, packetUpdate.Location)
 			}
 		}
 	}()

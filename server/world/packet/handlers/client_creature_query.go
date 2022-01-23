@@ -1,13 +1,14 @@
 package handlers
 
 import (
+	"github.com/jeshuamorrissey/wow_server_go/server/world/data/dynamic/interfaces"
 	"github.com/jeshuamorrissey/wow_server_go/server/world/data/static"
 	"github.com/jeshuamorrissey/wow_server_go/server/world/packet"
 	"github.com/jeshuamorrissey/wow_server_go/server/world/system"
 )
 
 // Handle will ensure that the given account exists.
-func HandleClientCreatureQuery(pkt *packet.ClientCreatureQuery, state *system.State) ([]system.ServerPacket, error) {
+func HandleClientCreatureQuery(pkt *packet.ClientCreatureQuery, state *system.State) ([]interfaces.ServerPacket, error) {
 	response := new(packet.ServerCreatureQueryResponse)
 
 	response.Unit = nil
@@ -19,5 +20,5 @@ func HandleClientCreatureQuery(pkt *packet.ClientCreatureQuery, state *system.St
 		response.Entry = uint32(response.Unit.Entry)
 	}
 
-	return []system.ServerPacket{response}, nil
+	return []interfaces.ServerPacket{response}, nil
 }

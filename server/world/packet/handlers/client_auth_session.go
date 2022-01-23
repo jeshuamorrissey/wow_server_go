@@ -3,13 +3,14 @@ package handlers
 import (
 	"strings"
 
+	"github.com/jeshuamorrissey/wow_server_go/server/world/data/dynamic/interfaces"
 	"github.com/jeshuamorrissey/wow_server_go/server/world/data/static"
 	"github.com/jeshuamorrissey/wow_server_go/server/world/packet"
 	"github.com/jeshuamorrissey/wow_server_go/server/world/system"
 )
 
 // Handle will ensure that the given account exists.
-func HandleClientAuthSession(pkt *packet.ClientAuthSession, state *system.State) ([]system.ServerPacket, error) {
+func HandleClientAuthSession(pkt *packet.ClientAuthSession, state *system.State) ([]interfaces.ServerPacket, error) {
 	response := new(packet.ServerAuthResponse)
 	response.Error = static.AuthOK
 
@@ -34,5 +35,5 @@ func HandleClientAuthSession(pkt *packet.ClientAuthSession, state *system.State)
 		state.Log.Infof("Account %v authenticated!", state.Account.Name)
 	}
 
-	return []system.ServerPacket{response}, nil
+	return []interfaces.ServerPacket{response}, nil
 }

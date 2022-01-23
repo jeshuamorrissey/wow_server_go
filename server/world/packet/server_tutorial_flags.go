@@ -5,13 +5,12 @@ import (
 	"math/big"
 
 	"github.com/jeshuamorrissey/wow_server_go/lib/util"
-	"github.com/jeshuamorrissey/wow_server_go/server/world/data/dynamic"
 	"github.com/jeshuamorrissey/wow_server_go/server/world/data/static"
 )
 
 // ServerTutorialFlags is sent back in response to ClientPing.
 type ServerTutorialFlags struct {
-	Player *dynamic.Player
+	Tutorials [256]bool
 }
 
 // ToBytes writes out the packet to an array of bytes.
@@ -20,7 +19,7 @@ func (pkt *ServerTutorialFlags) ToBytes() ([]byte, error) {
 
 	// Convert the binary array to a bitmask.
 	mask := big.NewInt(0)
-	for i, isDone := range pkt.Player.Tutorials {
+	for i, isDone := range pkt.Tutorials {
 		if isDone {
 			mask.SetBit(mask, i, 1)
 		}

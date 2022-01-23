@@ -4,17 +4,39 @@ import (
 	"bytes"
 	"encoding/binary"
 
-	"github.com/sirupsen/logrus"
-
-	"github.com/jeshuamorrissey/wow_server_go/lib/config"
-	"github.com/jeshuamorrissey/wow_server_go/server/world/data/dynamic"
+	"github.com/jeshuamorrissey/wow_server_go/server/world/data/dynamic/interfaces"
 	"github.com/jeshuamorrissey/wow_server_go/server/world/data/static"
 )
 
+type ItemSummary struct {
+	DisplayID     static.DisplayID
+	InventoryType static.InventoryType
+}
+
+type CharacterSummary struct {
+	Name        string
+	GUID        interfaces.GUID
+	Race        *static.Race
+	Class       *static.Class
+	Gender      static.Gender
+	SkinColor   int
+	Face        int
+	HairStyle   int
+	HairColor   int
+	Feature     int
+	Level       int
+	ZoneID      int
+	MapID       int
+	Location    interfaces.Location
+	HasLoggedIn bool
+	Flags       uint32
+	Equipment   map[static.EquipmentSlot]*ItemSummary
+	FirstBag    *ItemSummary
+}
+
 // ServerCharEnum is sent back in response to ClientPing.
 type ServerCharEnum struct {
-	Characters    []*config.Character
-	ObjectManager *dynamic.ObjectManager
+	Characters []*CharacterSummary
 }
 
 // ToBytes writes out the packet to an array of bytes.
@@ -24,35 +46,28 @@ func (pkt *ServerCharEnum) ToBytes() ([]byte, error) {
 	buffer.WriteByte(uint8(len(pkt.Characters))) // number of characters
 
 	for _, char := range pkt.Characters {
-
-		if !pkt.ObjectManager.Exists(char.GUID) {
-			logrus.Errorf("GameObject doesn't exist for character %v!", char.Name)
-			continue
-		}
-
-		charObj := pkt.ObjectManager.GetPlayer(char.GUID)
-		binary.Write(buffer, binary.LittleEndian, charObj.GUID().Low())
-		binary.Write(buffer, binary.LittleEndian, charObj.GUID().High())
+		binary.Write(buffer, binary.LittleEndian, char.GUID.Low())
+		binary.Write(buffer, binary.LittleEndian, char.GUID.High())
 		buffer.WriteString(char.Name)
 		buffer.WriteByte(0)
-		buffer.WriteByte(uint8(charObj.Race.ID))
-		buffer.WriteByte(uint8(charObj.Class.ID))
-		buffer.WriteByte(uint8(charObj.Gender))
-		buffer.WriteByte(uint8(charObj.SkinColor))
-		buffer.WriteByte(uint8(charObj.Face))
-		buffer.WriteByte(uint8(charObj.HairStyle))
-		buffer.WriteByte(uint8(charObj.HairColor))
-		buffer.WriteByte(uint8(charObj.Feature))
-		buffer.WriteByte(uint8(charObj.Level))
-		binary.Write(buffer, binary.LittleEndian, uint32(charObj.ZoneID))
-		binary.Write(buffer, binary.LittleEndian, uint32(charObj.MapID))
-		binary.Write(buffer, binary.LittleEndian, float32(charObj.GetLocation().X))
-		binary.Write(buffer, binary.LittleEndian, float32(charObj.GetLocation().Y))
-		binary.Write(buffer, binary.LittleEndian, float32(charObj.GetLocation().Z))
+		buffer.WriteByte(uint8(char.Race.ID))
+		buffer.WriteByte(uint8(char.Class.ID))
+		buffer.WriteByte(uint8(char.Gender))
+		buffer.WriteByte(uint8(char.SkinColor))
+		buffer.WriteByte(uint8(char.Face))
+		buffer.WriteByte(uint8(char.HairStyle))
+		buffer.WriteByte(uint8(char.HairColor))
+		buffer.WriteByte(uint8(char.Feature))
+		buffer.WriteByte(uint8(char.Level))
+		binary.Write(buffer, binary.LittleEndian, uint32(char.ZoneID))
+		binary.Write(buffer, binary.LittleEndian, uint32(char.MapID))
+		binary.Write(buffer, binary.LittleEndian, float32(char.Location.X))
+		binary.Write(buffer, binary.LittleEndian, float32(char.Location.Y))
+		binary.Write(buffer, binary.LittleEndian, float32(char.Location.Z))
 
 		// TODO(jeshua): implement the following fields with comments.
 		binary.Write(buffer, binary.LittleEndian, uint32(0)) // GuildID
-		binary.Write(buffer, binary.LittleEndian, char.Flags())
+		binary.Write(buffer, binary.LittleEndian, char.Flags)
 
 		if !char.HasLoggedIn {
 			buffer.WriteByte(1)
@@ -65,29 +80,18 @@ func (pkt *ServerCharEnum) ToBytes() ([]byte, error) {
 		binary.Write(buffer, binary.LittleEndian, uint32(0)) // PetFamily
 
 		for slot := static.EquipmentSlotHead; slot <= static.EquipmentSlotTabard; slot++ {
-			if itemGUID, ok := charObj.Equipment[slot]; ok {
-				if !pkt.ObjectManager.Exists(itemGUID) {
-					logrus.WithFields(logrus.Fields{
-						"player":    charObj.GUID(),
-						"slot":      slot,
-						"item_guid": itemGUID,
-					}).Errorf("Unknown equipped item")
-					continue
-				}
-
-				item := pkt.ObjectManager.GetItem(itemGUID)
-				binary.Write(buffer, binary.LittleEndian, uint32(item.GetTemplate().DisplayID))
-				binary.Write(buffer, binary.LittleEndian, uint8(item.GetTemplate().InventoryType))
+			if itemSummary, ok := char.Equipment[slot]; ok {
+				binary.Write(buffer, binary.LittleEndian, uint32(itemSummary.DisplayID))
+				binary.Write(buffer, binary.LittleEndian, uint8(itemSummary.InventoryType))
 			} else {
 				binary.Write(buffer, binary.LittleEndian, uint32(0))
 				binary.Write(buffer, binary.LittleEndian, uint8(0))
 			}
 		}
 
-		firstBag := charObj.FirstBag()
-		if firstBag != nil {
-			binary.Write(buffer, binary.LittleEndian, uint32(firstBag.GetTemplate().DisplayID))
-			binary.Write(buffer, binary.LittleEndian, uint8(firstBag.GetTemplate().InventoryType))
+		if char.FirstBag != nil {
+			binary.Write(buffer, binary.LittleEndian, uint32(char.FirstBag.DisplayID))
+			binary.Write(buffer, binary.LittleEndian, uint8(char.FirstBag.InventoryType))
 		} else {
 			binary.Write(buffer, binary.LittleEndian, uint32(0))
 			binary.Write(buffer, binary.LittleEndian, uint8(0))

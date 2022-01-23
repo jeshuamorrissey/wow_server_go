@@ -1,12 +1,13 @@
 package handlers
 
 import (
+	"github.com/jeshuamorrissey/wow_server_go/server/world/data/dynamic/interfaces"
 	"github.com/jeshuamorrissey/wow_server_go/server/world/packet"
 	"github.com/jeshuamorrissey/wow_server_go/server/world/system"
 )
 
 // Handle will ensure that the given account exists.
-func HandleClientMove(pkt *packet.ClientMove, state *system.State) ([]system.ServerPacket, error) {
+func HandleClientMove(pkt *packet.ClientMove, state *system.State) ([]interfaces.ServerPacket, error) {
 	state.Character.MovementInfo = pkt.MovementInfo
 
 	location := state.Character.GetLocation()

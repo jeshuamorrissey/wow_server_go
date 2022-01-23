@@ -16,6 +16,10 @@ func (u *Unit) Initialize() {
 // Utility methods.
 func (u *Unit) regenHealthAndPower() {
 	for range time.Tick(static.RegenTimeout) {
+		if u.CurrentHealth == 0 {
+			return
+		}
+
 		secondsInTimeout := static.RegenTimeout / time.Second
 		healthMod := game.UnitRegenPerSecond(u.maxHealth(), u.IsInCombat()) * int(secondsInTimeout)
 		powerMod := game.UnitRegenPerSecond(u.maxPower(), u.IsInCombat()) * int(secondsInTimeout)

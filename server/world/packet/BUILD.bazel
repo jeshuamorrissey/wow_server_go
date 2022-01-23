@@ -52,11 +52,8 @@ go_library(
     importpath = "github.com/jeshuamorrissey/wow_server_go/server/world/packet",
     visibility = ["//visibility:public"],
     deps = [
-        "//lib/config",
         "//lib/util",
-        "//server/world/data/dynamic",
         "//server/world/data/dynamic/interfaces",
         "//server/world/data/static",
-        "@com_github_sirupsen_logrus//:logrus",
     ],
 )

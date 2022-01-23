@@ -4,6 +4,7 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/jeshuamorrissey/wow_server_go/server/world/data/dynamic/interfaces"
 	"github.com/jeshuamorrissey/wow_server_go/server/world/data/static"
 	"github.com/jeshuamorrissey/wow_server_go/server/world/packet"
 	"github.com/jeshuamorrissey/wow_server_go/server/world/system"
@@ -29,20 +30,20 @@ func validateCharacterName(name string) static.CharErrorCode {
 }
 
 // Handle will ensure that the given account exists.
-func HandleClientCharCreate(pkt *packet.ClientCharCreate, state *system.State) ([]system.ServerPacket, error) {
+func HandleClientCharCreate(pkt *packet.ClientCharCreate, state *system.State) ([]interfaces.ServerPacket, error) {
 	response := new(packet.ServerCharCreate)
 	response.Error = static.CharErrorCodeCreateSuccess
 
 	// Check for invalid names.
 	response.Error = validateCharacterName(pkt.Name)
 	if response.Error != static.CharErrorCodeCreateSuccess {
-		return []system.ServerPacket{response}, nil
+		return []interfaces.ServerPacket{response}, nil
 	}
 
 	// If the character already exists, fail.
 	if state.Account.Character != nil {
 		response.Error = static.CharErrorCodeCreateFailed
-		return []system.ServerPacket{response}, nil
+		return []interfaces.ServerPacket{response}, nil
 	}
 
 	// Make the character.
@@ -53,10 +54,10 @@ func HandleClientCharCreate(pkt *packet.ClientCharCreate, state *system.State) (
 		pkt.SkinColor, pkt.Face, pkt.HairStyle, pkt.HairColor, pkt.Feature)
 	if err != nil {
 		response.Error = static.CharErrorCodeCreateError
-		return []system.ServerPacket{response}, nil
+		return []interfaces.ServerPacket{response}, nil
 	}
 
 	state.Account.Character = charObj
 
-	return []system.ServerPacket{response}, nil
+	return []interfaces.ServerPacket{response}, nil
 }

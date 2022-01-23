@@ -11,6 +11,7 @@ go_library(
         "player.go",
         "player_game_logic.go",
         "unit.go",
+        "unit_ai.go",
         "unit_game_logic.go",
     ],
     importpath = "github.com/jeshuamorrissey/wow_server_go/server/world/data/dynamic",
