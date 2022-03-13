@@ -22,6 +22,10 @@ const (
 	MaxObjectDistance = 500
 )
 
+func withinUpdateDistanceOf(o1, o2 interfaces.Object) bool {
+	return o1.GetLocation().Distance(o2.GetLocation()) < MaxObjectDistance
+}
+
 type updateCache struct {
 	UpdateFields   interfaces.UpdateFieldsMap
 	MovementUpdate []byte
@@ -133,7 +137,7 @@ func (u *Updater) makeUpdates(
 			movementUpdate = objectToUpdateTyped.MovementUpdate()
 		}
 
-		if objectToUpdate.GetLocation().Distance(player.GetLocation()) < MaxObjectDistance {
+		if withinUpdateDistanceOf(objectToUpdate, player) {
 			update := packet.ObjectUpdate{
 				GUID:            objectToUpdate.GUID(),
 				UpdateFlags:     dynamic.UpdateFlags(objectToUpdate),
@@ -252,7 +256,7 @@ func (u *Updater) doCombatUpdate(attacker interfaces.Object, target interfaces.O
 			continue
 		}
 
-		if attacker.GetLocation().Distance(player.GetLocation()) < MaxObjectDistance || target.GetLocation().Distance(player.GetLocation()) < MaxObjectDistance {
+		if withinUpdateDistanceOf(attacker, player) || withinUpdateDistanceOf(target, player) {
 			loginData.Session.Send(&packet.ServerAttackerStateUpdate{
 				HitInfo:      static.HitInfoNormalSwing,
 				Attacker:     attacker.GUID(),
