@@ -1,8 +1,0 @@
-name: Tests
-on: [pull_request]
-jobs:
-  RunBazelTests:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - run: bazel test //...
