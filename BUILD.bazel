@@ -18,7 +18,7 @@ genrule(
     name = "example_save",
     srcs = [],
     outs = ["world.json"],
-    cmd = "$(location //tools/new_game) -name jeshua > $@",
+    cmd = "$(location //tools/new_game) -name test > $@",
     tools = ["//tools/new_game"],
 )
 

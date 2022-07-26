@@ -1,18 +1,25 @@
 package static
 
-var (
-	startingItems = map[string]map[string][]string{
-		"Warrior": {
-			"Human": {
-				"Recruit's Boots",
-				"Recruit's Pants",
-				"Recruit's Shirt",
-				"Worn Shortsword",
-				"Worn Wooden Shield",
-			},
+var startingItems = map[string]map[string][]string{
+	"Warrior": {
+		"Human": {
+			"Recruit's Boots",
+			"Recruit's Pants",
+			"Recruit's Shirt",
+			"Worn Shortsword",
+			"Worn Wooden Shield",
 		},
-	}
-)
+	},
+	"Paladin": {
+		"Human": {
+			"Recruit's Boots",
+			"Recruit's Pants",
+			"Recruit's Shirt",
+			"Worn Shortsword",
+			"Worn Wooden Shield",
+		},
+	},
+}
 
 // GetStartingItems is a utility which will return a mapping of equipment slot
 // to the item that should be in that slot.

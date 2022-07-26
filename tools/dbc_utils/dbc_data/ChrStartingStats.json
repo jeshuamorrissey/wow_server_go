@@ -8,5 +8,15 @@
         "intellect": 4,
         "spirit": 4,
         "base_health": 50
+    },
+    {
+        "class": "Paladin",
+        "race": "Human",
+        "strength": 22,
+        "agility": 20,
+        "stamina": 22,
+        "intellect": 20,
+        "spirit": 21,
+        "base_health": 50
     }
 ]
