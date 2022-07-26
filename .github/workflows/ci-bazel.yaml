@@ -1,0 +1,17 @@
+name: Bazel
+on:
+  pull_request:
+  push:
+    branches: master
+jobs:
+  Build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - run: bazel build //...
+
+  Test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - run: bazel test //...
