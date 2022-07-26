@@ -29,8 +29,8 @@ func main() {
 	var err error
 	config.Accounts[0].Character, err = initial_data.NewCharacter(
 		config,
-		"Jeshua",
-		static.RaceHuman, static.ClassWarrior, static.GenderMale,
+		"Leeroy Jenkins",
+		static.RaceHuman, static.ClassPaladin, static.GenderMale,
 		1, 1, 1, 1, 1)
 	if err != nil {
 		log.Fatalf("Failed to create character: %v", err)
